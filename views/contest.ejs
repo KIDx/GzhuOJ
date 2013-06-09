@@ -1,0 +1,43 @@
+<!--<html>-->
+<% var cname = 'Contest'; %>
+<% if (type == 3) cname = 'Course'; %>
+<fieldset>
+  <div><legend><% if(type==1) { %>DIY<% } else if (type==2){ %>VIP<% } %> <%= cname%></legend></div>
+  <div class="tablebg">
+    <div id="pager" class="pagination pagination-small">
+      <div style="float:left;">
+        <% var page = 1; %>
+        <% if (Q && Q.page) page = Q.page; %>
+        <ul id="<%= page %>">
+        </ul>
+      </div>
+      <div style="float:right;" id="filter">
+        <div>
+          <button class="checklogin" id="addcontest">Add <%= cname%></button>
+        </div>
+        <div class="input-prepend">
+          <span class="add-on"><i class="icon-search"></i></span>
+          <% var search = ''; %>
+          <% if (Q && Q.search) search = Q.search; %>
+          <input type="text" id="search" value="<%= search %>" title="title or manager" placeholder=" title or manager">
+          <a id="uin_del" class="uin_del" style="display:none;" href="javascript:;" title="clear"></a>
+        </div>
+      </div>
+    </div>
+    <div id="tablediv">
+      <table class="table table-cf" id="contest">
+        <thead>
+          <tr>
+            <th style="width:7%;">CID</th>
+            <th>Title</th>
+            <th style="width:16%;">Start Time</th>
+            <th style="width:11%;">Duration</th>
+            <th style="width:11%;">Type</th>
+            <th style="width:11%;">Manager</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</fieldset>

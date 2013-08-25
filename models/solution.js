@@ -129,6 +129,15 @@ Solution.watch = function(Q, callback){
   });
 };
 
+Solution.mapReduce = function(o, callback){
+  solutions.mapReduce(o, function(err, docs){
+    if (err) {
+      console.log('Solution.mapReduce failed!');
+    }
+    return callback(err, docs);
+  });
+};
+
 Solution.aggregate = function(o, callback){
   solutions.aggregate(o, function(err, docs){
     if (err) {

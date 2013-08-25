@@ -43,6 +43,7 @@ Contest.prototype.save = function(callback){
   contest.probs = this.probs.slice(0);
   contest.password = this.password;
   contest.type = this.type;
+  contest.contestants = new Array();
   contest.save(function(err){
     if (err) {
       console.log('the contest is already exited!');

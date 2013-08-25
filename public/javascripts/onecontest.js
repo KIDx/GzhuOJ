@@ -12,6 +12,7 @@ var $contest = $('#contest')
 var $progress = $('#progress')
 ,	$bar = $progress.children('div.bar')
 ,	$info = $('#contest-info')
+,	$contain = $('#info-contain')
 ,	$lefttime = $('#lefttime');
 
 var $div = $('#thumbnail');
@@ -212,7 +213,7 @@ var $overview = $div.find('#overviewtab')
 
 function OverviewResponse(json) {
 	if (!json) return ;
-	var sols = json.pop(), All = json.pop();
+	var sols = json.pop(), res = json.pop();
 	if (sols) {
 		$.each(sols, function(i, p){
 			var $oi = $o_index.eq(index(p._id));
@@ -226,26 +227,13 @@ function OverviewResponse(json) {
 		});
 	}
 
-	var ac = {}, all = {};
-	if (All) {
-		for (var id in All) {
-			var p = All[id], i = index(p._id.pid);
-			if (!all[i]) all[i] = 0;
-			all[i] += p.val;
-			if (p._id.result == 2) {
-				if (!ac[i]) ac[i] = 0;
-				ac[i] += p.val;
-			}
-		}
-	}
-
-	for (var i = 0; i < prob_num; i++) {
-		if (!ac[i]) ac[i] = 0;
-		if (!all[i]) all[i] = 0;
-		var $oi = $o_sol.eq(i)
-		,	_ac = '<a href="javascript:;" res="2" pid="'+i+'">'+ac[i]+'</a>'
-		,	_all = '<a href="javascript:;" res="-1" pid="'+i+'">'+all[i]+'</a>';
-		$oi.html(_ac+'&nbsp/&nbsp'+_all);
+	if (res) {
+		$.each(res, function(i, p){
+			var $oi = $o_sol.eq(i), idx = index(p._id)
+			,	_ac = '<a href="javascript:;" res="2" pid="'+idx+'">'+p.value.AC+'</a>'
+			,	_all = '<a href="javascript:;" res="-1" pid="'+idx+'">'+p.value.all+'</a>';
+			$oi.html(_ac+'&nbsp/&nbsp'+_all);
+		});
 	}
 
 	if ($clone.length) {
@@ -373,7 +361,9 @@ function GetProblem() {
 }
 
 var $rank = $div.find('#ranktab')
-,	rankQ = {cid:cid};
+,	Star = {}
+,	rankQ = {cid:cid}
+,	rank = 1;
 
 function buildRank(user) {
 	var html = '<tr class="';
@@ -383,7 +373,6 @@ function buildRank(user) {
 	if (user.name == current_user) html += ' highlight';
 
 	html += '"><td';
-	var rank = RankAPI[user.name]-star;
 	if (!Star[user.name] && user.solved > 0) {
 		if (rank < 31) {
 			html += ' class="';
@@ -394,23 +383,21 @@ function buildRank(user) {
 		}
 	}
 	html += '>';
-	if (Star[user.name]) html += '*', ++star;
-	else html += rank;
+	if (Star[user.name]) html += '*';
+	else html += rank++;
 	html += '</td><td><div class="u-info">';
 
-	var pvl;
-	if (contest_type == 2 && contest_private && Users[user.name].gde) {
-		pvl = parseInt(Users[user.name].pvl);
-		html += '<span class="u-info-u">'+Users[user.name].gde+'<br/>'+Users[user.name].name+'</span>';
+	if (contest_type == 2 && contest_private) {
+		html += '<span class="u-info-u">'+'班级'+'<br/>'+'姓名'+'</span>';
 		if (current_user == 'admin') {
 			html += '<input type="checkbox" title="Add star"';
 			if (Star[user.name]) html += ' checked';
 			html += '/>&nbsp;';
 		}
-	} else pvl = parseInt(Users[user.name]);
+	};
 
-	html += '<a href="/user/'+user.name+'" class="user user-';
-	html += UserCol(pvl)+'" title="'+UserTitle(pvl)+'">';
+	html += '<a href="/user/'+user.name+'" class="user';
+	html += '" title="">';
 	html += user.name+'</a>';
 	if (contest_type == 2 && current_user == 'admin')
 		html += '<a href="javascript:;" title="Delete the user" class="user-del">×</a>'
@@ -439,6 +426,7 @@ function buildRank(user) {
 }
 
 function RankResponse(json) {
+
 }
 
 function GetRanklist() {
@@ -613,6 +601,13 @@ $(document).ready(function(){
 	runContest();
 });
 
+function statusInit() {
+	$search.val('');
+	$pid.val('nil');
+	$result.val('nil');
+	statusQ.page = 1;
+}
+
 //bind status
 $(document).ready(function(){
 	$Filter.click(function(){
@@ -620,7 +615,7 @@ $(document).ready(function(){
 		GetStatus();
 	});
 	$('#reset').click(function(){
-		$search.val(''); $pid.val('nil'); $result.val('nil'); statusQ.page = 1;
+		statusInit();
 		GetStatus();
 	});
 	$search.keyup(function(e){
@@ -694,7 +689,7 @@ $(document).ready(function(){
 			} else if (err == '3') {
 				ShowMessage('系统错误！');
 			}
-			init();
+			statusInit();
 			$tablink.eq(2).click();
 			
 		});

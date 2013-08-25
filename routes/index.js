@@ -274,10 +274,29 @@ exports.getOverview = function(req, res) {
   if (!cid) {
     return res.end();
   }
-  Solution.aggregate([
-  { $match: { cID: cid } }
-, { $group: { _id: {pid:'$problemID', result:'$result'}, val: {$sum:1} } }
-  ], function(err, all){
+  Solution.mapReduce({
+    map: function(){
+      emit(this.problemID, { AC:1, all:1, result:this.result });
+    },
+    reduce: function(key, vals){
+      val = { AC:0, all:0, result:2 };
+      vals.forEach(function(p, i){
+        val.all += p.all;
+        if (p.result == 2) {
+          val.AC += p.AC;
+        }
+      });
+      return val;
+    },
+    finalize: function(key, val){
+      if (val.result != 2) {
+        return { AC:0, all:1 };
+      }
+      return { AC:val.AC, all:val.all };
+    },
+    query: {cID: cid},
+    sort: {runID: 1}
+  }, function(err, results){
     if (err) {
       console.log(err);
       res.end();
@@ -292,10 +311,10 @@ exports.getOverview = function(req, res) {
           console.log(err);
           res.end();
         }
-        res.json([all, sols]);
+        res.json([results, sols]);
       });
     } else {
-      res.json([all, null]);
+      res.json([results, null]);
     }
   });
 };
@@ -392,10 +411,16 @@ exports.getStatus = function(req, res) {
   });
 };
 
-exports.getPrivilege = function(req, res) {
+exports.getRanklist = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  var cid = parseInt(req.body.cid);
+  var cid = parseInt(req.body.cid, 10);
   if (!cid) {
+    return res.end();
+  }
+  var page = parseInt(req.body.page, 10);
+  if (!page) {
+    page = 1;
+  } else if (page < 0) {
     return res.end();
   }
   Contest.watch(cid, function(err, contest){
@@ -403,23 +428,101 @@ exports.getPrivilege = function(req, res) {
       console.log(err);
       return res.end();
     }
-    if (!contest || contest.type != 2) {
+    if (!contest) {
       return res.end();
     }
-    var key = 0, ary = new Array();
-    if (contest.password) key = 1;
-    if (contest.contestants) {
-      contest.contestants.forEach(function(p){
-        ary.push(p.split(p.charAt(0))[1]);
-      });
-    }
-    ary.push(contest.userName);
-    User.Find (key, {name: {$in: ary}}, function(err, users){
+    Solution.mapReduce({
+      map: function(){
+        return emit(this.userName, {
+          solved: 0,
+          pid: this.problemID,
+          result: this.result,
+          status: {},
+          inDate: (new Date(this.inDate)).getTime()
+        });
+      },
+      reduce: function(key, vals){
+        var val = { solved: 0, penalty: 0, pid: null, result: null, status: {}, inDate: null };
+        vals.forEach(function(p){
+          if (p.pid) {
+            if (p.result == 2) {
+              if (!val.status[p.pid]) {
+                ++val.solved;
+                val.penalty += p.inDate;
+                val.status[p.pid] = { wa: 0, inDate: p.inDate };
+              } else if (val.status[p.pid].wa < 0) {
+                ++val.solved;
+                val.status[p.pid].wa = -val.status[p.pid].wa;
+                val.penalty += val.status[p.pid].wa*1200000 + p.inDate;
+                val.status[p.pid].inDate = p.inDate;
+              }
+            } else {
+              if (!val.status[p.pid]) {
+                val.status[p.pid] = { wa: -1 };
+              } else if (val.status[p.pid].wa < 0) {
+                --val.status[p.pid].wa;
+              }
+            }
+          } else {
+            for (var i in p.status) {
+              var o = p.status[i];
+              if (o.wa < 0) {
+                if (!val.status[i]) {
+                  val.status[i] = o;
+                } else if (val.status[i].wa < 0) {
+                  val.status[i].wa += o.wa;
+                }
+              } else {
+                if (!val.status[i]) {
+                  val.solved++;
+                  val.penalty += o.inDate;
+                  val.status[i] = o;
+                } else if (val.status[i].wa < 0) {
+                  val.solved++;
+                  val.status[i].wa = o.wa - val.status[i].wa;
+                  val.penalty += val.status[i].wa*1200000 + o.inDate;
+                  val.status[i].inDate = o.inDate;
+                }
+              }
+            }
+          }
+        });
+        return val;
+      },
+      finalize: function(key, val){
+        if (val.pid) {
+          var tp = { solved:0, penalty:0, status:{} };
+          if (val.result == 2) {
+            tp.solved = 1;
+            tp.penalty = val.inDate;
+            tp.status[val.pid] = { wa: 0, inDate: val.inDate };
+            return tp;
+          } else {
+            tp.status[val.pid] = { wa: -1, inDate: val.inDate };
+            return tp;
+          }
+        }
+        return { solved: val.solved, penalty: val.penalty, status: val.status };
+      },
+      query: {cID: cid},
+      sort: {runID: 1}
+    }, function(err, sols){
       if (err) {
         console.log(err);
-        return res.end();
+        res.end();
       }
-      return res.json([ary, users]);
+      sols.sort(function(a, b){
+        if (a.value.solved == b.value.solved) {
+          return a.value.penalty < b.value.penalty ? -1 : 1;
+        }
+        return a.value.solved > b.value.solved ? -1 : 1;
+      });
+      /*sols.forEach(function(p, i){
+        console.log(p._id+' --- '+p.value.solved+' --- '+p.value.penalty);
+        console.log(p.value.status);
+      });*/
+
+      return res.json(sols);
     });
   });
 };
@@ -874,12 +977,14 @@ exports.index = function(req, res){
   //recalAfterClear();
   //deleteAllData();
   //Problem.change();
+  //Solution.update({cID:1000, runID:1136}, {$set:{result:6}}, function(){
   res.render('index', { title: 'Gzhu Online Judge',
                         user: req.session.user,
                         message: req.session.msg,
                         time: (new Date()).getTime(),
                         key: -1
   });
+  //});
 };
 
 exports.user = function(req, res) {

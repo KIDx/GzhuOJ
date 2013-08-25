@@ -43,6 +43,7 @@ app.configure(function(){
 
   app.use(app.router);
 });
+
 //设置环境: production, development
 app.configure('development', function() {
   //使用静态资源服务以及设置缓存
@@ -56,7 +57,8 @@ app.configure('development', function() {
     next();
   });
 });
-/***********************server response***********************/
+
+//#####server response
 //主页
 app.get('/', routes.index);
 //user页面
@@ -94,8 +96,8 @@ app.get('/sourcecode/:runid', routes.sourcecode);
 app.get('/statistic/:pid', routes.statistic);
 //regform页面
 app.get('/regform/:type', routes.regCon);
-app.post('/regform', routes.regCon);
-/***********************jquery ajax***********************/
+
+//#####jquery ajax
 //注册
 app.post('/doReg', routes.doReg);
 //创建验证码
@@ -113,7 +115,7 @@ app.post('/getProblem', routes.getProblem);
 app.post('/contestDelete', routes.contestDelete);
 //公有VIPContest的注册
 app.post('/contestReg', routes.contestReg);
-//注册报名私有VIPContest
+//用户提交注册报名私有VIPContest
 app.post('/doRegCon', routes.doRegCon);
 //更新私有VIPContest的报名结果，以及给审核通过用户赋予相应权限
 app.post('/regUpdate', routes.regUpdate);
@@ -121,8 +123,8 @@ app.post('/regUpdate', routes.regUpdate);
 app.post('/getOverview', routes.getOverview);
 //get a page of contest status
 app.post('/getStatus', routes.getStatus);
-//获取一组用户的权限信息
-app.post('/getPrivilege', routes.getPrivilege);
+//get a page of contest ranklist
+app.post('/getRanklist', routes.getRanklist);
 //VIPContest的打星功能(管理员)
 app.post('/toStar', routes.toStar);
 //user页面的修改用户称号功能(队长以上)

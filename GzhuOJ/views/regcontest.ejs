@@ -1,0 +1,47 @@
+<!--<html>-->
+<% var Ce = ['计算机科学与教育软件学院', '数学与信息科学学院', '土木工程学院', '物理与电子工程学院', '机械与电气工程学院', '其他学院']; %>
+<% var Se = 0; %>
+<% if (u && u.college) for (var i = 0; i < 5; i++) if (Ce[i] == u.college) { Se=i; break; }%>
+<div class="jqmSubmit" id="regcolog" style="width:400px;height:430px;top:25%;left:35%;">
+  <div align="center">
+    <div class="bread jqDrag jqtop" style="width:390px;">
+      比赛报名
+    </div>
+  </div>
+  <div class="jqcontent" style="width:390px;height:340px;padding-left:10px;">
+    <div>
+      <label for="number">学号 *<% if(u && u.privilege) { %><span class="user-gray" style="margin-left:20px;">注意：你已认证身份，若改变信息则会擦除之前的认证</span><% } %></label>
+      <input <% if(u && u.number) { %>value="<%= u.number %>"<% } %> maxlength="50" type="text" class="jqtext" style="width:370px;" id="number">
+    </div>
+    <div>
+      <label for="realname">真实姓名 *</label>
+      <input <% if(u && u.realname) { %>value="<%= u.realname %>"<% } %> maxlength="50" type="text" class="jqtext" style="width:370px;" id="realname">
+    </div>
+    <div>
+      <label for="grade">班级 *<span class="user-gray" style="margin-left:20px;">例：计机123、软工105、光信122</span></label>
+      <input <% if(u && u.grade) { %>value="<%= u.grade %>"<% } %> maxlength="50" type="text" class="jqtext" style="width:370px;" id="grade">
+    </div>
+    <div>
+      <label for="sex">性别 *</label>
+      <select class="jqtext" style="width:370px;" id="sex">
+        <option value="0"<% if (!u || u.sex == '0') { %> selected<% } %>>男</option>
+        <option value="1"<% if (u && u.sex == '1') { %> selected<% } %>>女</option>
+      </select>
+    </div>
+    <div>
+      <label for="college">学院 *</label>
+      <select class="jqtext" style="width:370px;"  id="college">
+      <% for (i = 0; i < 6; i++) { %>
+        <option value="<%= Ce[i] %>"<% if (Se == i) { %> selected<% } %>><%= Ce[i] %></option>
+      <% } %>
+      </select>
+    </div>
+    <small id="regc_error" class="error-text"></small>
+  </div>
+  <div class="jqfoot">
+    <a class="uibtn" id="regc_submit" href="javascript:;">提交</a>
+    <a class="uibtn regc_close" href="javascript:;">取消</a>
+  </div>
+  <div class="jqResize"></div>
+  <i class="regc_close jqclose"></i>
+</div>

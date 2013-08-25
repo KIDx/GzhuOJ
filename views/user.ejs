@@ -4,6 +4,10 @@
 <%   var ch = user.privilege.charAt(0); %>
 <%   if (ch > '7' && (!u.privilege || ch > u.privilege.charAt(0))) { %>
 <%     Y = true; if (ch == '9') X = true; } }%>
+
+<% var img = '/img/avatar/%3Ddefault%3D/1.jpeg'; %>
+<% if (u.imgType) { img = '/img/avatar/'+u.name+'/1.'+u.imgType; } %>
+
 <fieldset>
   <div><legend>用户</legend></div>
   <div style="position:relative;">
@@ -12,11 +16,13 @@
         <li><a href="/user/<%= u.name %>"><%= u.name %></a></li>
         <% if (user && user.name == u.name) { %>
         <li><a href="javascript:;" id="set">settings</a></li>
+        <li><a href="/avatar">设置头像</a></li>
         <% } %>
-        <li><a href="/status?user=<%= u.name %>">submissions</a></li>
+        <li><a href="/status?name=<%= u.name %>">submissions</a></li>
       </ul>
     </div>
-    <div class="roundbox">
+    <div class="roundbox avatar_box">
+      <div class="avatar"><img alt="avatar" src="<%= img %>" /></div>
       <h3>
         <span id="usercol" name="<%= u.name %>" <% if (u.privilege) { %>pvl="<%= u.privilege %>"<% } %>>&nbsp;</span>
       <% if (X || Y) { %>
@@ -82,21 +88,19 @@
       <% } %>
       </div>
     </div>
-  <% if (B.length > 0) { %>
     <div class="tablebg mylist">
       <div id="header">
         List of <span class="error-text">unsolved</span> problems
       </div>
       <div id="tablediv">
       <% if (B.length == 0) { %>
-        <p class="text-error">No problems has been solved :(</p>
+        <p class="success-text">No unsolved problems :)</p>
       <% } %>
       <% for (var i = 0; i < B.length; i++) { %>
         <a href="/problem?pID=<%= B[i] %>"><%= B[i] %></a>
       <% } %>
       </div>
     </div>
-  <% } %>
   </div>
   <%- partial('settings', {u:u}) %>
 </fieldset>

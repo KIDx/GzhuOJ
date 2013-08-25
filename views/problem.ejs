@@ -63,8 +63,8 @@
       </div>
       <div style="padding-top:10px;" align="center">
         <a class="uibtn checklogin" href="javascript:;" pid="<%= problem.problemID %>" id="gotosubmit">Submit</a>
-        <a class="uibtn" href="/statistic?pID=<%= problem.problemID %>">Statistic</a>
-        <a class="uibtn" href="/problem?pID=<%= problem.problemID+1 %>">Next Problem</a>
+        <a class="uibtn" href="/statistic/<%= problem.problemID %>">Statistic</a>
+        <a class="uibtn" href="/problem?pid=<%= problem.problemID+1 %>">Next Problem</a>
         <% if (user) { %>
           <% if (user.addprob == 1) { %><a class="uibtn" href="/addproblem?pID=<%= problem.problemID %>">Edit Problem</a><% } %>
           <% if (user.name == 'admin'|| user.name == problem.manager) { %><a class="uibtn" href="javascript:;" id="rejudge">Rejudge</a><% } %>

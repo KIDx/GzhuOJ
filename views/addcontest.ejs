@@ -53,10 +53,12 @@
           <tr>
             <th></th>
             <td>
-              <input style="margin-left:3px;" type="radio" value="1" name="p"<% if(contest && contest.password) { %> checked<% } %>>
-              <font color="green">Private</font>
-              <input style="margin-left:30px;" type="radio" value="" name="p"<% if(!contest || !contest.password) { %> checked<% } %>>
-              <font color="blue">Public</font>
+              <div class="my-radio">
+                <input id="private" type="radio" value="1" name="p" <% if(contest && contest.password) { %>checked<% } %>>
+                <label for="private" class="user-green" title="Codeforce的注册模式">private</label>
+                <input id="public" type="radio" value="" name="p" <% if(!contest || !contest.password) { %>checked<% } %>>
+                <label for="public" class="user-blue" title="校内注册模式(需要填表)">public</label>
+              </div>
             </td>
           </tr>
           <% } %>

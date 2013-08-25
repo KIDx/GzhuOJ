@@ -17,7 +17,7 @@ var idsObj = new Schema({
 mongoose.model('idss', idsObj);
 var idss = mongoose.model('idss');
 
-IDs.Init = function Init() {
+IDs.Init = function(){
   var tnames = ['problemID', 'runID', 'contestID', 'regID'];
   for (var i = 0; i < 4; i++) {
     ids = new idss();
@@ -30,7 +30,7 @@ IDs.Init = function Init() {
   }
 };
 
-IDs.get = function get(idname, callback) {
+IDs.get = function(idname, callback){
   idss.findOneAndUpdate({name: idname}, {$inc:{'id':1}}, function(err, doc) {
     if (err) {
       return callback ('id update Error!', null);
@@ -43,17 +43,11 @@ IDs.get = function get(idname, callback) {
   });
 };
 
-IDs.del = function del() {
+IDs.del = function(){
   idss.find({}, function(err, docs){
     docs.forEach(function(doc) {
         doc.remove();
         console.log('ids');
     });
-  });
-};
-
-IDs.change = function change() {
-  idss.update({name:'contestID'}, {$set:{id:1012}}, function(err){
-    console.log('id changed succeed! ');
   });
 };

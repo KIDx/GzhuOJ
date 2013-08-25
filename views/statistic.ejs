@@ -1,5 +1,10 @@
 <!--<html>-->
-<legend>统计</legend>
+<% var _id = [0, 2, 6, 3, 4, 5, 7, 8, 9, 13, 14]; %>
+<% var lan = ['', 'C', 'C++', 'Java']; %>
+<% var tc = ['', '', '']; %>
+<legend id="statistic" pid="<%= pid %>" <% if (sort_key >= 0) { %>sort="<%= sort_key %>"<% } %>>
+  统计
+</legend>
 <fieldset>
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
@@ -10,47 +15,33 @@
             <table class="table table-cf tdcenter tdmini">
               <thead>
                 <tr>
-                  <th>Stats</th>
+                  <th>Verdict</th>
                   <th>Amount</th>
                 </tr>
               </thead>
               <tbody>
-                <tr class="odd">
-                  <td>Total Submissions</td>
-                  <td></td>
+              <% _id.forEach(function(p, i){ %>
+              <% var c = ''; %>
+              <% if (i % 2 == 1) { %>
+              <% c = 'even'; %>
+              <% } else { %>
+              <% c = 'odd'; %>
+              <% } %>
+              <% var v = 0; %>
+              <% if (N[p]) { %>
+              <% v = N[p]; %>
+              <% } %>
+                <tr class="<%= c %>">
+                  <td>
+                    <% if (i == 0) { %>Total Submissions<% } else { %><%= Res(p) %><% } %>
+                  </td>
+                  <td>
+                    <a href="/status?pid=<%= pid %><% if (_id[i] > 0) { %>&result=<%= _id[i] %><% } %>">
+                      <%= v %>
+                    </a>
+                  </td>
                 </tr>
-                <tr>
-                  <td>Accepted</td>
-                  <td></td>
-                </tr>
-                <tr class="odd">
-                  <td>Wrong Answer</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Presentation Error</td>
-                  <td></td>
-                </tr>
-                <tr class="odd">
-                  <td>Time Limit Exceed</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Memory Limit Exceed</td>
-                  <td></td>
-                </tr>
-                <tr class="odd">
-                  <td>Output Limit Exceed</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>Runtime Error</td>
-                  <td></td>
-                </tr>
-                <tr class="odd">
-                  <td>Compilation Error</td>
-                  <td></td>
-                </tr>
+              <% }); %>
               </tbody>
             </table>
           </div>
@@ -58,38 +49,84 @@
       </td>
       <td width="3%"></td>
       <td valign="top">
-        <div style="text-align:center;"><h3 style="color:#666;">The Best Solutions For <a href="/problem?pID=<%= pid %>">Problem <%= pid %></a></h3></div>
+        <div style="text-align:center;">
+          <h3 style="color:#666;">The Best Solutions For <a href="/problem?pid=<%= pid %>">Problem <%= pid %></a>
+          </h3>
+        </div>
         <div class="tablebg">
-          <div id="pager" class="pagination pagination-small">
-            <div style="float:left;">
-              <ul id="<%= pid %>">
-              </ul>
-            </div>
-            <div style="float:right;" class="input-prepend" id="filter">
+          <div id="pager">
+            <%- partial('pager', {page:page, n:n}) %>
+            <div class="fr input-prepend" id="filter">
               <span class="add-on">Lang.</span>
-              <select class="input-mini" id="search">
-                <option value="-1" selected>All</option>
-                <option value="1">C</option>
-                <option value="2">C++</option>
-                <option value="3">Java</option>
+              <select class="input-mini" id="lang">
+                <option value="" <% if (!lang) { %>selected<% } %>>All</option>
+                <% for (var i = 1; i < lan.length; i++) { %>
+                <option value="<%= i %>" <% if (lang == i) { %>selected<% } %>>
+                  <%= lan[i] %>
+                </option>
+                <% } %>
               </select>
             </div>
           </div>
           <div id="tablediv">
-            <div class="back" style="width:0%;"><div class="left"></div></div>
             <table class="table table-cf tdcenter sort" id="statistic">
               <thead>
                 <tr>
                   <th width="7%">Rank</th>
                   <th width="20%">Author</th>
-                  <th><a id="1" href="javascript:;">Exe. Time</a></th>
-                  <th><a id="2" href="javascript:;">Exe. Memory</a></th>
-                  <th><a id="3" href="javascript:;">Code Len.</a></th>
+                  <th title="sorted by exec time.">
+                    <a class="sort <% if (!sort_key) { %>current<% } %>" href="javascript:;">
+                      Exe. Time
+                    </a>
+                  </th>
+                  <th title="sorted by exec memory.">
+                    <a class="sort <% if (sort_key == 1) { %>current<% } %>" href="javascript:;">
+                      Exe. Memory
+                    </a>
+                  </th>
+                  <th title="sorted by code length.">
+                    <a class="sort <% if (sort_key == 2) { %>current<% } %>" href="javascript:;">
+                      Code Len.
+                    </a>
+                  </th>
                   <th>Language</th>
                   <th width="20%">Date</th>
                 </tr>
               </thead>
-              <tbody></tbody>
+              <tbody>
+              <% if (!sols || sols.length == 0) { %>
+                <tr class="odd">
+                  <td class="error-text center" colspan="7">No Status are matched.</td>
+                </tr>
+              <% } else { %>
+                <% sols.forEach(function(p, i){ %>
+                <% var c, lang = 'C++'; %>
+                <% if (i % 2 == 1) { %>
+                <% c = 'even'; %>
+                <% } else { %>
+                <% c = 'odd'; %>
+                <% } %>
+                <% if (p.language == 1) { %>
+                <% lang = 'C'; %>
+                <% } else if (p.language == 3) { %>
+                <% lang = 'Java'; %>
+                <% } %>
+                <tr class="<%= c %>">
+                  <td><%= (page-1)*pageNum + i + 1 %></td>
+                  <td>
+                    <a title="<%= UT[p._id] %>" class="user user-<%= UC[p._id] %>" href="/user/<%= p._id %>">
+                      <%= p._id %>
+                    </a>
+                  </td>
+                  <td><%= p.time %> MS</td>
+                  <td><%= p.memory %> KB</td>
+                  <td><%= p.length %> B</td>
+                  <td><a href="/sourcecode/<%= p.runID %>"><%= lang %></a></td>
+                  <td><%= p.inDate %></td>
+                </tr>
+                <% }); %>
+              <% } %>
+              </tbody>
             </table>
           </div>
         </div>

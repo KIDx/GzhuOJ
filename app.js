@@ -46,7 +46,8 @@ app.configure(function(){
 //设置环境: production, development
 app.configure('development', function() {
   //使用静态资源服务以及设置缓存
-  app.use(express.static(path.join(__dirname, 'public')))//, {maxAge:31557600000}));
+  //app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
   //若有错误，写入错误日志
   app.use(function(err, req, res, next){
@@ -60,6 +61,8 @@ app.configure('development', function() {
 app.get('/', routes.index);
 //user页面
 app.get('/user/:name', routes.user);
+//上传头像页面
+app.get('/avatar', routes.avatar);
 //addproblem页面
 app.get('/addproblem', routes.addproblem);
 app.post('/addproblem', routes.doAddproblem);
@@ -70,30 +73,25 @@ app.post('/addcontest', routes.doAddcontest);
 app.post('/logout', routes.logout);
 //problemset面
 app.get('/problemset', routes.problemset);
-app.post('/problemset', routes.problemset);
 //problem页面
 app.get('/problem', routes.problem);
 //onecontest页面
-app.get('/onecontest', routes.onecontest);
+app.get('/onecontest/:cid', routes.onecontest);
 //status页面
 app.get('/status', routes.status);
-app.post('/status', routes.status);
 //ranklist页面
 app.get('/ranklist', routes.ranklist);
-app.post('/ranklist', routes.ranklist);
 //contest页面
-app.get('/contest', routes.contest);
-app.post('/contest', routes.contest);
+app.get('/contest/:type', routes.contest);
 //FAQ页面
 app.get('/faq', routes.faq);
 //submit页面及submit动作
 app.get('/submit', routes.submit);
 app.post('/submit', routes.doSubmit);
 //sourcecode页面
-app.get('/sourcecode', routes.sourcecode);
+app.get('/sourcecode/:runid', routes.sourcecode);
 //statistic页面
-app.get('/statistic', routes.statistic);
-app.post('/statistic', routes.doStatistic);
+app.get('/statistic/:pid', routes.statistic);
 //regform页面
 app.get('/regform/:type', routes.regCon);
 app.post('/regform', routes.regCon);
@@ -108,23 +106,21 @@ app.post('/doLogin', routes.doLogin);
 app.post('/loginContest', routes.loginContest);
 //检查用户是否存在
 app.post('/getUsername', routes.getUsername);
-//获取运行结果+时间+内存, updatestatus.js引用
-app.post('/getStatus', routes.getStatus);
 //1.获取题目, addcontest.js引用;
 //2.获取题目全部信息, onecontest.js引用, 并更新onecontest的会话:oneQ
 app.post('/getProblem', routes.getProblem);
-//获取某比赛的所有提交记录, 以及用户的权限信息(与名字颜色相关)
-app.post('/getContestStatus', routes.getContestStatus);
 //删除一个比赛或课程
 app.post('/contestDelete', routes.contestDelete);
 //公有VIPContest的注册
 app.post('/contestReg', routes.contestReg);
-//提交审核私有VIPContest的注册
-app.post('/regContest', routes.regContest);
 //注册报名私有VIPContest
 app.post('/doRegCon', routes.doRegCon);
 //更新私有VIPContest的报名结果，以及给审核通过用户赋予相应权限
 app.post('/regUpdate', routes.regUpdate);
+//get user's AC or not AC records
+app.post('/getOverview', routes.getOverview);
+//get a page of contest status
+app.post('/getStatus', routes.getStatus);
 //获取一组用户的权限信息
 app.post('/getPrivilege', routes.getPrivilege);
 //VIPContest的打星功能(管理员)
@@ -139,8 +135,6 @@ app.post('/changeInfo', routes.changeInfo);
 app.post('/editTag', routes.editTag);
 //题目代码文件上传功能(problem.ejs)
 app.post('/problem', routes.upload);
-//动态获取比赛跑马灯信息
-app.post('/marquee', routes.marquee);
 //单题重判
 app.post('/rejudge', routes.rejudge);
 //VIPContest删除指定的已报名用户
@@ -151,18 +145,12 @@ app.post('/regContestAdd', routes.regContestAdd);
 app.post('/changeGrade', routes.changeGrade);
 //上传图片
 app.post('/imgUpload', routes.imgUpload);
+//上传头像
+app.post('/avatarUpload', routes.avatarUpload);
 //上传数据
 app.post('/dataUpload', routes.dataUpload);
 //获取指定runID的CE信息
 app.post('/getCE', routes.getCE);
-//检查是否已登录
-app.post('/checkLogin', function(req, res){
-  res.header('Content-Type', 'text/plain');
-  if (req.session.cid && req.session.cid[req.body.cid] ||
-      req.session.user && req.session.user.name == req.body.manager)
-    return res.end('1');
-  res.end();
-});
 //获取验证码
 app.post('/getVerifycode', function(req, res){
   res.header('Content-Type', 'text/plain');
@@ -171,27 +159,6 @@ app.post('/getVerifycode', function(req, res){
 //清除服务器消息
 app.post('/msgClear', function(req, res){
   req.session.msg = null;
-  res.end();
-});
-//problemset页面的会话
-app.post('/probQuery', function(req, res){
-  req.session.probQ = req.body;
-  res.end();
-});
-//contest页面的会话
-app.post('/conQuery', function(req, res){
-  type = parseInt(req.query.type);
-  if (type) req.session['conQ'+type] = req.body;
-  res.end();
-});
-//ranklist页面的会话
-app.post('/rankQuery', function(req, res){
-  req.session.rankQ = req.body;
-  res.end();
-});
-//regform页面的会话
-app.post('/regQuery', function(req, res){
-  req.session.regQ = req.body;
   res.end();
 });
 //connect mongodb

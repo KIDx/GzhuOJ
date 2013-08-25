@@ -18,10 +18,10 @@
   background-color: white !important;
 }
 .syntaxhighlighter .line.alt1 {
-  background-color: #f3fff2 !important;
+  background-color: white !important;
 }
 .syntaxhighlighter .line.alt2 {
-  background-color: #f3fff2 !important;
+  background-color: white !important;
 }
 .syntaxhighlighter .line.highlighted.alt1, .syntaxhighlighter .line.highlighted.alt2 {
   background-color: #c3defe !important;

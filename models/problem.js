@@ -1,21 +1,10 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+var mongoose = require('mongoose')
+,   Schema = mongoose.Schema
+,   pageNum = require('../settings').problemset_pageNum;
 
 function Problem(problem) {
   this.problemID = problem.problemID;
-  this.title = problem.title;
-  this.description = problem.description;
-  this.input = problem.input;
-  this.output = problem.output;
-  this.sampleInput = problem.sampleInput;
-  this.sampleOutput = problem.sampleOutput;
-  this.hint = problem.hint;
-  this.source = problem.source;
-  this.spj = problem.spj;
-  this.timeLimit = problem.timeLimit;
-  this.memoryLimit = problem.memoryLimit;
-  this.hide = problem.hide;
   this.manager = problem.manager;
 }
 
@@ -38,124 +27,76 @@ var problemObj = new Schema({
   memoryLimit: Number,
   hide: Boolean,
   tags: Array,
-  manager: String
+  manager: String,
+  TC: Boolean
 });
 
 mongoose.model('problems', problemObj);
 var problems = mongoose.model('problems');
 
-Problem.prototype.save = function save(key, callback) {
-  if (key == 2) {
-    //存入 Mongodb 的文档
-    problem = new problems();
-    problem.problemID = this.problemID;
-    problem.title = this.title;
-    problem.description = this.description;
-    problem.input = this.input;
-    problem.output = this.output;
-    problem.sampleInput = this.sampleInput;
-    problem.sampleOutput = this.sampleOutput;
-    problem.hint = this.hint;
-    problem.source = this.source;
-    problem.spj = this.spj;
-    problem.AC = 0;
-    problem.submit = 0;
-    problem.timeLimit = this.timeLimit;
-    problem.memoryLimit = this.memoryLimit;
-    if (!this.hide) problem.hide = false;
-    else problem.hide = true;
-    if (this.manager) problem.manager = this.manager;
-    problem.tags = new Array();
+Problem.prototype.save = function(callback){
+  //存入 Mongodb 的文档
+  problem = new problems();
+  problem.problemID = this.problemID;
+  problem.title = 'NULL';
+  problem.description = '';
+  problem.input = '';
+  problem.output = '';
+  problem.sampleInput = '';
+  problem.sampleOutput = '';
+  problem.hint = '';
+  problem.source = '';
+  problem.spj = 0;
+  problem.AC = 0;
+  problem.submit = 0;
+  problem.timeLimit = 1000;
+  problem.memoryLimit = 64000;
+  problem.hide = false;
+  problem.TC = false;
+  if (this.manager) problem.manager = this.manager;
+  problem.tags = new Array();
 
-    problem.save(function(err){
-      if (err) {
-        return callback('the problem is already exited');
-      }
-      return callback(null);
-    });
-  } else {
-    problems.update({problemID:this.problemID}, {$set:{
-      title       : this.title,
-      description : this.description,
-      input       : this.input,
-      output      : this.output,
-      sampleInput : this.sampleInput,
-      sampleOutput: this.sampleOutput,
-      hint        : this.hint,
-      source      : this.source,
-      spj         : this.spj,
-      timeLimit   : this.timeLimit,
-      memoryLimit : this.memoryLimit,
-      hide        : this.hide
-    }}, function(err){
-      if (err) {
-        return callback('problem update failed');
-      }
-      return callback(null);
-    });
-  }
-};
-
-Problem.get = function get(q, sq, n, PageNum, callback) {
-  var Q = q;
-  var sl = {
-    _id: 0,
-    __v: 0,
-    description: 0,
-    input: 0,
-    output: 0,
-    sampleInput: 0,
-    sampleOutput: 0,
-    hint: 0,
-    spj: 0,
-    timeLimit: 0,
-    memoryLimit: 0,
-    hide: 0,
-    manager: 0
-  };
-  problems.find(Q).count(function(err, count){
-    problems.find(Q).select(sl).sort(sq).skip((n-1)*PageNum).limit(PageNum).find(function(err, docs){
-      if (err) {
-        return callback('Problems matched failed', null, 1);
-      }
-      return callback(err, docs, count);
-    });
-  });
-};
-
-Problem.watch = function watch(pID, callback) {
-  problems.findOne({problemID: pID}, function(err, doc) {
+  problem.save(function(err){
     if (err) {
-      return callback('problem watch failed', null);
-    }
-    if (doc) {
-      return callback(err, doc);
-    }
-    return callback('The problem '+pID+' is not exist!', null);
-  });
-};
-
-Problem.update = function update(pID, Q, callback) {
-  problems.update({problemID: pID}, Q, function(err){
-    if (err) {
-      console.log('user.update failed');
+      console.log('the problem is already exited!');
     }
     return callback(err);
   });
 };
 
-Problem.change = function change() {
-  problems.find({}, function(err, docs){
-    docs.forEach(function(doc, i) {
-      doc.tags = new Array();
-      doc.save(function(){
-        console.log('problem change succeed!');
-      });
+Problem.get = function(Q, page, callback){
+  problems.find(Q).count(function(err, count){
+    if ((page-1)*pageNum > count) {
+      return callback(null, null, -1);
+    }
+    problems.find(Q).sort({problemID:1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
+      if (err) {
+        console.log('Problem.get failed');
+      }
+      return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
   });
 };
 
-Problem.del = function del() {
+Problem.watch = function(pID, callback){
+  problems.findOne({problemID: pID}, function(err, doc) {
+    if (err) {
+      console.log('Problem.watch failed');
+    }
+    return callback(err, doc);
+  });
+};
+
+Problem.update = function(pID, Q, callback){
+  problems.update({problemID: pID}, Q, function(err){
+    if (err) {
+      console.log('Problem.update failed');
+    }
+    return callback(err);
+  });
+};
+
+Problem.del = function(){
   problems.find({}, function(err, docs){
     docs.forEach(function(doc, i) {
       doc.remove();

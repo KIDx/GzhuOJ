@@ -1,6 +1,7 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+var mongoose = require('mongoose')
+,   Schema = mongoose.Schema
+,   pageNum = require('../settings').ranklist_pageNum;
 
 function User(user) {
   this.name = user.name;
@@ -33,12 +34,13 @@ var userObj = new Schema({
   college: String,
   grade: String,
   addprob: Boolean,
+  imgType: String
 });
 
 mongoose.model('users', userObj);
 var users = mongoose.model('users');
 
-User.prototype.save = function save(callback) {
+User.prototype.save = function(callback){
   //存入 Mongodb 的文档
   user = new users();
 
@@ -57,22 +59,45 @@ User.prototype.save = function save(callback) {
 
   user.save(function(err){
     if (err) {
-      return callback('user insert Error: this user is already exited!');
+      console.log('user insert Error: this user is already exited!');
     }
     return callback(err);
   });
 };
 
-User.get = function get(username, callback) {
+User.watch = function(username, callback){
   users.findOne({name:username}, function(err, doc){
     if (err) {
-      return callback('user get Error!', doc);
+      console.log('User.watch failed!');
     }
     return callback(err, doc);
   });
 };
 
-User.Find = function Find (key, q, callback) {
+User.find = function(Q, callback){
+  users.find(Q, function(err, docs){
+    if (err) {
+      console.log('User.find failed!');
+    }
+    return callback(err, docs);
+  });
+};
+
+User.get = function(Q, page, callback){
+  users.find(Q).count(function(err, count){
+    if ((page-1)*pageNum > count) {
+      return callback(null, null, -1);
+    }
+    users.find(Q).sort({solved:-1,submit:1,privilege:-1,name:1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
+      if (err) {
+        console.log('User.get Error!');
+      }
+      return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
+    });
+  });
+};
+
+User.Find = function(key, q, callback){
   users.find(q, function(err, docs){
     if (err) {
       return callback('user Find Error!', null);
@@ -86,32 +111,7 @@ User.Find = function Find (key, q, callback) {
   });
 };
 
-User.getAll = function getAll(q, n, PageNum, callback) {
-  var Q = {$and:[ {$or:[q, {nick:q.name}]}, {$nor:[{name:'admin'}]} ]};
-  var sl = {
-    _id: 0,
-    __v: 0,
-    password: 0,
-    regTime: 0,
-    school: 0,
-    email: 0,
-    number: 0,
-    realname: 0,
-    sex: 0,
-    college: 0,
-    addprob: 0
-  };
-  users.find(Q).count(function(err, count){
-    users.find(Q).select(sl).sort({solved:-1,submit:1,privilege:-1,name:1}).skip((n-1)*PageNum).limit(PageNum).exec(function(err, docs){
-      if (err) {
-        return callback('user getAll Error!', null, 1);
-      }
-      return callback(err, docs, count);
-    });
-  });
-};
-
-User.getRank = function getRank(username, callback) {
+User.getRank = function(username, callback){
   users.find({$nor:[{name:'admin'}]}).sort({solved:-1,submit:1,privilege:-1,name:1}).exec(function(err, docs){
     if (err) {
       return callback('user getRank Error!', -1);
@@ -127,23 +127,14 @@ User.getRank = function getRank(username, callback) {
   });
 };
 
-User.update = function update(Q, H, callback) {
-  users.update(Q, H, { multi:true }, function(err){
+User.update = function update(Q, H, flg, callback) {
+  users.update(Q, H, { multi:flg }, function(err){
     if (err) {
       console.log('user.update failed');
     }
     return callback(err);
   });
 };
-
-User.All = function All(callback) {
-  users.find({}, function(err, docs){
-    if (err) {
-      console.log('user.clear failed');
-    }
-    return callback(err, docs);
-  });
-}
 
 User.del = function del() {
   users.find({}, function(err, docs){

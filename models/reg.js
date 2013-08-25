@@ -1,6 +1,7 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+var mongoose = require('mongoose')
+,   Schema = mongoose.Schema
+,   pageNum = require('../settings').regform_pageNum;
 
 function Reg(reg) {
   this.regID = reg.regID;
@@ -32,7 +33,7 @@ var regObj = new Schema({
 mongoose.model('regs', regObj);
 var regs = mongoose.model('regs');
 
-Reg.prototype.save = function save(callback) {
+Reg.prototype.save = function(callback){
   reg = new regs();
   reg.regID = this.regID;
   reg.cid = this.cid;
@@ -46,25 +47,27 @@ Reg.prototype.save = function save(callback) {
   reg.status = '0';
   reg.save(function(err){
     if (err) {
-      return callback('reg insert Error!');
+      console.log('the registration is already exited!');
     }
     return callback(err);
   });
 };
 
-Reg.get = function get(Q, n, PageNum, callback) {
-  var sl = {_id:0, __v:0};
+Reg.get = function(Q, page, callback){
   regs.find(Q).count(function(err, count){
-    regs.find(Q).select(sl).sort({regTime: -1}).skip((n-1)*PageNum).limit(PageNum).exec(function(err, docs){
+    if ((page-1)*pageNum > count) {
+      return callback(null, null, -1);
+    }
+    regs.find(Q).sort({regTime: -1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
-        return callback('Reg Get Error!', null, 1);
+        console.log('Reg.get failed!');
       }
-      return callback(err, docs, count);
+      return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
   });
 }
 
-Reg.Find = function Find(cid, name, callback) {
+Reg.Find = function(cid, name, callback){
   if (!name) return callback(null, 0);
   regs.findOne({cid:cid, user:name}, function(err, doc){
     if (err) {
@@ -74,16 +77,16 @@ Reg.Find = function Find(cid, name, callback) {
   });
 }
 
-Reg.update = function update(rid, s, callback) {
-  regs.update({regID:rid}, {$set:{status:s}}, function(err) {
+Reg.update = function(Q, H, callback){
+  regs.findOneAndUpdate(Q, H, function(err, doc) {
     if (err) {
-      return callback('Reg update Error!');
+      console.log('Reg.update failed!');
     }
-    return callback(err);
+    return callback(err, doc);
   });
 };
 
-Reg.del = function del() {
+Reg.del = function(){
   regs.find({}, function(err, docs){
     docs.forEach(function(doc) {
         doc.remove();

@@ -1,7 +1,26 @@
 <!--<html>-->
 <% var F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", probNum = 0; %>
-<fieldset id="Contest">
-  <div><legend>比赛</legend></div>
+<% var startTime = (new Date(contest.startTime)).getTime() %>
+<% var pending = parseInt((startTime - time)/1000, 10); %>
+<% var c = '', s = '', ts, ps = ''; %>
+<% if (pending > 0) { %>
+<% c = 'info'; s = 'Pending'; ts = 0; %>
+<% } else if (pending + contest.len*60 > 0) { %>
+<% c = 'wrong'; s = 'Running'; ts = 1; %>
+<% } else { %>
+<% c = 'accept'; s = 'Ended'; ts = 2; %>
+<% } %>
+<% if (ts == 1) { %>
+<% ps = 'progress-danger'; %>
+<% } else if (ts == 2) { %>
+<% ps = 'progress-success'; %>
+<% } %>
+<fieldset>
+  <div>
+    <legend id="contest" cid="<%= contest.contestID %>" len="<%= contest.len %>" pending="<%= pending %>" status="<%= ts %>" <% if (user && user.name == contest.userName) { %>watch="1"<% } %>>
+      比赛
+    </legend>
+  </div>
 <% if (!contest) { %>
   <div class="alert alert-error" style="display:none;padding:100px;">
     <h1 align="center">The Contest is not Available!!</h1>
@@ -10,46 +29,57 @@
   <% contest.probs.forEach(function(prob) { ++probNum; %>
   <span class="cpid hidden" id="<%= prob[0] %>"><%= prob[1] %></span>
   <% }); %>
-  <div>
-    <marquee id="marquee" class="user-red" style="font-weight:bold;" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="alternate" height="25"><%= contest.msg %></marquee>
+  <div class="marquee">
+    <marquee id="marquee" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="alternate">
+      <%= contest.msg %>
+    </marquee>
   </div>
   <div>
     <h3 class="problem-header"><%= contest.title %></h3>
   </div>
-  <div id="contest-info" style="float:left;text-align:right;"></div><br />
-  <div id="progress" class="progress progress-striped active" style="margin:0;height:13px;">
-    <div class="bar" style="width:100%;z-index:100;"></div>
+  <div id="contest-info" style="float:left;text-align:right;">
   </div>
-  <div style="text-align:right;"></div>
+  <br />
+  <div id="progress" class="contest_progress progress progress-striped active <%= ps %>">
+    <div class="bar"></div>
+  </div>
   <div id="thumbnail" class="tabbable thumbnail">
     <ul class="nav nav-tabs">
       <li style="padding-left:10px;">
-        <a href="#overview" data-target="#overviewtab" data-toggle="tab"><span>Overview</span></a>
+        <a href="#overview" data-target="#overviewtab" data-toggle="tab">
+          <span>Overview</span>
+        </a>
       </li>
       <li class="hidden">
-        <a class="problembutton" href="#problem/A" data-target="#problemtab" data-toggle="tab"><span>Problem</span></a>
+        <a href="#problem-A" data-target="#problemtab" data-toggle="tab">
+          <span>Problem</span>
+        </a>
       </li>
       <li class="hidden">
-        <a href="#status" data-target="#statustab" data-toggle="tab"><span>Status</span></a>
+        <a href="#status" data-target="#statustab" data-toggle="tab">
+          <span>Status</span>
+        </a>
       </li>
       <li class="hidden">
-        <a href="#rank" data-target="#ranktab" data-toggle="tab"><span>Rank</span></a>
+        <a href="#rank" data-target="#ranktab" data-toggle="tab">
+          <span>Rank</span>
+        </a>
       </li>
     </ul>
     <div class="tab-content">
 <!--overviewtab-->
-      <div class="tab-pane" id="overviewtab" curl="<%= curl %>" ct="<%= contest.type %>" len="<%= contest.len %>" cid="<%= contest.contestID %>" <% if (contest.password) { %>psd="1"<% } %>>
+      <div class="tab-pane" id="overviewtab">
         <div style="margin: 0 18%;">
           <table class="table table-head thright" id="overviewtable">
             <tr>
-              <th style="width:20%;">Current Time:</th>
-              <td id="current"></td>
-              <th style="width:21%;">Contest Type:</th>
+              <th width="20%">Current Time:</th>
+              <td id="contest_current"></td>
+              <th width="21%">Contest Type:</th>
               <td>
               <% if (contest.password) { %>
-                <font color="green">Private</font>
+                <span class="user-green">Private</span>
               <% } else { %>
-                <font color="#1111DD">Public</font>
+                <span class="user-blue">Public</span>
               <% } %>
               </td>
             </tr>
@@ -57,24 +87,36 @@
               <th>Start Time:</th>
               <td><%= contest.startTime %>:00</td>
               <th>Contest Status:</th>
-              <td></td>
+              <td class="<%= c %>-text"><%= s %></td>
             </tr>
             <tr>
               <th>End Time:</th>
-              <td></td>
-              <th id="con_manager">Manager:</th>
-              <td><%= contest.userName %></td>
+              <td><%= getDate(new Date(startTime+contest.len*60000)) %></td>
+              <th>Manager:</th>
+              <td>
+                <a href="/user/<%= contest.userName %>">
+                  <%= contest.userName %>
+                </a>
+              </td>
             </tr>
           </table>
         </div>
-        <div <% if(!contest.password || (user && user.name == contest.userName)) { %>id="btn-group"<% } %> class="row-fluid" align="center" style="margin-bottom:15px;">
+        <div class="row-fluid" align="center" style="margin-bottom:15px;">
       <% if (user && user.name == contest.userName) { %>
           <%- partial('contestdelete') %>
           <a class="uibtn" href="/addcontest?cID=<%= contest.contestID %>&type=<%= contest.type %>">Edit</a>
           <a class="uibtn" href="javascript:;" id="delete">Delete</a>
       <% } %>
+      <% if (s == 'Ended') { %>
+        <a href="javascript:;" class="uibtn checklogin" id="clone" title="To create a DIY Contest whit the same problems">Clone this contest</a>
+      <% } %>
         </div>
-        <div class="hidden" id="problemsview" style="margin:0 15%;">
+      <% if (ts == 0 && (!user || user.name != contest.userName)) { %>
+        <div class="user-gray" style="text-align:center;font-size:1.75em;margin:100px;">
+          Before Contest <span id="lefttime"></span>
+        </div>
+      <% } %>
+        <div class="hidden" id="problemsview">
           <div class="tablebg">
             <div id="header">Problems</div>
             <div id="tablediv">
@@ -83,14 +125,20 @@
                   <tr>
                     <th style="width:10%;">#</th>
                     <th>Name</th>
-                    <th style="width:10%;"></th>
+                    <th style="width:10%;">OP</th>
                     <th style="width:13%;">Solved</th>
                   </tr>
                 </thead>
-              <% contest.probs.forEach(function(prob, id) { %>
-                <tr class="<% if (id % 2 == 0) { %>odd<% } else { %>even<% } %>">
-                  <td class="center" style="font-weight:bold;"><%= F[id] %></td>
-                  <td><a class="splink" href="#problem/<%= F[id] %>"><%= prob[1] %></a></td>
+              <% contest.probs.forEach(function(prob, i) { %>
+                <tr class="<% if (i % 2 == 0) { %>odd<% } else { %>even<% } %>">
+                  <td class="center bold o_index">
+                    <%= F[i] %>
+                  </td>
+                  <td>
+                    <a class="splink" href="#problem-<%= F[i] %>">
+                      <%= prob[1] %>
+                    </a>
+                  </td>
                   <td>
                     <span class="act-item">
                       <a class="consubmit" href="javascript:;" pid="<%= prob[0] %>" tname="<%= prob[1] %>">
@@ -98,7 +146,7 @@
                       </a>
                     </span>
                   </td>
-                  <td class="center"></td>
+                  <td class="center o_sol"></td>
                 </tr>
               <% }); %>
               </table>
@@ -113,8 +161,10 @@
       <div class="row-fluid tab-pane" id="problemtab">
         <div class="pagination pagination-centered">
           <ul>
-          <% contest.probs.forEach(function(prob, id) { %>
-            <li class="problemlink"><a class="splink" href="#problem/<%= F[id] %>"><%= F[id] %></a></li>
+          <% contest.probs.forEach(function(prob, i) { %>
+            <li class="problemlink">
+              <a class="splink" href="#problem-<%= F[i] %>"><%= F[i] %></a>
+            </li>
           <% }); %>
           </ul>
         </div>
@@ -141,28 +191,26 @@
 <!--statustab-->
       <div class="tab-pane" id="statustab" style="margin: 0 10px;">
         <div class="tablebg">
-          <div id="pager" class="pagination pagination-small">
-            <div style="float:left;">
-              <ul>
-              </ul>
+          <div id="pager">
+            <div id="list" class="pagination pagination-small fl">
             </div>
-            <div style="float:right;" id="filter">
+            <div class="fr" id="filter">
               <div class="input-prepend">
                 <span class="add-on">Name</span>
                 <input type="text" id="search" placeholder=" username">
               </div>
               <div class="input-prepend">
                 <span class="add-on">Problem</span>
-                <select id="pID" style="width:160px;">
+                <select id="pid" style="width:160px;">
                   <option value="-1" selected>All</option>
-                <% contest.probs.forEach(function(prob, id) { %>
-                  <option value="<%= F[id] %>"><%= F[id] %> - <%= prob[1] %></option>
+                <% contest.probs.forEach(function(prob, i) { %>
+                  <option value="<%= F[i] %>"><%= F[i] %> - <%= prob[1] %></option>
                 <% }); %>
                 </select>
               </div>
               <div class="input-prepend">
                 <span class="add-on">Verdict</span>
-                <select id="what" style="width:160px;">
+                <select id="result" style="width:160px;">
                   <option value="-1" selected>All</option>
                   <option value="0">Pending</option>
                   <option value="2">Accepted</option>
@@ -176,7 +224,7 @@
                 </select>
               </div>
               <div>
-                <button id="filter">Filter</button>
+                <button id="fil">Filter</button>
               </div>
               <div>
                 <button id="reset">Reset</button>
@@ -224,7 +272,7 @@
                   <th class="penalty">Penalty</th>
                   <% for(var i = 0; i < probNum; i++) { %>
                   <th class="standing_status">
-                    <a href="#problem/<%= F[i] %>"><%= F[i] %></a>
+                    <a class="rplink" href="#problem-<%= F[i] %>"><%= F[i] %></a>
                   </th>
                   <% } %>
                 </tr>

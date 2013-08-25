@@ -28,5 +28,15 @@ exports.Can = function (callback) {
         ctx.transform(a, b, c, d, 0, 0);
         vcode += items[item];
     }
+    for (var i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.moveTo(-50, getRandom(0, 35));
+        ctx.lineTo(200, getRandom(0, 35));
+        ctx.closePath();
+        ctx.stroke();
+    }
+
     return callback(vcode.toLowerCase(), '<img src="'+canvas.toDataURL()+'" style="padding-left:30px;" alt="验证码"/>');
 };

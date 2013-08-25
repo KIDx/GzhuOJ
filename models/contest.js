@@ -1,6 +1,7 @@
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+var mongoose = require('mongoose')
+,   Schema = mongoose.Schema
+,   pageNum = require('../settings').contest_pageNum;
 
 function Contest(contest) {
   this.title = contest.title;
@@ -30,7 +31,7 @@ var contestObj = new Schema({
 mongoose.model('contests', contestObj);
 var contests = mongoose.model('contests');
 
-Contest.prototype.save = function save(callback) {
+Contest.prototype.save = function(callback){
   contest = new contests();
   contest.contestID = this.contestID;
   contest.userName = this.userName;
@@ -44,60 +45,56 @@ Contest.prototype.save = function save(callback) {
   contest.type = this.type;
   contest.save(function(err){
     if (err) {
-      return callback('the contest is already exited!');
+      console.log('the contest is already exited!');
     }
-    return callback(null);
+    return callback(err);
   });
 };
 
-Contest.get = function get(q, sq, n, PageNum, callback) {
-  var Q = {$or:[q, {type:q.type,userName:q.title}]};
-  var cq = {msg:0,description:0,probs:0,type:0};
+Contest.get = function(Q, page, callback){
   contests.find(Q).count(function(err, count){
-    contests.find(Q).select(cq).sort(sq).skip((n-1)*PageNum).limit(PageNum).find(function(err, docs){
+    if ((page-1)*pageNum > count) {
+      return callback(null, null, -1);
+    }
+    contests.find(Q).sort({startTime:-1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
       if (err) {
-        return callback('contests matched failed', null, 1);
+        console.log('Contests.get failed');
       }
-      if (!docs) return callback(null, null, 1);
-      return callback(err, docs, count);
+      return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
   });
 };
 
-Contest.watch = function watch(cID, callback) {
-  if (cID < 0) return callback(null, null);
+Contest.watch = function(cID, callback){
   contests.findOne({contestID:cID}, function(err, doc){
     if (err) {
-      return callback('contest watch failed', null);
+      console.log('Contest.watch failed!');
     }
-    if (doc) {
-      return callback(null, doc);
-    }
-    return callback('不存在'+' contest '+cID, null);
+    return callback(err, doc);
   });
 };
 
-Contest.update = function update(cID, q, callback) {
+Contest.update = function(cID, q, callback){
   contests.findOneAndUpdate({contestID:cID}, q, function(err){
     if (err) {
-      console.log(err);
-      return callback('Contest update failed');
+      console.log('Contest.update failed!');
+      return callback();
     }
     callback(err);
   });
 };
 
-Contest.dele = function dele(cID, callback) {
-  contests.findOne({contestID:cID}, function(err, doc){
+Contest.dele = function(Q, callback){
+  contests.findOne(Q, function(err, doc){
     if (err) {
-      return callback('contest delete failed');
+      console.log('Contest.dele failed');
     }
-    doc.remove();
-    return callback(null);
+    if (doc) doc.remove();
+    return callback(err);
   });
 };
 
-Contest.del = function del() {
+Contest.del = function() {
   contests.find({}, function(err, docs){
     docs.forEach(function(doc) {
         doc.remove();

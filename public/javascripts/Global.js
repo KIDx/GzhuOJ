@@ -27,8 +27,8 @@ function Col (n) {
 //return status result string
 function Res (n) {
     switch(n) {
-        case 0: return 'Pending';
-        case 1: return 'Running';
+        case 0: return 'Pending...';
+        case 1: return 'Running...';
         case 2: return 'Accepted';
         case 3: return 'Presentation Error';
         case 4: return 'Time Limit Exceeded';
@@ -44,7 +44,7 @@ function Res (n) {
 
 //return user color style
 function UserCol (n) {
-    if (!n) return 'gray';
+    if (!n) return 'black';
     switch(n) {
         case 73:
         case 99: return 'red';
@@ -58,7 +58,7 @@ function UserCol (n) {
 
 //return user title
 function UserTitle (n) {
-    if (!n) return 'Not Certified-未认证';
+    if (!n) return 'Normal-普通用户';
     switch(n) {
         case 99: return 'Administrator-创界者';
         case 82: return 'Teacher-老师';
@@ -70,25 +70,22 @@ function UserTitle (n) {
     }
 }
 
-var Tag = ['','beginer','brute force','binary search','ternary search','constructive',
-'dp','games','geometry','graphs','greedy','hashing','implementation',
-'math','matrices','number theory','probabilities','dfs', 'bfs',
-'shortest paths','sortings','string suffix structures','strings',
- 'combinatorics', 'divide and conquer'];
+function errAnimate($err, err) {
+    $err.text(err);
+    $err.stop().stop().animate({
+        'margin-left' : '30px'
+    }).animate({
+        'margin-left' : '0'
+    });
+}
 
-var ProTil = ['','Easy problem for new ACMer','Brute force','Binary search','Ternary search',
-'Constructive algorithms','Dynamic programming',
-'Games, Sprague–Grundy theorem','Geometry, computational geometry',
-'Graphs','Greedy algorithms','Hashing, hashtables',
-'Implementation problems, programming technics, simulation',
-'Mathematics including integration, differential equations, etc',
-'Matrix multiplication, Cramer\'s rule, systems of linear equations',
-'Euler function, GCD, divisibility, etc',
-'Probabilities, expected values, statistics, random variables, etc',
-'Depth-First-Search','Breadth-First-Search','Shortest paths','Sortings, orderings',
-'Suffix arrays, suffix trees, suffix automatas, etc',
-'String processing', 'Combinatorics', 'Divide and Conquer'];
-
+function simulateClick($input, $btn) {
+    $input.keyup(function(e){
+        if (e.keyCode == 13) {
+            $btn.click();
+        }
+    });
+}
 
 var CE = {};
 var $CE;
@@ -140,7 +137,8 @@ function BindCE() {
 
 var nextURL = "";
 
-var $footTime = $('span#timer');
+var $footTime = $('span#timer')
+,   $contest_current = $('#contest_current');
 
 var current_user = $footTime.attr('user');
 
@@ -149,13 +147,12 @@ var contest_type = $footTime.attr('type');
 var curren_second = parseInt($footTime.attr('time'));
 
 var $finput = $('input[type="text"], textarea').eq(1);
-var $uin_del = $('a#uin_del');
 
 var Msg = $footTime.attr('msg');
 
 var $logindialog = $('div#logindialog');
 var $logininput = $logindialog.find('input');
-var $loginerror = $logindialog.find('small#login_error');
+var $loginerr = $logindialog.find('small#login_error');
 var $loginsubmit = $logindialog.find('a#login_submit');
 
 var $checklogin = $('a.checklogin, button.checklogin');
@@ -168,40 +165,6 @@ var $logout = $('a#logout');
 var $tablebg = $('div.tablebg');
 
 var $sverdict = $('span#verdict');
-
-function buildPager(current_page, pn) {
-    var cp = 5, html = '';
-    var i = current_page - 2; if (i <= 0) i = 1;
-
-    if (pn > 3) {
-        html += '<li id="1"';
-        if (current_page <= 3) html += ' class="disabled"';
-        html += '><a href="javascript:;">&lt&lt</a></li>';
-    }
-    if (i > 1) html += '<li class="nothing"><a>...</a></li>';
-    while (i < current_page)
-    {
-        html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
-        i++;
-        --cp;
-    }
-    html += '<li id="'+i+'" class="active"><a href="javascript:;">'+i+'</a></li>';
-    ++i;
-    --cp;
-    while (i <= pn && cp > 0)
-    {
-        html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
-        i++;
-        --cp;
-    }
-    if (i-1 < pn) html += '<li class="nothing"><a>...</a></li>';
-    if (pn > 5) {
-        html += '<li id="'+pn+'"';
-        if (i > pn) html += ' class="disabled"';
-        html += '><a href="javascript:;">&gt&gt</a></li>';
-    }
-    return html;
-}
 
 function calTime(startTime, endTime) {
     startTime = startTime.replace(/-/g, '/');
@@ -246,23 +209,19 @@ function toEscape(str) {
   return res;
 }
 
-//To check cstr is empty or not
-function JudgeString(cstr) {
-    var d = cstr.split(' ');
-    var str = "", flg = false;
-    for (var i in d) {
-        if (d[i]) {
-            if (flg) str += ' ';
-            else flg = true;
-            str += d[i];
-        }
-    }
-    return str;
+function trim(s) {
+    if (!s) return '';
+    return String(s).replace(/(^\s*)|(\s*$)/g, '');
 }
 
-function trim(str) {
-    if (!str) return '';
-    return String(str).replace(/(^\s*)|(\s*$)/g, '');
+function drim(s) {
+    if (!s) return '';
+    return String(s).replace(/(\s+)/g, ' ');
+}
+
+//return a string without no unuseful space
+function JudgeString(s) {
+    return drim(trim(s));
 }
 
 function getDate(date) {
@@ -299,6 +258,9 @@ function SetCurrentTime() {
     if (s < 10) s = '0' + s;
     current_time += ':' + s;
     $footTime.text(current_time);
+    if ($contest_current.length) {
+        $contest_current.text(current_time);
+    }
     curren_second += 1000;
 }
 
@@ -306,7 +268,7 @@ var timeout;
 function ShowMessage(msg) {
     $msgdialog = $('div#msg-dialog');
     if ($msgdialog.length > 0) $msgdialog.remove();
-    $('div#body').after('<div class="jqmWindow" id="msg-dialog"><span>'+msg+'</span><span class="msgclose jqmClose">×</span></div>');
+    $('#wrapper').append('<div class="jqmWindow" id="msg-dialog"><span>'+msg+'</span><span class="msgclose jqmClose">×</span></div>');
     $msgdialog = $('div#msg-dialog');
     function Hide() {
         $msgdialog.jqmHide();
@@ -344,25 +306,10 @@ $(document).ready(function(){
     }
 
     //focus
-    if ($finput.length) {
+    /*if ($finput.length) {
         $finput.focus();
         $finput.val($finput.val());
-    }
-
-    //绑定清空search输入框内容
-    if ($uin_del.length) {
-        var $search = $('input#search');
-        if ($search.val()) $uin_del.show();
-        $search.keyup(function(){
-            if ($search.val()) $uin_del.show();
-            else $uin_del.hide();
-        });
-        $uin_del.click(function(){
-            $search.val('').keyup();
-            $search.focus();
-            $uin_del.hide();
-        });
-    }
+    }*/
 
     //login
     if ($logindialog.length) {
@@ -387,20 +334,26 @@ $(document).ready(function(){
         });
 
         $loginsubmit.click(function(){
-            if (!$logininput.eq(0).val()) {
-                $loginerror.text('the username can not be empty!');
+            var name = $logininput.eq(0).val();
+            if (!name) {
+                errAnimate($loginerr, 'the username can not be empty!');
+                return ;
+            }
+            var psw = $logininput.eq(1).val();
+            if (!psw) {
+                errAnimate($loginerr, 'the password can not be empty!');
                 return ;
             }
             $.post('/doLogin', {
-                    username: $logininput.eq(0).val(),
-                    password: $logininput.eq(1).val()
+                    username: name,
+                    password: psw
                 }, function(res){
                     if (res == '1') {
-                        $loginerror.text('the user is not exist!');
+                        errAnimate($loginerr, 'the user is not exist!');
                         return ;
                     }
                     if (res == '2') {
-                        $loginerror.text('username and password do not match!');
+                        errAnimate($loginerr, 'username and password do not match!');
                         return ;
                     }
                     $logindialog.jqmHide();
@@ -436,11 +389,11 @@ $(document).ready(function(){
         switch(aid) {
             case 'gotosubmit': {
                 if ($logindialog.length > 0) {
-                    nextURL = '/submit?pID=' + $(this).attr('pid');
+                    nextURL = '/submit?pid=' + $(this).attr('pid');
                     $logindialog.jqmShow();
                     break;
                 }
-                window.location.href = '/submit?pID=' + $(this).attr('pid');
+                window.location.href = '/submit?pid=' + $(this).attr('pid');
                 break;
             }
             case 'addcontest': {
@@ -490,7 +443,7 @@ $(document).ready(function(){
         var $regimg = $regdialog.find('div#vcode');
         var $reginput = $regdialog.find('input');
         var $regsubmit = $regdialog.find('a#reg_submit');
-        var $regerror = $regdialog.find('small#reg_error');
+        var $regerr = $regdialog.find('small#reg_error');
 
         $('a#reg').click(function(){
             $regdialog.jqm({
@@ -521,59 +474,59 @@ $(document).ready(function(){
         $regsubmit.click(function(){
             var username = $reginput.eq(0).val();
             if (!username) {
-                $regerror.text('username can not be empty!');
+                errAnimate($regerr, 'username can not be empty!');
                 return false;
             }
             if (username.length < 2 || username.length > 15) {
-                $regerror.text('the length of username must be between 2 and 15!');
+                errAnimate($regerr, 'the length of username must be between 2 and 15!');
                 return false;
             }
             var pattern = new RegExp("^[a-zA-Z0-9_]{2,15}$");
             if (!pattern.test(username)) {
-                $regerror.text("username should only contain digits, letters, or '_'s!");
+                errAnimate($regerr, "username should only contain digits, letters, or '_'s!");
                 return false;
             }
             var password = $reginput.eq(1).val();
-            if (!password) {
-                $regerror.text('password can not be empty!');
+            if (!password || password.length < 4) {
+                errAnimate($regerr, 'the length of password can not less then 4!');
                 return false;
             }
             var repeat = $reginput.eq(2).val();
             if (repeat != password) {
-                $regerror.text('two password are not the same!');
+                errAnimate($regerr, 'two password are not the same!');
                 return false;
             }
             var nick = JudgeString($reginput.eq(3).val());
             if (!nick) {
-                $regerror.text('nickname can not be empty!');
+                errAnimate($regerr, 'nickname can not be empty!');
                 return false;
             }
             if (nick.length > 20) {
-                $regerror.text('the length of nickname should be no more than 20!');
+                errAnimate($regerr, 'the length of nickname should be no more than 20!');
                 return false;
             }
             var email = $reginput.eq(5).val();
             if (email) {
                 pattern = new RegExp("^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,4}$");
                 if (!pattern.test(email)) {
-                    $regerror.text('the format of email is not True!');
+                    errAnimate($regerr, 'the format of email is not True!');
                     return false;
                 }
             }
             if (!$reginput.eq(6).val()) {
-                $regerror.text('验证码不能为空!');
+                errAnimate($regerr, '验证码不能为空!');
                 return false;
             }
 
             $.post('/getVerifycode', function(verifycode){
                 var tp = $reginput.eq(6).val().toLowerCase();
                 if (tp != verifycode) {
-                    $regerror.text('验证码错误!');
+                    errAnimate($regerr, '验证码错误!');
                     return ;
                 }
                 $.post('/getUsername', {key: username}, function(res){
                     if (res) {
-                        $regerror.text('this user already exists!');
+                        errAnimate($regerr, 'this user already exists!');
                         return ;
                     }
                     $.post('/doReg', {
@@ -600,7 +553,7 @@ $(document).ready(function(){
     //settings
     if ($setdialog.length > 0) {
         var $setinput = $setdialog.find('input');
-        var $seterror = $setdialog.find('small#set_error');
+        var $seterr = $setdialog.find('small#set_error');
         var $setsubmit = $setdialog.find('#set_submit');
 
         $setdialog.jqm({
@@ -621,33 +574,33 @@ $(document).ready(function(){
         $setsubmit.click(function(){
             var oldpassword = $setinput.eq(0).val();
             if (!oldpassword) {
-                $seterror.text('Old Password can not be empty!');
+                errAnimate($seterr, 'Old Password can not be empty!');
                 return false;
             }
             var password = $setinput.eq(1).val();
             var repeat = $setinput.eq(2).val();
             if (repeat != password) {
-                $seterror.text('Two New Passwords are not the same!');
+                errAnimate($seterr, 'Two New Passwords are not the same!');
                 return false;
             }
             if (password == oldpassword) {
-                $seterror.text('New Password should not be the same as the old one!');
+                errAnimate($seterr, 'New Password should not be the same as the old one!');
                 return false;
             }
             var nick = JudgeString($setinput.eq(3).val());
             if (!nick) {
-                $seterror.text('Nick Name can not be empty!');
+                errAnimate($seterr, 'Nick Name can not be empty!');
                 return false;
             }
             if (nick.length > 20) {
-                $seterror.text('The length of Nick Name should be no more than 20!');
+                errAnimate($seterr, 'The length of Nick Name should be no more than 20!');
                 return false;
             }
             var email = $setinput.eq(5).val();
             if (email) {
                 pattern = new RegExp("^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,4}$");
                 if (!pattern.test(email)) {
-                    $seterror.text('The format of Email is not True!');
+                    errAnimate($seterr, 'The format of Email is not True!');
                     return false;
                 }
             }
@@ -664,7 +617,7 @@ $(document).ready(function(){
                     window.location.reload(true);
                     return ;
                 }
-                $seterror.text('The Old Password is not True!');
+                errAnimate($seterr, 'The Old Password is not True!');
             });
         });
 

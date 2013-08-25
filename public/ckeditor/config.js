@@ -8,6 +8,7 @@ CKEDITOR.editorConfig = function( config )
 	// Define changes to default configuration here. For example:
 	// config.language = 'fr';
 	// config.uiColor = '#AADC6E';
+	config.forcePasteAsPlainText = true;
 	config.toolbar = 'Full';
 	config.toolbar_Full = [{
 		name: 'document',

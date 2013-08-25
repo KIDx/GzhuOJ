@@ -1,7 +1,9 @@
 
-var mongoose = require('mongoose');
-var dburl = require('../settings').dburl;
-var Schema = mongoose.Schema;
+var mongoose = require('mongoose')
+,   settings = require('../settings')
+,   dburl = settings.dburl
+,   pageNum = settings.status_pageNum
+,   Schema = mongoose.Schema;
 
 function Solution(solution) {
   this.runID = solution.runID;
@@ -16,11 +18,11 @@ function Solution(solution) {
 
 module.exports = Solution;
 
-Solution.connect = function (callback) {
+Solution.connect = function(callback){
   mongoose.connect(dburl);
 };
 
-Solution.disconnect = function (callback) {
+Solution.disconnect = function(callback){
   mongoose.disconnect(callback);
 };
 
@@ -42,7 +44,7 @@ var solutionObj = new Schema({
 mongoose.model('solutions', solutionObj);
 var solutions = mongoose.model('solutions');
 
-Solution.prototype.save = function save(callback) {
+Solution.prototype.save = function(callback){
   //存入 Mongodb 的文档
   solution = new solutions();
   solution.runID = this.runID;
@@ -58,133 +60,94 @@ Solution.prototype.save = function save(callback) {
   solution.code = this.code;
   solution.save(function(err){
     if (err) {
-      return callback('runID is already exited');
-    }
-    return callback(null);
-  });
-};
-
-Solution.get = function get(q, n, mini, PageNum, all, callback) {
-  var sl = { code:0, _id:0, __v:0, CE:0 };
-  if (all == 0) {
-    sl.language = 0; sl.length = 0;
-    sl.time = 0; sl.memory = 0;
-  }
-  if (mini > -1) sl.cID = 0;
-  if (n < 0) {
-    solutions.find(q).select(sl).where('runID').gt(mini).sort({runID:-1}).exec(function(err, docs){
-      if (err) {
-        return callback('Solution.get failed!', null, 1);
-      }
-      return callback(err, docs);
-    });
-  } else {
-    solutions.find(q).count(function(err, count) {
-      solutions.find(q).select(sl).sort({runID:-1}).skip((n-1)*PageNum).limit(PageNum).exec(function(err, docs){
-        if (err) {
-          return callback('Solution.get failed!', null, 1);
-        }
-        return callback(err, docs, count);
-      });
-    });
-  }
-};
-
-Solution.getDistinct = function getDistinct(key, Q, callback) {
-  solutions.distinct(key, Q, function(err, docs){
-    if (err) {
-      return callback('solution.getdistinct failed', null);
-    }
-    callback(err, docs);
-  });
-};
-
-Solution.update = function update(Q, H, callback) {
-  solutions.update(Q, H, { multi:true }, function(err){
-    if (err) {
-      console.log('solution.update failed');
+      console.log('runID is already exited');
     }
     return callback(err);
   });
 };
 
-Solution.statis = function statis(pid, sq, callback){
-  solutions.find({problemID:pid}).select({
-    cID:0,
-    code:0,
-    problemID:0
-  }).where('result').gt(1).sort(sq).exec(function(err, docs){
+Solution.find = function(Q, callback){
+  solutions.find(Q, function(err, docs){
     if (err) {
-      return callback('solution.statis failed', null);
+      console.log('Solution.find failed!');
     }
     return callback(err, docs);
   });
 };
 
-Solution.FindOut = function FindOut(Q, callback) {
-  solutions.find(Q).exec(function(err, docs){
-    if (err) {
-      return callback('solution.findout failed', null);
+Solution.get = function(Q, page, callback){
+  solutions.find(Q).count(function(err, count) {
+    if ((page-1)*pageNum > count) {
+      return callback(null, null, -1);
     }
-    var probs = {};
-    docs.forEach(function(p){
-      if (probs[p.problemID] != '2') {
-        if (p.result == 2) probs[p.problemID] = '2';
-        else probs[p.problemID] = '1';
+    solutions.find(Q).sort({runID:-1}).skip((page-1)*pageNum).limit(pageNum)
+    .exec(function(err, docs){
+      if (err) {
+        console.log('Solution.get failed!');
       }
+      return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
-    return callback(err, probs);
   });
 };
 
-Solution.Find = function Find(name, callback) {
-  solutions.find({userName:name}).select({
-    runID:0,
-    userName: 0,
-    inDate: 0,
-    language: 0,
-    length: 0,
-    time: 0,
-    memory: 0,
-    cID: 0,
-    code: 0,
-    CE: 0
-  }).where('result').gt(1).exec(function(err, docs){
+Solution.distinct = function(key, Q, callback){
+  solutions.distinct(key, Q, function(err, docs){
     if (err) {
-      return callback('solution.find failed', null);
+      console.log('Solution.getdistinct failed!');
+    }
+    callback(err, docs);
+  });
+};
+
+Solution.update = function(Q, H, callback){
+  solutions.update(Q, H, { multi:true }, function(err){
+    if (err) {
+      console.log('Solution.update failed!');
+    }
+    return callback(err);
+  });
+};
+
+Solution.stats = function(Q, sq, page, callback){
+  solutions.find(Q).sort(sq).exec(function(err, docs){
+    if (err) {
+      console.log('Solution.statis failed!');
+    }
+    var sols = new Array(), has = {};
+    if (docs) {
     }
     return callback(err, docs);
   });
 };
 
-Solution.watch = function watch(Q, callback) {
+Solution.watch = function(Q, callback){
   solutions.findOne(Q, function(err, doc){
     if (err) {
-      return callback(err, null);
+      console.log('Solution.watch failed!');
     }
     return callback(err, doc);
   });
 };
 
-Solution.Count = function Count(Q, callback) {
-  solutions.find(Q).count(function(err, count){
+Solution.aggregate = function(o, callback){
+  solutions.aggregate(o, function(err, docs){
     if (err) {
-      console.log('solution.count failed');
+      console.log('Solution.aggregate failed!');
+    }
+    return callback(err, docs);
+  });
+};
+
+Solution.count = function(Q, callback){
+  solutions.count(Q, function(err, count){
+    if (err) {
+      console.log('Solution.count failed!');
     }
     return callback(err, count);
   });
 };
 
-Solution.Clear = function Clear(callback) {
-  solutions.find({}, function(err, docs){
-    if (err) {
-      console.log(err);
-    }
-    callback(docs);
-  });
-};
-
-Solution.del = function del() {
+Solution.del = function(){
   solutions.find({}, function(err, docs){
     docs.forEach(function(doc) {
         doc.remove();

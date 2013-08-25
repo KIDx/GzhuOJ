@@ -1,32 +1,84 @@
 body {
-    font-family: "Helvetica Neue",Helvetica,"微软雅黑",Arial,sans-serif;
-    font-size: .9em;
-    background-color: #ddd;
+    font-family: "微软雅黑","Helvetica Neue",Helvetica,Arial,sans-serif;
+    background-color: #f2f2f2;
     max-width: 1300px;
     min-width: 920px;
-
     margin: auto;
+    color: #555;
 }
 
-input, button, select, textarea {
-    font-family: "Helvetica Neue",Helvetica,"微软雅黑",Arial,sans-serif;
+pre, input, button, select, textarea {
+    font-family: "微软雅黑","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+.my-radio {
+    overflow: hidden;
+}
+
+.my-radio label, .my-radio input {
+    float: left;
+    margin-left: 25px;
+}
+
+.my-radio label {
+    margin-left: 5px;
+}
+
+.radio input {
+    margin-left: 20px;
+}
+
+.fl {
+    float: left;
+}
+
+.fr {
+    float: right;
+}
+
+.w {
+    overflow: hidden;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 5px #ccc;
+    margin: 5px auto;
+    background: #fff;
+}
+
+.marquee {
+    color: #D33F74;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+ul.navigation > li {
+    margin-right: 5px;
+    float: right;
+    list-style: none;
+    list-style-position: outside;
+}
+
+ul.menu > li {
+    margin: 5px 15px 0 0;
+    float: left;
+}
+
+ul.menu > li > a {
+    color: #555!important;
+    text-decoration: none!important;
+    font-size: 18px;
 }
 
 div#wrapper {
-    min-height: 680px;
-}
-
-div#body {
-    padding: 10px 15px;
-    border: 3px solid rgb(243,242,215);
-    border-radius: 6px 6px 6px 6px;
-    margin: 5px 2px;
-    background-color: #f3fff2;
+    min-height: 101%;
 }
 
 @media screen and (max-width: 1024px) {
     body {
         width: 950px;
+    }
+    div#wrapper {
+        min-height: 700px;
     }
 }
 
@@ -39,8 +91,7 @@ div#change-grade > input{
     margin-bottom: 3px;
 }
 
-.info-text {
-    color: #BE780E;
+.bold {
     font-weight: bold;
 }
 
@@ -54,9 +105,20 @@ div#change-grade > input{
     font-weight: bold;
 }
 
+.info-text {
+    color: #DB8C15;
+}
+
+.accept-text {
+    color: #24A329;
+}
+
+.wrong-text {
+    color: #F12525;
+}
+
 .special-text {
-    color: #813091!important;
-    font-weight: bold;
+    color: #AE53C0;
 }
 
 a.special-text {
@@ -91,6 +153,10 @@ a.special-text {
     color: gray!important;
 }
 
+.user-black {
+    color: #555!important;
+}
+
 .user-del {
     float: right;
     color: gray!important;
@@ -119,8 +185,12 @@ td.bronze {
     background: #f0c598;
 }
 
+span.user {
+    font-weight: bold;
+}
+
 a.user {
-    text-decoration: none!important;
+    text-decoration: none;
     font-weight: bold;
 }
 
@@ -209,17 +279,18 @@ td.center {
     text-align: center;
 }
 
+div#xbody {
+    min-height: 680px;
+}
+
 div.tablebg,
 div#xbody input,
 div#xbody textarea {
-    font-size: 13px;
+    font-size: 14px;
 }
 
 div#preload_logo {
-    width: 350px;
     height: 70px;
-    float: left;
-    margin-top: 5px;
 }
 
 div.upload {
@@ -399,7 +470,7 @@ div.tablebg {
 }
 
 div.tablebg div#pager {
-    height: 27px;
+    height: 30px;
     padding-right: 2px;
     position: relative;
 }
@@ -415,6 +486,7 @@ div.tablebg div#tablediv {
     margin: 0 3px 0 3px;
     background-color: white;
     position: relative;
+    clear: both;
 }
 
 div.tablebg table {
@@ -476,8 +548,8 @@ div.tablebg div#filter button {
 }
 
 form div#simpleInput div input,
-.table tr td input,
-.table tr th input {
+.table tr td input[type="text"],
+.table tr th input[type="text"] {
     margin: 0;
     padding: 0;
 }
@@ -520,45 +592,98 @@ ul.nav-tabs > li > a:hover {
     background: #d6d6d6;
 }
 
-.bread {
-    border-radius: 4px 4px 4px 4px;
-    border: 1px solid #ccc;
-    background-color: white;
-    list-style: none outside none;
-    padding: 7px 14px;
-}
-
 .jqtop {
     background: url('img/tab.png') repeat-x scroll 0 -43px white;
 }
 
-ul.bread#headmenu {
-    border: 0;
-    padding: 0;
+div.avatar {
+    border: 1px solid #ccc;
     float: right;
+    margin: 20px 20px 0 0;
+    width: 250px;
+    height: 250px;
 }
 
-.menu {
-    padding: 14px 0;
-    margin: 10px 0;
+.avatar_b, .avatar_m, .avatar_s {
+    float: left;
+    text-align: center;
+    color: #666;
+    font-size: 12px;
 }
 
-.menu > li {
-    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-    padding-left: 14px;
+.left {
+    float: left;
+    width: 250px;
+    height: 250px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    margin-right: 40px;
+    background: #f5f5f5;
+    text-align: center;
 }
 
-.menu > li > a {
-    color: #333;
-    font-weight: bold;
-    text-decoration: none;
-    text-transform: uppercase;
+.right {
+    float: left;
+    width: 320px;
+    height: 270px;
+    border-left: 1px #ddd solid;
+    padding-left: 40px;
 }
 
-.bread > li,
-.menu > li {
-    display: inline-block;
-    text-shadow: 0 1px 0 white;
+.fixed {
+    display: block;
+}
+
+.avatar_img {
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.avatar_b .avatar_img {
+    width: 150px;
+    height: 150px;
+}
+
+.avatar_m .avatar_img {
+    width: 100px;
+    height: 100px;
+}
+
+.avatar_s .avatar_img {
+    width: 50px;
+    height: 50px;
+}
+
+.avatar_b {
+    padding-top: 40px;
+}
+
+.avatar_m {
+    padding-left: 40px;
+    padding-top: 40px;
+    margin-bottom: 10px;
+}
+
+.avatar_s {
+    padding-left: 48px;
+    padding-top: 5px;
+}
+
+.avatar_setting {
+    min-height: 400px;
+    width: 660px;
+    padding: 30px 50px 0px 70px;
+    overflow: hidden;
+    margin: 0px auto;
+}
+
+#choosebox {
+    padding: 5px;
+    width: 220px;
+    border: 1px solid #ccc;
+    background: #E5E5E5;
+    cursor: pointer;
 }
 
 div.roundbox {
@@ -567,6 +692,7 @@ div.roundbox {
     border-radius: 6px 6px 6px 6px;
     background-color: whitesmoke;
     box-shadow: 0 1px 1px rgba(0,0,0,0.05) inset;
+    overflow: hidden;
 }
 
 div.roundbox > h3 {
@@ -584,8 +710,8 @@ ul.user-info > li {
 
 div.menu-list {
     position: absolute;
-    left: 1em;
-    top: -3.5em;
+    left: 1.5em;
+    top: -3.8em;
 }
 
 div.menu-list > ul > li {
@@ -603,7 +729,12 @@ div.menu-list > ul > li > a {
     z-index: 10;
     float: left;
     display: block;
-    margin: auto 7px;
+    padding: 3px 5px;
+    margin-left: 10px;
+}
+
+div.menu-list > ul > li > a:hover {
+    background: #e5e5e5;
 }
 
 .divider {
@@ -636,16 +767,28 @@ div.form-actions {
 }
 
 .progress {
-    background-color: #dfdfdf;
-    background-image: none;
+    background-color: #e5e5e5;
+    margin: 0;
+    height: 15px;
+}
+
+.progress .bar {
+    width: 100%;
+    z-index: 100;
+}
+
+.contest_progress {
+    margin-bottom: 10px;
+}
+
+td .progress {
+    margin: 0;
 }
 
 /**************bootstrap fixed**************/
 
 legend{
-    font-size: 18px;
     color: #666;
-    border-bottom: 1px solid #CCC;
 }
 
 .table td {
@@ -686,7 +829,7 @@ table.parity thead {
 }
 
 tr.odd {
-    background-color: #F5F5F5;
+    background-color: #f5f5f5;
 }
 
 tr.even {
@@ -701,6 +844,10 @@ h3.problem-header {
 
 #wrapper {
     min-height: 105%;
+}
+
+#problemsview {
+    margin: 0 13%;
 }
 
 .table tr th,
@@ -741,12 +888,20 @@ div.des-box {
     border-radius: 3px;
 }
 
-table.sort thead > tr > th a {
+table.sort th a {
     position: relative;
     display: block;
     text-decoration: none!important;
     color: #333!important;
     z-index: 1000;
+}
+
+table.sort th a:hover {
+    background: #ddd;
+}
+
+table.sort th a.current {
+    background: #ccc;
 }
 
 table#problemset tr td div#dif_bg {
@@ -806,8 +961,8 @@ div.prob-tag {
     color: gray;
 }
 
-div.prob-tag a {
-    color: gray!important;
+div.prob-tag a.tag {
+    color: gray;
     text-decoration: none;
 }
 
@@ -854,11 +1009,6 @@ span.failed {
     display: block;
 }
 
-span.accept {
-    color: #0A0;
-    font-weight: bold;
-}
-
 span.cell-time {
     color: #777;
     font-size: 10px;
@@ -893,13 +1043,8 @@ table th img {
 }
 
 #footer {
-    margin-top: 2em;
-    padding: 1em 1em 4em 1em;
-    border-top: 1px solid #CCC;
     text-align: center;
     font-size: 1em;
-    clear: both;
-    height: 0;
 }
 
 
@@ -989,6 +1134,7 @@ table th img {
     position: relative;
     top: 0;
     left: 0;
+    border: 1px solid #ddd;
 }
 
 .jqcontent {
@@ -996,13 +1142,13 @@ table th img {
     padding-left: 10px;
     margin: 0;
     position: absolute;
-    overflow: auto;
+    overflow: auto;    
 }
 
 div.jqcontent > small.error-text {
-    position: absolute;
-    left: 10px;
-    bottom: 15px;
+    height: 15px;
+    display: block;
+    margin-top: 5px;
 }
 
 div.jqcontent textarea {
@@ -1079,41 +1225,50 @@ div.jqfoot .btn {
 /*Made by Lrelia,a little girl forever:start*/
 .container{
     width:100%;
-    height: 2760px; /*important:The height of FAQ web page depends on it.
+    height: 2650px; /*important:The height of FAQ web page depends on it.
     When it changes,the height of its son divs will change,too*/
     position: relative;
     /*border: 1px solid red; if you are unsatisfied with the layout,I suggest you to use this code.*/
 }
 .set_picture_left{
-    width: 20%; /*important:this div's width is 20% of its father div*/
+    width: 18%; /*important:this div's width is 20% of its father div*/
     height: 95%;
+    min-height:2670px;
+    min-width:167px;
     position:relative; /*important:this code makes your div fit the scanner size*/
     float: left; 
     /*border: 1px solid red;*/
     background-image: url(/img/picture_left.png);
     background-size: 100%;
+    z-index: 2;
 }
 .set_picture_right{
-    width: 20%;
+    width: 18%;
     height: 95%;
+    min-height:2670px;
+    min-width:167px;
     position:relative;
-    float: left; 
+    float: right; 
     /*border: 1px solid red;*/
     background-image: url(/img/picture_right.png);
     background-size: 100%;
+    z-index: 2;
 }
 .QA{
-    width:59%;
+    width:63%;
     height: 95%;
+    min-height:2670px;
+    min-width:550px;
     position:relative;
     float: left;
    /*border: 1px solid red;*/
     border-left:1px solid yellow;
     border-right:1px solid yellow;
-    font-family: Trebuchet MS; 
+    font-family: Trebuchet MS,Arial; 
     color: rgb(22,163,230); /*font color*/
-    font-size: 16px;
+    font-size: 1em;
     z-index:3px;
+    overflow: hidden;
 }
 .left_border{
    width:20px;
@@ -1130,19 +1285,21 @@ div.jqfoot .btn {
     background-image: url(/img/border.jpg);
 }
 .Q{
-    width: 600px;
+    width: 550px;
     margin: 0 auto; /*this code makes your div stay in the horizontal center*/
     padding-top:5px;
     padding-left: 3px;
 }
 .A{
-    width:600px;
+    width:550px;
     margin: 0 auto;
     padding-top:5px;
     padding-left: 3px;
 }
 .QA_img{
     float: left;
+    height: 22px;
+    width:34px;
 }
 /*Made by Lrelia,a little girl forever:end*/
 p.MsoNormal, li.MsoNormal, div.MsoNormal {
@@ -1151,10 +1308,10 @@ p.MsoNormal, li.MsoNormal, div.MsoNormal {
     text-align: justify;
     text-justify: inter-ideograph;
     font-size: 10.5pt;
-    font-family: "Calibri","sans-serif";
+    font-family: "微软雅黑","sans-serif";
 }
 .MsoChpDefault {
-    font-family: "Calibri","sans-serif";
+    font-family: "微软雅黑","sans-serif";
 }
 div.WordSection1 {
     page: WordSection1;

@@ -1,2 +1,0 @@
-官网: http://stefangabos.ro/jquery/zebra-datepicker/
-版本：1.6.1

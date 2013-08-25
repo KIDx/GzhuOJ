@@ -1,0 +1,66 @@
+<!--<html>-->
+<% var pvl = false; %>
+<% if (user && user.privilege && parseInt(user.privilege) > 80) { pvl = true; } %>
+<fieldset>
+  <div><legend><% if (Q.name) { %>报名<% } else { %>申请<% } %>列表</legend></div>
+<% if (type == 2) { %>
+  <h3 class="problem-header"><%= Q.name %></h3>
+  <div id="info" align="center" style="margin-bottom:10px;width:100%;height:25px;">
+  <% if (pvl) { %>
+    <a style="margin-left:10px;" href="javascript:;" id="regupdate" class="uibtn">提交</a>
+  <% } %>
+  </div>
+<% } %>
+<% if (pvl) { %>
+  <div id="change-grade">
+    <input type="text" class="input-medium" placeholder="用户名">
+    <input type="text" class="input-small" placeholder="班别">
+    <a class="uibtn" href="javescript:;">修改</a>
+  </div>
+<% } %>
+  <div class="tablebg">
+    <div id="pager" class="pagination pagination-small">
+      <div style="float:left;">
+        <% var page = 1; %>
+        <% if (Q && Q.page) page = Q.page; %>
+        <ul cid="<%= Q.cid %>" st="<%= Q.startTime %>" id="<%= page %>">
+        </ul>
+      </div>
+      <div style="float:right;" id="filter">
+        <div class="input-prepend">
+          <span class="add-on"><i class="icon-search"></i></span>
+          <% var search = ''; %>
+          <% if (Q && Q.search) search = Q.search; %>
+          <input type="text" id="search" value="<%= search %>" placeholder=" 用户名 or 姓名" title="用户名或姓名">
+        </div>
+      </div>
+    </div>
+    <div id="tablediv">
+      <table class="table table-cf tdcenter" id="regform">
+        <thead>
+          <tr>
+            <th style="width:5%;">RID</th>
+            <th style="width:15%;">用户名</th>
+            <th style="width:10%;">学号</th>
+            <th style="width:10%;">姓名</th>
+            <th style="width:5%;">性别</th>
+            <th style="width:19%;">学院</th>
+            <th style="width:8%;">班级</th>
+            <th>报名时间</th>
+          <% if (pvl) { %>
+            <th style="width:5%;">
+              <span id="accept" class="success-text myhover" title="全选">通过</span>
+            </th>
+            <th style="width:5%;">
+              <span id="reject" class="error-text myhover" title="全选">拒绝</span>
+            </th>
+          <% } else { %>
+            <th style="width:10%;">状态</th>
+          <% } %>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</fieldset>

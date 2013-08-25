@@ -1,0 +1,61 @@
+<!--<html>-->
+<fieldset>
+  <div><legend>状态</legend></div>
+  <div class="tablebg">
+    <div id="pager" class="pagination pagination-small">
+      <div style="float:left;">
+        <ul <% if (name) { %>name="<%= name %>"<% } %> <% if (pid) { %>pid="<%= pid %>"<% } %> <% if (result) { %>result="<%= result %>"<% } %>>
+        </ul>
+      </div>
+      <div style="float:right;" id="filter">
+        <div class="input-prepend">
+          <span class="add-on">Name</span>
+          <input type="text" id="search" placeholder=" username">
+        </div>
+        <div class="input-prepend">
+          <span class="add-on">prob#</span>
+          <input type="text" id="pID" placeholder=" problemid">
+        </div>
+        <div class="input-prepend">
+          <span class="add-on">Verdict</span>
+          <select id="what" style="width:160px">
+            <option value="-1" selected>All</option>
+            <option value="0">Pending</option>
+            <option value="2">Accepted</option>
+            <option value="6">Wrong Answer</option>
+            <option value="4">Time Limit Exceeded</option>
+            <option value="9">Runtime Error</option>
+            <option value="3">Presentation Error</option>
+            <option value="8">Compilation Error</option>
+            <option value="5">Memory Limit Exceeded</option>
+            <option value="7">Output Limit Exceeded</option>
+          </select>
+        </div>
+        <div>
+          <button id="filter">Filter</button>
+        </div>
+        <div>
+          <button id="reset">Reset</button>
+        </div>
+      </div>
+    </div>
+    <div id="tablediv">
+      <table class="table table-cf" id="statustable">
+        <thead>
+          <tr>
+            <th style="width:7%;">RunID</th>
+            <th style="width:14%;">User</th>
+            <th style="width:10%;">Problem</th>
+            <th>Verdict</th>
+            <th style="width:9%;">Time</th>
+            <th style="width:9%;">Memory</th>
+            <th style="width:8%;">Lang</th>
+            <th style="width:8%;">Length</th>
+            <th style="width:15%;">Submit Time</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</fieldset>

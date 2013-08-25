@@ -46,6 +46,7 @@ function buildPager(page, n) {
 
 var $status = $div.find('#statustab')
 ,	$list = $('#list')
+,	$list_a
 ,	$tablebg = $('div.tablebg')
 ,	$tbody = $tablebg.find('#statustable tbody')
 ,	$search = $('#search')
@@ -147,11 +148,19 @@ function Response(json) {
 	if ($plink && $plink.length) {
 		$plink.unbind();
 	}
+	if ($list_a && $list_a.length) {
+		$list_a.unbind();
+	}
 	$tbody.html( html );
 	$plink = $('a.plink');
 	$plink.click(function(){
 		$tablink.eq(1).attr('href', $(this).attr('href'));
 		$tablink.eq(1).click();
+	});
+	$list_a = $list.find('a');
+	$list_a.click(function(){
+		statusQ.page = $(this).parent().attr('id');
+		GetStatus();
 	});
 	BindCE();
 	$status.fadeIn(100);
@@ -160,8 +169,11 @@ function Response(json) {
 function GetStatus() {
 	searchTimeout = setTimeout(function(){
 		var ts = JudgeString($search.val()), tp = $pid.val(), tr = $result.val();
-		if (tp == '-1') tp = '';
+		window.location.hash = '#status-' + ts + '-' + tp + '-' + tr;
+		if (statusQ.page) window.location.hash += '-' + statusQ.page;
+		if (tp == 'nil') tp = '';
 		else tp = fmap[tp];
+		if (tr == 'nil') tr = '';
 		statusQ.name = ts;
 		statusQ.pid = tp;
 		statusQ.result = tr;
@@ -360,13 +372,91 @@ function GetProblem() {
 	}, interceptorTime);
 }
 
-var $rank = $div.find('#ranktab');
+var $rank = $div.find('#ranktab')
+,	rankQ = {cid:cid};
+
+function buildRank(user) {
+	var html = '<tr class="';
+
+	if (cnt % 2 == 1) html += 'odd';
+	else html += 'even';
+	if (user.name == current_user) html += ' highlight';
+
+	html += '"><td';
+	var rank = RankAPI[user.name]-star;
+	if (!Star[user.name] && user.solved > 0) {
+		if (rank < 31) {
+			html += ' class="';
+			if (rank < 6) html += 'gold';
+			else if (rank < 16) html += 'silver';
+			else html += 'bronze';
+			html += '"';
+		}
+	}
+	html += '>';
+	if (Star[user.name]) html += '*', ++star;
+	else html += rank;
+	html += '</td><td><div class="u-info">';
+
+	var pvl;
+	if (contest_type == 2 && contest_private && Users[user.name].gde) {
+		pvl = parseInt(Users[user.name].pvl);
+		html += '<span class="u-info-u">'+Users[user.name].gde+'<br/>'+Users[user.name].name+'</span>';
+		if (current_user == 'admin') {
+			html += '<input type="checkbox" title="Add star"';
+			if (Star[user.name]) html += ' checked';
+			html += '/>&nbsp;';
+		}
+	} else pvl = parseInt(Users[user.name]);
+
+	html += '<a href="/user/'+user.name+'" class="user user-';
+	html += UserCol(pvl)+'" title="'+UserTitle(pvl)+'">';
+	html += user.name+'</a>';
+	if (contest_type == 2 && current_user == 'admin')
+		html += '<a href="javascript:;" title="Delete the user" class="user-del">×</a>'
+	html += '</div></td>';
+	html += '<td>'+user.solved+'</td>';
+	html += '<td>'+user.penalty+'</td>';
+	$.each(user.status, function(i, v){
+		var style = '', WA = v;
+		html += '<td>';
+		if (WA > 0) {
+			--WA;
+			if (FB[i] == user.stime[i]) style = 'FB';
+			else style = 'accept';
+			html += '<span class="'+style+'">+';
+			if (WA > 0) html += WA;
+			html += '</span>';
+			html += '<span class="cell-time">'+user.stime[i]+'</span>';
+		} else if (WA < 0) {
+			html += '<span class="failed">'+WA+'</span>';
+		}
+		html += '</td>';
+	});
+	html += '</tr>';
+	++cnt;
+	return html;
+}
+
+function RankResponse(json) {
+}
+
+function GetRanklist() {
+	$.ajax({
+		type: 'POST',
+		url: '/getRanklist',
+		dataType: 'json',
+		data: rankQ,
+		timeout: 5000
+	})
+	.done(RankResponse);
+}
 
 function run(str, key) {
 	if (!str) str = '#overview'
 	window.location.hash = str;
 	var sp = str.split('-');
-	var a = sp[0], b = sp[1], c = sp[2], d = sp[3];
+	var a = sp[0], b = sp[1], c = sp[2], d = sp[3], e = sp[4];
 	ID = 0;
 	switch(a) {
 		case '#problem': {
@@ -390,8 +480,10 @@ function run(str, key) {
 				$status.addClass('active');
 			}
 			$status.hide();
-			//if (b) statusQ.page = parseInt(b, 10);
-			//if (c) $pid = 
+			if (b) $search.val(b);
+			if (c) $pid.val(c);
+			if (d) $result.val(d);
+			if (e) statusQ.page = parseInt(e, 10);
 			GetStatus();
 			PreTab = 0;
 			break;
@@ -404,7 +496,7 @@ function run(str, key) {
 				$rank.addClass('active');
 			}
 			$rank.hide();
-			//GetContestRanklist();
+			GetRanklist();
 			PreTab = 0;
 			break;
 		}
@@ -509,6 +601,7 @@ function runContest() {
 	}
 }
 
+//run contest
 $(document).ready(function(){
 	if (status == 0) {
 		pendingTimer();
@@ -520,12 +613,14 @@ $(document).ready(function(){
 	runContest();
 });
 
+//bind status
 $(document).ready(function(){
 	$Filter.click(function(){
+		statusQ.page = 1;
 		GetStatus();
 	});
 	$('#reset').click(function(){
-		$search.val(''); $pid.val(-1); $result.val(-1);
+		$search.val(''); $pid.val('nil'); $result.val('nil'); statusQ.page = 1;
 		GetStatus();
 	});
 	$search.keyup(function(e){
@@ -534,4 +629,75 @@ $(document).ready(function(){
 		}
 	});
 	bindstatusQ();
+});
+
+//bind submit
+var $SubmitDialog = $('#submitdialog');
+
+$(document).ready(function(){
+	$('a.consubmit').click(function(){
+		if ($logindialog.length > 0) {
+			nextURL = '';
+			$logindialog.jqmShow();
+			return false;
+		}
+		if ($SubmitDialog.length == 0) {
+			ShowMessage('You can not submit because you have not registered the contest yet!');
+			return false;
+		}
+		$SubmitDialog.find('#error').html('&nbsp;');
+		$SubmitDialog.find('#lang').val(2);
+		$SubmitDialog.find('textarea').val('');
+		pid_index = $(this).attr('pid');
+		$SubmitDialog.find('span#pid').text(pmap[pid_index]+' - '+$(this).attr('tname'));
+		$SubmitDialog.jqmShow();
+	});
+
+	if ($SubmitDialog.length > 0) {
+
+		$SubmitDialog.jqm({
+			overlay: 30,
+			trigger: false,
+			modal: true,
+			closeClass: 'submitclose',
+			onShow: function(h) {
+				h.o.fadeIn(200);
+				h.w.fadeIn(200, function(){$SubmitDialog.find('textarea').focus();});
+			},
+			onHide: function(h) {
+				h.w.fadeOut(200);
+				h.o.fadeOut(200);
+			}
+		}).jqDrag('.jqDrag').jqResize('.jqResize');
+
+		$SubmitDialog.find('a#jqcodesubmit').click(function(){
+		var code = $SubmitDialog.find('textarea').val();
+		if (code.length < 50 || code.length > 65536) {
+			$SubmitDialog.find('span#error').text('the length of code must be between 50B to 65535B');
+			return false;
+		}
+		$.post('/submit', {
+			pid: pid_index,
+			cid: cid,
+			code: code,
+			lang: $SubmitDialog.find('select').val()
+		}, function(err){
+			if (err == '1') {
+				window.location.reload(true);
+				return ;
+			}
+			$SubmitDialog.jqmHide();
+			if (!err) {
+				ShowMessage('Your code for problem '+pmap[pid_index]+' has been submited successfully!');
+			} else if (err == '2'){
+				ShowMessage('You can not submit because you have not registered the contest yet!');
+			} else if (err == '3') {
+				ShowMessage('系统错误！');
+			}
+			init();
+			$tablink.eq(2).click();
+			
+		});
+	});
+	}
 });

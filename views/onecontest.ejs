@@ -175,7 +175,7 @@
             <div id="pids">
               <a id="probsubmit" class="uibtn consubmit" href="javascript:;">Submit</a>
               <a class="uibtn" href="javascript:;" res="-1">Status</a>
-            <% if (user && (user.name == 'admin' || contest.userName == user.name)) { %>
+            <% if (user && user.name == 'admin') { %>
               <a id="rejudge" class="uibtn" href="javascript:;">Rejudge</a>
             <% } %>
             </div>
@@ -202,7 +202,7 @@
               <div class="input-prepend">
                 <span class="add-on">Problem</span>
                 <select id="pid" style="width:160px;">
-                  <option value="-1" selected>All</option>
+                  <option value="nil" selected>All</option>
                 <% contest.probs.forEach(function(prob, i) { %>
                   <option value="<%= F[i] %>"><%= F[i] %> - <%= prob[1] %></option>
                 <% }); %>
@@ -211,7 +211,7 @@
               <div class="input-prepend">
                 <span class="add-on">Verdict</span>
                 <select id="result" style="width:160px;">
-                  <option value="-1" selected>All</option>
+                  <option value="nil" selected>All</option>
                   <option value="0">Pending</option>
                   <option value="2">Accepted</option>
                   <option value="6">Wrong Answer</option>

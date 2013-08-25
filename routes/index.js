@@ -38,9 +38,12 @@
  3 : Course
 
  ~VIP contest.contestants~
- public : [name1, name2, ...]
- private : 1.normal: ['!'+name1,'!'+name2, ...]; 2.star: ['*'+name1,'*'+name2, ...]
+ 1.normal: ['!user1', '!user2', ...]
+ 2.star: ['*user1', '*user2', ...]
 
+~session~
+ req.session.user : current user
+ req.session.cid : if current user has enter a private contest before, write down it, no need to wirte password again
 */
 var crypto = require('crypto')
 ,   fs = require('fs')
@@ -772,12 +775,12 @@ exports.rejudge = function(req, res) {
         console.log(err);
         return res.end();
       }
-      Solution.distinct('userName', {problemID:pid, result:2}, function(err, solutions){
+      Solution.distinct('userName', {problemID:pid, result:2}, function(err, users){
         if (err) {
           console.log(err);
           return res.end();
         }
-        User.update({'name': {$in: solutions}}, {$inc: {solved:-1}}, true, function(err){
+        User.update({'name': {$in: users}}, {$inc: {solved:-1}}, true, function(err){
           if (err) {
             console.log(err);
             return res.end();
@@ -1665,9 +1668,12 @@ exports.onecontest = function(req, res) {
         }
       }
     }
-    var curl;
-    if (req.session.oneQ) {
-      curl = req.session.oneQ[cid];
+    var isContestant = false;
+    if (contest.type != 2 ||
+      (req.session.user &&
+        (req.session.user.name == contest.userName ||
+        IsRegCon(contest.contestants, req.session.user.name)))) {
+      isContestant = true;
     }
     res.render('onecontest', {title: 'OneContest',
                               user: req.session.user,
@@ -1676,7 +1682,7 @@ exports.onecontest = function(req, res) {
                               key: 9,
                               contest: contest,
                               getDate: getDate,
-                              curl: curl
+                              isContestant: isContestant
     });
   });
 };
@@ -1722,6 +1728,7 @@ exports.contest = function(req, res) {
     if (req.session.cid) {
       CS = req.session.cid;
     }
+
     res.render ('contest', {title: 'Contest',
                             user: req.session.user,
                             message: req.session.msg,
@@ -2144,12 +2151,15 @@ exports.contestReg = function(req, res) {
     return res.end();
   }
   var cid = parseInt(req.body.cid);
-  Contest.watch(cid, function(err, doc){
+  Contest.watch(cid, function(err, contest){
     if (err) {
       console.log(err);
       return res.end();
     }
-    if (getDate(new Date()) > calDate(doc.startTime, -5)) {
+    if (!contest || contest.type != 2 || contest.password) {
+      return res.end();
+    }
+    if (getDate(new Date()) > calDate(contest.startTime, -5)) {
       req.session.msg = "Register is closed.";
       return res.end('1');
     }

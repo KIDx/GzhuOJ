@@ -83,7 +83,9 @@ http://www.w3.org/TR/html4/loose.dtd">
       <% } %>
     <% } else if (key == 9) { %>
       <%- partial('info') %>
+      <% if (user && isContestant) { %>
       <%- partial('contestsubmit') %>
+      <% } %>
     <% } %>
 <!--****************Dialogs****************-->
   <!-- js Placed at the end of the document so the pages load faster -->

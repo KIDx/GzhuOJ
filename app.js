@@ -125,8 +125,6 @@ app.post('/getOverview', routes.getOverview);
 app.post('/getStatus', routes.getStatus);
 //get a page of contest ranklist
 app.post('/getRanklist', routes.getRanklist);
-//VIPContest的打星功能(管理员)
-app.post('/toStar', routes.toStar);
 //user页面的修改用户称号功能(队长以上)
 app.post('/changePvl', routes.changePvl);
 //user页面的修改用户加题权限功能(admin)
@@ -139,8 +137,6 @@ app.post('/editTag', routes.editTag);
 app.post('/problem', routes.upload);
 //单题重判
 app.post('/rejudge', routes.rejudge);
-//VIPContest删除指定的已报名用户
-app.post('/regContestDel', routes.regContestDel);
 //VIPContest增加指定用户
 app.post('/regContestAdd', routes.regContestAdd);
 //修改某用户报名信息

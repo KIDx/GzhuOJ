@@ -65,7 +65,7 @@ Problem.prototype.save = function(callback){
 };
 
 Problem.get = function(Q, page, callback){
-  problems.find(Q).count(function(err, count){
+  problems.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }

@@ -33,13 +33,9 @@
  cid > 0  : edit a contest
 
 ~contest.type~
- 1 : DIY Contest
- 2 : VIP Contest
- 3 : Course
-
- ~VIP contest.contestants~
- 1.normal: ['!user1', '!user2', ...]
- 2.star: ['*user1', '*user2', ...]
+ 1 : DIY Contest (all registered user can add)
+ 2 : VIP Contest (only admin can add)
+ 3 : Course (user.privilege >= 82(teacher) can add)
 
 ~session~
  req.session.user : current user
@@ -50,8 +46,9 @@ var crypto = require('crypto')
 ,   gm = require('gm')
 ,   imageMagick = gm.subClass({ imageMagick : true })
 ,   exec = require('child_process').exec
-,   User = require('../models/user.js')
 ,   IDs = require('../models/ids.js')
+,   ContestRank = require('../models/contestrank.js')
+,   User = require('../models/user.js')
 ,   Solution = require('../models/solution.js')
 ,   Problem = require('../models/problem.js')
 ,   Contest = require('../models/contest.js')
@@ -60,7 +57,8 @@ var crypto = require('crypto')
 
 var settings = require('../settings')
 ,   ranklist_pageNum = settings.ranklist_pageNum
-,   stats_pageNum = settings.stats_pageNum;
+,   stats_pageNum = settings.stats_pageNum
+,   contestRank_pageNum = settings.contestRank_pageNum;
 
 //return status color class
 function Col (n) {
@@ -213,8 +211,9 @@ function clearHtml(str) {
 }
 
 function IsRegCon(s, name) {
+  if (!s) return false;
   for (var i = 0; i < s.length; i++) {
-    if (s[i].split(s[i].charAt(0))[1] == name)
+    if (s[i] == name)
       return true;
   }
   return false;
@@ -414,7 +413,7 @@ exports.getStatus = function(req, res) {
 exports.getRanklist = function(req, res) {
   res.header('Content-Type', 'text/plain');
   var cid = parseInt(req.body.cid, 10);
-  if (!cid) {
+  if (!cid || cid < 0) {
     return res.end();
   }
   var page = parseInt(req.body.page, 10);
@@ -423,107 +422,155 @@ exports.getRanklist = function(req, res) {
   } else if (page < 0) {
     return res.end();
   }
-  Contest.watch(cid, function(err, contest){
+  var now = (new Date()).getTime();
+  Contest.findOneAndUpdate({
+    contestID   : cid,
+    updateTime  : { $lt: now-60000 }
+  }, {
+    $set: { updateTime: now }
+  }, {
+    new : false
+  }, function(err, contest){
     if (err) {
       console.log(err);
       return res.end();
     }
-    if (!contest) {
-      return res.end();
-    }
-    Solution.mapReduce({
-      map: function(){
-        return emit(this.userName, {
-          solved: 0,
-          pid: this.problemID,
-          result: this.result,
-          status: {},
-          inDate: (new Date(this.inDate)).getTime()
+    var RP = function(con){
+      ContestRank.get({_id: new RegExp('^'+cid+'-.*$')}, page, function(err, users, n){
+        if (err) {
+          console.log(err);
+          return res.end();
+        }
+        if (n < 0) {
+          return res.end();
+        }
+        var names = new Array();
+        if (users) {
+          var has = {};
+          users.forEach(function(p, i){
+            p._id = p._id.split('-')[1];
+            has[p._id] = true;
+            names.push(p._id);
+          });
+        }
+        User.find({name: {$in:names}}, function(err, U){
+          if (err) {
+            console.log(err);
+            req.session.msg = '系统错误！';
+            return res.redirect('/');
+          }
+          var pvl = {}, I = {};
+          if (U) {
+            U.forEach(function(p){
+              pvl[p.name] = p.privilege;
+              if (con.type == 3 || (con.type == 2 && con.password)) {
+                I[p.name] = { gde: p.grade, name: p.realname };
+              } else {
+                I[p.name] = p.nick;
+              }
+            });
+          }
+          return res.json([users, pvl, I, n]);
         });
-      },
-      reduce: function(key, vals){
-        var val = { solved: 0, penalty: 0, pid: null, result: null, status: {}, inDate: null };
-        vals.forEach(function(p){
-          if (p.pid) {
-            if (p.result == 2) {
-              if (!val.status[p.pid]) {
-                ++val.solved;
-                val.penalty += p.inDate;
-                val.status[p.pid] = { wa: 0, inDate: p.inDate };
-              } else if (val.status[p.pid].wa < 0) {
-                ++val.solved;
-                val.status[p.pid].wa = -val.status[p.pid].wa;
-                val.penalty += val.status[p.pid].wa*1200000 + p.inDate;
-                val.status[p.pid].inDate = p.inDate;
-              }
-            } else {
-              if (!val.status[p.pid]) {
-                val.status[p.pid] = { wa: -1 };
-              } else if (val.status[p.pid].wa < 0) {
-                --val.status[p.pid].wa;
-              }
-            }
-          } else {
-            for (var i in p.status) {
-              var o = p.status[i];
-              if (o.wa < 0) {
-                if (!val.status[i]) {
-                  val.status[i] = o;
-                } else if (val.status[i].wa < 0) {
-                  val.status[i].wa += o.wa;
+      });
+    };
+    if (!contest) {
+      Contest.watch(cid, function(err, con){
+        if (err) {
+          console.log(err);
+          return res.end();
+        }
+        if (!con) {
+          return res.end();
+        }
+        return RP(con);
+      });
+    } else {
+      Solution.mapReduce({
+        out: { merge: 'ranks' },
+        map: function(){
+          return emit(this.cID+'-'+this.userName, {
+            solved: 0,
+            pid: this.problemID,
+            result: this.result,
+            status: {},
+            inDate: parseInt((new Date(this.inDate)).getTime()/60000, 10)
+          });
+        },
+        reduce: function(key, vals){
+          var val = { solved: 0, penalty: 0, pid: null, result: null, status: {}, inDate: null };
+          vals.forEach(function(p){
+            if (p.pid) {
+              if (p.result == 2) {
+                if (!val.status[p.pid]) {
+                  ++val.solved;
+                  val.penalty += p.inDate;
+                  val.status[p.pid] = { wa: 0, inDate: p.inDate };
+                } else if (val.status[p.pid].wa < 0) {
+                  ++val.solved;
+                  val.status[p.pid].wa = -val.status[p.pid].wa;
+                  val.penalty += val.status[p.pid].wa*20 + p.inDate;
+                  val.status[p.pid].inDate = p.inDate;
                 }
               } else {
+                if (!val.status[p.pid]) {
+                  val.status[p.pid] = { wa: -1 };
+                } else if (val.status[p.pid].wa < 0) {
+                  --val.status[p.pid].wa;
+                }
+              }
+            } else {
+              for (var i in p.status) {
+                var o = p.status[i];
                 if (!val.status[i]) {
-                  val.solved++;
-                  val.penalty += o.inDate;
+                  if (o.wa >= 0) {
+                    val.solved++;
+                    val.penalty += o.wa*20 + o.inDate;
+                  }
                   val.status[i] = o;
                 } else if (val.status[i].wa < 0) {
-                  val.solved++;
-                  val.status[i].wa = o.wa - val.status[i].wa;
-                  val.penalty += val.status[i].wa*1200000 + o.inDate;
-                  val.status[i].inDate = o.inDate;
+                  if (o.wa >= 0) {
+                    val.solved++;
+                    val.status[i].wa = o.wa - val.status[i].wa;
+                    val.penalty += val.status[i].wa*20 + o.inDate;
+                  } else {
+                    val.status[i].wa += o.wa;
+                  }
                 }
               }
             }
+          });
+          return val;
+        },
+        finalize: function(key, val){
+          if (val.pid) {
+            var tp = { solved:0, penalty:0, status:{} };
+            if (val.result == 2) {
+              tp.solved = 1;
+              tp.penalty = val.inDate;
+              tp.status[val.pid] = { wa: 0, inDate: val.inDate };
+              return tp;
+            } else {
+              tp.status[val.pid] = { wa: -1 };
+              return tp;
+            }
           }
-        });
-        return val;
-      },
-      finalize: function(key, val){
-        if (val.pid) {
-          var tp = { solved:0, penalty:0, status:{} };
-          if (val.result == 2) {
-            tp.solved = 1;
-            tp.penalty = val.inDate;
-            tp.status[val.pid] = { wa: 0, inDate: val.inDate };
-            return tp;
-          } else {
-            tp.status[val.pid] = { wa: -1, inDate: val.inDate };
-            return tp;
-          }
+          return { solved: val.solved, penalty: val.penalty, status: val.status };
+        },
+        query: { $and: [
+          {cID: cid},
+          {$nor: [{userName:'admin'}]},
+          {inDate: {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)}},
+        ] },
+        sort: {runID: 1}
+      }, function(err){
+        if (err) {
+          console.log(err);
+          return res.end();
         }
-        return { solved: val.solved, penalty: val.penalty, status: val.status };
-      },
-      query: {cID: cid},
-      sort: {runID: 1}
-    }, function(err, sols){
-      if (err) {
-        console.log(err);
-        res.end();
-      }
-      sols.sort(function(a, b){
-        if (a.value.solved == b.value.solved) {
-          return a.value.penalty < b.value.penalty ? -1 : 1;
-        }
-        return a.value.solved > b.value.solved ? -1 : 1;
+        return RP(contest);
       });
-      /*sols.forEach(function(p, i){
-        console.log(p._id+' --- '+p.value.solved+' --- '+p.value.penalty);
-        console.log(p.value.status);
-      });*/
-
-      return res.json(sols);
-    });
+    }
   });
 };
 
@@ -969,6 +1016,34 @@ function recalAfterClear() {
 function deleteAllData() {
   Contest.del(); IDs.del(); Problem.del();
   Reg.del(); Solution.del(); User.del();
+  ContestRank.del();
+}
+
+function Must1(callback) {
+  Contest.multiupdate(function(err){
+    if (err) {
+      console.log(err);
+    }
+    return callback(err);
+  });
+}
+
+function Must2(callback) {
+  Contest.watch(1002, function(err, contest){
+    if (err) {
+      console.log(err);
+    }
+    var con = new Array();
+    contest.contestants.forEach(function(p){
+      con.push(p.split(p.charAt(0))[1]);
+    });
+    Contest.update(contest.contestID, {contestants:con}, function(err){
+      if (err) {
+        console.log(err);
+      }
+      return callback(err);
+    });
+  });
 }
 
 exports.index = function(req, res){
@@ -976,8 +1051,9 @@ exports.index = function(req, res){
   //IDs.Init();
   //recalAfterClear();
   //deleteAllData();
+  //ContestRank.del();
   //Problem.change();
-  //Solution.update({cID:1000, runID:1136}, {$set:{result:6}}, function(){
+  //Must2(function(){
   res.render('index', { title: 'Gzhu Online Judge',
                         user: req.session.user,
                         message: req.session.msg,
@@ -1018,12 +1094,20 @@ exports.user = function(req, res) {
           WA[p.problemID] = true;
         }
       });
-      User.getRank(name, function(err, rank){
+      User.count({$and: [{
+        $nor: [{name: 'admin'}]
+      },{
+        $or:[
+          { solved: {$gt: user.solved} },
+          { $and:[ {solved: user.solved}, {submit: {$lt: user.submit}} ] }
+          ]
+      }]},
+        function(err, rank){
         if (err) {
           req.session.msg = err;
           return res.redirect('/');
         }
-        user.rank = rank;
+        user.rank = rank + 1;
         if (!user.addprob) user.addprob = 0;
         else user.addprob = 1;
         res.render('user', {title: 'User',
@@ -1143,8 +1227,8 @@ exports.addcontest = function(req, res) {
       req.session.msg = 'You have no permission to add VIP Contest!';
       return res.redirect('/contest/2');
     }
-    if (type == 3 && parseInt(req.session.user.privilege, 10) != 82) {
-      req.session.msg = 'Only teachers can add Course!';
+    if (type == 3 && parseInt(req.session.user.privilege, 10) < 82) {
+      req.session.msg = 'You have no permission to add Course!';
       return res.redirect('/contest/3');
     }
     res.render('addcontest', {title: 'AddContest',
@@ -1202,8 +1286,8 @@ exports.doAddcontest = function(req, res) {
     req.session.msg = 'Failed! You have no permission to add VIP Contest!';
     return res.end('/contest/2');
   }
-  if (type == 3 && parseInt(req.session.user.privilege, 10) != 82) {
-    req.session.msg = 'Failed! Only teachers can add Course!';
+  if (type == 3 && parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = 'Failed! You have no permission to add Course!';
     return res.redirect('/contest/3');
   }
   var cnt = req.body.cnt;
@@ -1787,7 +1871,8 @@ exports.onecontest = function(req, res) {
                               key: 9,
                               contest: contest,
                               getDate: getDate,
-                              isContestant: isContestant
+                              isContestant: isContestant,
+                              pageNum: contestRank_pageNum
     });
   });
 };
@@ -2246,6 +2331,19 @@ exports.regCon = function(req, res) {
   });
 };
 
+function regContestAndUpdate(cid, name, callback) {
+  Contest.update(cid, {$addToSet: {contestants:name}}, function(err){
+    if (err) {
+      console.log(err);
+      return callback(err);
+    }
+    var rank = new ContestRank({_id: cid+'-'+name});
+    rank.save(function(){
+      return callback();  //insert multiple, no need to callback error.
+    });
+  });
+}
+
 exports.contestReg = function(req, res) {
   if (!req.session.user) {
     req.session.msg = "Please login first!";
@@ -2268,15 +2366,22 @@ exports.contestReg = function(req, res) {
       req.session.msg = "Register is closed.";
       return res.end('1');
     }
-    var name = '!'+req.session.user.name;
-    Contest.update(cid, {$addToSet: {contestants:name}}, function(err){
+    regContestAndUpdate(cid, req.session.user.name, function(err){
       if (err) {
-        req.session.msg = err;
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
       }
       return res.end();
     });
   });
 };
+
+function isSameAsBefore(user, reg) {
+  return (user.number == reg.number && user.realname == reg.realname &&
+  user.sex == reg.sex && user.college == reg.college &&
+  user.grade == reg.grade);
+}
 
 exports.doRegCon = function(req, res) {
   if (!req.session.user) {
@@ -2288,20 +2393,20 @@ exports.doRegCon = function(req, res) {
     return res.end();
   }
   var cid = parseInt(req.body.cid), name = req.session.user.name;
-  Reg.Find(cid, name, function(err, doc){
-    if (doc) {
-      if (doc.status == 2) {
+  Reg.findOne({cid:cid, user:name}, function(err, reg){
+    if (reg) {
+      if (reg.status == 2) {
         req.session.msg = '您已通过审核，无需修改。';
         return res.end();
       }
-      doc.regTime = getDate(new Date());
-      doc.number = req.body.number;
-      doc.realname = req.body.realname;
-      doc.sex = req.body.sex;
-      doc.college = req.body.college;
-      doc.grade = req.body.grade;
-      doc.status = 0;
-      doc.save(function(err){
+      reg.regTime = getDate(new Date());
+      reg.number = req.body.number;
+      reg.realname = req.body.realname;
+      reg.sex = req.body.sex;
+      reg.college = req.body.college;
+      reg.grade = req.body.grade;
+      reg.status = 0;
+      reg.save(function(err){
         if (err) {
           console.log(err);
           req.session.msg = '系统错误！';
@@ -2312,7 +2417,7 @@ exports.doRegCon = function(req, res) {
       });
     } else {
       IDs.get ('regID', function(err, id) {
-        var newReg = new Reg({
+        var reg = new Reg({
           regID: id,
           cid: cid,
           user: name,
@@ -2323,16 +2428,32 @@ exports.doRegCon = function(req, res) {
           college: req.body.college,
           grade: req.body.grade
         });
-        newReg.save(function(err) {
+        reg.save(function(err) {
           if (err) {
             console.log(err);
             req.session.msg = '系统错误！';
             return res.end();
           }
-          if (cid < 0) req.session.msg = '申请';
-          else req.session.msg = '报名';
-          req.session.msg += '成功！请等待管理员审核。';
-          return res.end();
+          if (cid < 0) {
+            req.session.msg = '申请成功！请等待管理员审核。';
+            return res.end();
+          } else {
+            User.watch(reg.user, function(err, user) {
+              if (err) {
+                console.log(err);
+                req.session.msg = '系统错误！';
+                return res.end();
+              }
+              if (!user.privilege || !isSameAsBefore(user, reg)) {
+                req.session.msg = '报名成功！请等待管理员审核。';
+                return res.end();
+              }
+              Reg.update({regID: id}, {$set: {status: '2'}}, function(err){
+                req.session.msg = '报名成功！';
+                return res.end();
+              });
+            });
+          }
         });
       });
     }
@@ -2375,19 +2496,17 @@ exports.regUpdate = function(req, res) {
         }
 
         var flg = false;
-        if (user.number != reg.number)
-          user.number = reg.number, flg = true;
-        if (user.realname != reg.realname)
-          user.realname = reg.realname, flg = true;
-        if (user.sex != reg.sex)
-          user.sex = reg.sex, flg = true;
-        if (user.college != reg.college)
-          user.college = reg.college, flg = true;
-        if (user.grade != reg.grade)
-          user.grade = reg.grade, flg = true;
+        if (!isSameAsBefore(user, reg)) {
+          user.number = reg.number;
+          user.realname = reg.realname;
+          user.sex = reg.sex;
+          user.college = reg.college;
+          user.grade = reg.grade;
+          flg = true;
+        }
 
         var RP = function(){
-          Contest.update(reg.cid, {$addToSet: {contestants: '!'+reg.user}}, function(err){
+          regContestAndUpdate(reg.cid, reg.user, function(err){
             if (err) {
               console.log(err);
               req.session.msg = '系统错误！';
@@ -2426,76 +2545,40 @@ exports.regContestAdd = function(req, res) {
     return res.end();
   }
   var name = req.body.name;
-  if (!name) return res.end();
-  User.watch(name, function(err, user){
+  if (!name) {
+    return res.end();
+  }
+  var cid = parseInt(req.body.cid, 10);
+  if (!cid) {
+    return res.end();
+  }
+  Contest.watch(cid, function(err, contest){
     if (err) {
       console.log(err);
       req.session.msg = '系统错误！';
       return res.end();
     }
-    if (!user) {
-      req.session.msg = 'The user is not exist.';
+    if (!contest) {
       return res.end();
     }
-    Contest.update(req.body.cid, {$addToSet: {contestants:'!'+name}}, function(err){
+    User.watch(name, function(err, user){
       if (err) {
-        req.session.msg = err;
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
       }
-      return res.end();
-    });
-  });
-};
-
-exports.regContestDel = function(req, res) {
-  if (!req.session.user) {
-    req.session.msg = 'Please login first!';
-    return res.end();
-  }
-  if (req.session.user.name != 'admin') {
-    req.session.msg = 'Failed! You aren\'t admin';
-    return res.end();
-  }
-  var cid = parseInt(req.body.cid);
-  Contest.watch(cid, function(err, doc){
-    if (err) {
-      console.log(err);
-      return res.end();
-    }
-    if (!doc) return res.end();
-    var name = req.body.name;
-    Contest.update(cid, {$pullAll: {contestants:['!'+name, '*'+name]}}, function(err){
-      if (err) {
-        req.session.msg = err;
+      if (!user) {
+        req.session.msg = 'The user is not exist.';
+        return res.end();
       }
-      return res.end();
-    });
-  });
-};
-
-exports.toStar = function(req, res) {
-  if (!req.session.user) {
-    req.session.msg = 'Please login first!';
-    return res.end();
-  }
-  if (req.session.user.name != 'admin') {
-    req.session.msg = 'update Failed! You aren\'t admin';
-    return res.end();
-  }
-  var a, b, cid = parseInt(req.body.cid);
-  if (req.body.star) a = '!', b = '*';
-  else a = '*', b = '!';
-  a += req.body.user;
-  b += req.body.user;
-  Contest.update(cid, {$pull: {contestants:b}}, function(err){
-    if (err) {
-      req.session.msg = err;
-      return res.end();
-    }
-    Contest.update(cid, {$addToSet: {contestants:a}}, function(err){
-      if (err) {
-        req.session.msg = err;
-      }
-      return res.end();
+      regContestAndUpdate(cid, name, function(err){
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        return res.end();
+      });
     });
   });
 };
@@ -2509,17 +2592,17 @@ exports.changeGrade = function(req, res) {
     req.session.msg = 'update Failed! You aren\'t admin';
     return res.end();
   }
-  Reg.Find(req.body.cid, req.body.name, function(err, doc){
+  Reg.findOne({cid: req.body.cid, user: req.body.name}, function(err, reg){
     if (err) {
       req.session.msg = err;
       return res.end();
     }
-    if (!doc) {
+    if (!reg) {
       req.session.msg = 'The record is not exist.';
       return res.end();
     }
-    doc.grade = req.body.grade;
-    doc.save(function(err){
+    reg.grade = req.body.grade;
+    reg.save(function(err){
       if (err) {
         console.log(err);
         req.session.msg = '系统错误！';

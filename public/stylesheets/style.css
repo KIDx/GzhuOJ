@@ -28,6 +28,10 @@ pre, input, button, select, textarea {
     margin-left: 20px;
 }
 
+td.accept {
+    background: #D4FFD0;
+}
+
 .fl {
     float: left;
 }
@@ -966,6 +970,10 @@ div.prob-tag a.tag {
     text-decoration: none;
 }
 
+table.table-rank tbody tr {
+    height: 45px;
+}
+
 table.table-rank th {
     padding: 8px 0;
 }
@@ -973,10 +981,6 @@ table.table-rank th {
 table.table-rank td {
     padding: 0.5em;
     line-height: 15px;
-}
-
-table.table-rank td {
-    height: 30px;
 }
 
 th.rank {
@@ -995,9 +999,6 @@ th.penalty {
     width: 70px;
 }
 
-th.standing_status {
-    width: 70px;
-}
 
 td.red {
     background-color: rgb(255, 221, 221);

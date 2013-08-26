@@ -76,7 +76,7 @@ Solution.find = function(Q, callback){
 };
 
 Solution.get = function(Q, page, callback){
-  solutions.find(Q).count(function(err, count) {
+  solutions.count(Q, function(err, count) {
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }

@@ -25,7 +25,8 @@ var contestObj = new Schema({
   probs: Array,
   password: String,
   type: Number,
-  contestants: Array
+  contestants: Array,
+  updateTime: Number
 });
 
 mongoose.model('contests', contestObj);
@@ -44,6 +45,7 @@ Contest.prototype.save = function(callback){
   contest.password = this.password;
   contest.type = this.type;
   contest.contestants = new Array();
+  contest.updateTime = 0;
   contest.save(function(err){
     if (err) {
       console.log('the contest is already exited!');
@@ -53,7 +55,7 @@ Contest.prototype.save = function(callback){
 };
 
 Contest.get = function(Q, page, callback){
-  contests.find(Q).count(function(err, count){
+  contests.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
@@ -66,8 +68,8 @@ Contest.get = function(Q, page, callback){
   });
 };
 
-Contest.watch = function(cID, callback){
-  contests.findOne({contestID:cID}, function(err, doc){
+Contest.watch = function(cid, callback){
+  contests.findOne({contestID:cid}, function(err, doc){
     if (err) {
       console.log('Contest.watch failed!');
     }
@@ -75,11 +77,28 @@ Contest.watch = function(cID, callback){
   });
 };
 
-Contest.update = function(cID, q, callback){
-  contests.findOneAndUpdate({contestID:cID}, q, function(err){
+Contest.findOneAndUpdate = function(Q, H, O, callback){
+  contests.findOneAndUpdate(Q, H, O, function(err, doc){
+    if (err) {
+      console.log('Contest.findOneAndUpdate failed!');
+    }
+    return callback(err, doc);
+  });
+};
+
+Contest.update = function(cid, H, callback){
+  contests.update({contestID:cid}, H, function(err){
     if (err) {
       console.log('Contest.update failed!');
-      return callback();
+    }
+    return callback(err);
+  });
+};
+
+Contest.multiupdate = function(callback){
+  contests.update({}, {updateTime:0}, {multi:true}, function(err){
+    if (err) {
+      console.log('err');
     }
     callback(err);
   });

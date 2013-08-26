@@ -54,7 +54,7 @@ Reg.prototype.save = function(callback){
 };
 
 Reg.get = function(Q, page, callback){
-  regs.find(Q).count(function(err, count){
+  regs.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
@@ -67,9 +67,8 @@ Reg.get = function(Q, page, callback){
   });
 }
 
-Reg.Find = function(cid, name, callback){
-  if (!name) return callback(null, 0);
-  regs.findOne({cid:cid, user:name}, function(err, doc){
+Reg.findOne = function(Q, callback){
+  regs.findOne(Q, function(err, doc){
     if (err) {
       return callback('Reg Find Error!', null);
     }

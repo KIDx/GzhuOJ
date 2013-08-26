@@ -2,7 +2,7 @@
 <% var F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", probNum = 0; %>
 <% var startTime = (new Date(contest.startTime)).getTime() %>
 <% var pending = parseInt((startTime - time)/1000, 10); %>
-<% var c = '', s = '', ts, ps = ''; %>
+<% var c = '', s = '', ts, ps = '', display = '0'; %>
 <% if (pending > 0) { %>
 <% c = 'info'; s = 'Pending'; ts = 0; %>
 <% } else if (pending + contest.len*60 > 0) { %>
@@ -15,9 +15,12 @@
 <% } else if (ts == 2) { %>
 <% ps = 'progress-success'; %>
 <% } %>
+<% if (contest.type == 3 || (contest.type == 2 && contest.password)) { %>
+<% display = '1'; %>
+<% } %>
 <fieldset>
   <div>
-    <legend id="contest" cid="<%= contest.contestID %>" len="<%= contest.len %>" pending="<%= pending %>" status="<%= ts %>" <% if (user && user.name == contest.userName) { %>watch="1"<% } %>>
+    <legend id="contest" pageNum="<%= pageNum %>" display="<%= display %>" startTime="<%= startTime/60000 %>" cid="<%= contest.contestID %>" len="<%= contest.len %>" pending="<%= pending %>" status="<%= ts %>" <% if (user && user.name == contest.userName) { %>watch="1"<% } %>>
       比赛
     </legend>
   </div>
@@ -261,7 +264,8 @@
         </div>
       <% } %>
         <div class="tablebg" style="width:<%= mw %>px;">
-          <div id="header">Standings</div>
+          <div id="ranklist" class="pagination pagination-small">
+          </div>
           <div id="tablediv">
             <table class="table table-rank tdcenter">
               <thead>

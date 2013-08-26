@@ -77,8 +77,8 @@
               </a>
               <% if (type == 2) { %>
               <div class="table-tab">
-                <% if (!s) { %>
-                  <% if (R[i] || (user && user.name == 'admin')) { %>
+                <% if (!s && (!user || user.name != 'admin')) { %>
+                  <% if (R[i]) { %>
                   <span class="user user-green">Registration completed</span>
                   <% } else { %>
                   <% T[i] -= 300000; %>

@@ -1,8 +1,13 @@
 
 //截流响应
-var interceptorTime = 300;
+var interceptorTime = 300
+,	cnt;	//行号
 
 var $contest = $('#contest')
+,	pageNum = $contest.attr('pageNum')
+,	display = $contest.attr('display')
+,	contest_private = $contest.attr('psw')
+,	startTime = parseInt($contest.attr('startTime'), 10)
 ,	status = parseInt($contest.attr('status'), 10)
 ,	pending = $contest.attr('pending')
 ,	TotalTime = parseInt($contest.attr('len'), 10)*60
@@ -25,7 +30,7 @@ function buildPager(page, n) {
     if (page == 1) html += ' class="disabled"';
     html += '><a href="javascript:;">&lt&lt</a></li>';
     if (i > 1) {
-    	html += '<li class="disabled"><a>...</a></li>';
+    	html += '<li class="disabled"><a href="javascript:;">...</a></li>';
     }
     while (i < page)
     {
@@ -38,7 +43,7 @@ function buildPager(page, n) {
     	++i; --cp;
         html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
     }
-    if (i < n) html += '<li class="disabled"><a>...</a></li>';
+    if (i < n) html += '<li class="disabled"><a href="javascript:;">...</a></li>';
     html += '<li id="'+n+'"';
     if (n == 0 || page == n) html += ' class="disabled"';
     html += '><a href="javascript:;">&gt&gt</a></li></ul>';
@@ -57,7 +62,7 @@ var $status = $div.find('#statustab')
 ,	$plink
 ,	statusQ = { cid:cid, page:1 }
 ,	searchTimeout
-,	Users = {};
+,	Users;
 
 function bindstatusQ() {
 	var $af = $('a[res]');
@@ -78,13 +83,9 @@ function buildRow(sol) {
 	html += '">';
 
 	html += '<td>'+sol.runID+'</td>';
-	var pvl;
-	if (contest_type == 2 && contest_private)
-		pvl = parseInt(Users[sol.userName].pvl);
-	else pvl = parseInt(Users[sol.userName]);
+	var pvl = parseInt(Users[sol.userName], 10);
 	html += '<td><a href="/user/'+sol.userName+'" class="user user-';
 	html += UserCol(pvl)+'" title="'+UserTitle(pvl)+'">'+sol.userName+'</a></td>';
-	//html += '<td><a href="#problem/'+pmap[sol.problemID]+'">'+pmap[sol.problemID]+'</a></td>';
 	html += '<td><a class="plink" href="#problem-'+pmap[sol.problemID]+'">'+pmap[sol.problemID]+'</a></td>';
 
 	html += '<th';
@@ -133,11 +134,8 @@ function buildRow(sol) {
 
 function Response(json) {
 	if (!json) return ;
-	var pvl = json.pop(), n = json.pop(), sols = json.pop();
-	$.each(pvl, function(i, p){
-		if (!Users[i])
-			Users[i] = p;
-	});
+	Users = json.pop();
+	var n = json.pop(), sols = json.pop();
 	$list.html(buildPager(statusQ.page, n));
 	var html;
 	if (!sols || sols.length == 0) {
@@ -160,6 +158,8 @@ function Response(json) {
 	});
 	$list_a = $list.find('a');
 	$list_a.click(function(){
+		if ($(this).parent().hasClass('active') || $(this).parent().hasClass('disabled'))
+			return false;
 		statusQ.page = $(this).parent().attr('id');
 		GetStatus();
 	});
@@ -168,6 +168,7 @@ function Response(json) {
 }
 
 function GetStatus() {
+	clearTimeout(searchTimeout);
 	searchTimeout = setTimeout(function(){
 		var ts = JudgeString($search.val()), tp = $pid.val(), tr = $result.val();
 		window.location.hash = '#status-' + ts + '-' + tp + '-' + tr;
@@ -178,7 +179,6 @@ function GetStatus() {
 		statusQ.name = ts;
 		statusQ.pid = tp;
 		statusQ.result = tr;
-		clearTimeout(searchTimeout);
 		$.ajax({
 			type: 'POST',
 			url: '/getStatus',
@@ -336,7 +336,8 @@ function ProblemsResponse(prob) {
 }
 
 function GetProblem() {
-	setTimeout(function(){
+	clearTimeout(problemTimeout);
+	problemTimeout = setTimeout(function(){
 		if (!ID || ID < 0) ID = 0;
 		pid_index = $pidtext.eq(ID).attr('id');
 		pid_name = $pidtext.eq(ID).text();
@@ -361,19 +362,25 @@ function GetProblem() {
 }
 
 var $rank = $div.find('#ranktab')
-,	Star = {}
-,	rankQ = {cid:cid}
-,	rank = 1;
+,	$ranktbody = $rank.find('table tbody')
+,	$ranklist = $('#ranklist')
+,	$ranklist_a
+,	$rplink
+,	$adduser = $('#user-add')
+,	rankQ = {cid:cid, page:1}
+,	rank = 1, I
+,	rankTimeout;
 
-function buildRank(user) {
+function buildRank(U) {
+	var user = U.value;
 	var html = '<tr class="';
 
 	if (cnt % 2 == 1) html += 'odd';
 	else html += 'even';
-	if (user.name == current_user) html += ' highlight';
+	if (U._id == current_user) html += ' highlight';
 
 	html += '"><td';
-	if (!Star[user.name] && user.solved > 0) {
+	if (user.solved > 0) {
 		if (rank < 31) {
 			html += ' class="';
 			if (rank < 6) html += 'gold';
@@ -382,62 +389,104 @@ function buildRank(user) {
 			html += '"';
 		}
 	}
+
 	html += '>';
-	if (Star[user.name]) html += '*';
-	else html += rank++;
+	html += rank++;
 	html += '</td><td><div class="u-info">';
 
-	if (contest_type == 2 && contest_private) {
-		html += '<span class="u-info-u">'+'班级'+'<br/>'+'姓名'+'</span>';
-		if (current_user == 'admin') {
-			html += '<input type="checkbox" title="Add star"';
-			if (Star[user.name]) html += ' checked';
-			html += '/>&nbsp;';
+	if (display == '1') {
+		if (I[U._id] && I[U._id].gde && I[U._id].name) {
+			html += '<span class="u-info-u">'+I[U._id].gde+'<br/>'+I[U._id].name+'</span>';
 		}
-	};
+	} else if (I[U._id]) {
+		html += '<span class="u-info-u">'+I[U._id]+'<br/>&nbsp</span>';
+	}
 
-	html += '<a href="/user/'+user.name+'" class="user';
-	html += '" title="">';
-	html += user.name+'</a>';
-	if (contest_type == 2 && current_user == 'admin')
-		html += '<a href="javascript:;" title="Delete the user" class="user-del">×</a>'
+	var pvl = parseInt(Users[U._id], 10);
+	html += '<a href="/user/'+U._id+'" class="user user-'+UserCol(pvl);
+	html += '" title="'+UserTitle(pvl)+'">';
+	html += U._id+'</a>';
 	html += '</div></td>';
 	html += '<td>'+user.solved+'</td>';
-	html += '<td>'+user.penalty+'</td>';
-	$.each(user.status, function(i, v){
-		var style = '', WA = v;
-		html += '<td>';
-		if (WA > 0) {
-			--WA;
-			if (FB[i] == user.stime[i]) style = 'FB';
-			else style = 'accept';
-			html += '<span class="'+style+'">+';
-			if (WA > 0) html += WA;
-			html += '</span>';
-			html += '<span class="cell-time">'+user.stime[i]+'</span>';
-		} else if (WA < 0) {
-			html += '<span class="failed">'+WA+'</span>';
+	html += '<td>'+(user.penalty-user.solved*startTime)+'</td>';
+	
+	for (i = 0; i < prob_num; i++) {
+		var pid = fmap[F.charAt(i)];
+		html += '<td';
+		if (user.status[pid]) {
+			var WA = user.status[pid].wa;
+			if (WA >= 0) {
+				html += ' class="accept">'
+				style = 'accept-text';
+				html += '<span class="'+style+'">+';
+				if (WA > 0) html += WA;
+				html += '</span>';
+				html += '<span class="cell-time">'+deal((user.status[pid].inDate-startTime)*60, 1)+'</span>';
+			} else if (WA < 0) {
+				html += '><span class="failed">'+WA+'</span>';
+			}
+		} else {
+			html += '>';
 		}
 		html += '</td>';
-	});
-	html += '</tr>';
+	}
+
 	++cnt;
+
+	html += '</tr>';
 	return html;
 }
 
 function RankResponse(json) {
-
+	if (!json) return ;
+	$ranklist.html( buildPager(rankQ.page, json.pop()) );
+	I = json.pop();
+	Users = json.pop();
+	var users = json.pop();
+	if (!users || users.length == 0) {
+		html = '<tr class="odd"><td class="error-text center" colspan="'+(4+prob_num)+'">No Submits till Now.</tr>';
+	} else {
+		rank = (rankQ.page-1)*pageNum+1;
+		cnt = 1;
+		html = $.map(users, buildRank).join('');
+	}
+	if ($ranklist_a && $ranklist_a.length) {
+		$ranklist_a.unbind();
+	}
+	if ($rplink && $rplink.length) {
+		$rplink.unbind();
+	}
+	$ranktbody.html(html);
+	$ranklist_a = $ranklist.find('a');
+	$ranklist_a.click(function(){
+		if ($(this).parent().hasClass('active') || $(this).parent().hasClass('disabled'))
+			return false;
+		rankQ.page = $(this).parent().attr('id');
+		GetRanklist();
+	});
+	$rplink = $('a.rplink');
+	$rplink.click(function(){
+		$tablink.eq(1).attr('href', $(this).attr('href'));
+		$tablink.eq(1).click();
+	});
+	$rank.fadeIn(100);
 }
 
 function GetRanklist() {
-	$.ajax({
-		type: 'POST',
-		url: '/getRanklist',
-		dataType: 'json',
-		data: rankQ,
-		timeout: 5000
-	})
-	.done(RankResponse);
+	clearTimeout(rankTimeout);
+	rankTimeout = setTimeout(function(){
+		if (rankQ.page) {
+			window.location.hash = '#rank-'+rankQ.page;
+		}
+		$.ajax({
+			type: 'POST',
+			url: '/getRanklist',
+			dataType: 'json',
+			data: rankQ,
+			timeout: 5000
+		})
+		.done(RankResponse);
+	}, interceptorTime);
 }
 
 function run(str, key) {
@@ -484,6 +533,7 @@ function run(str, key) {
 				$rank.addClass('active');
 			}
 			$rank.hide();
+			if (b) rankQ.page = parseInt(b, 10);
 			GetRanklist();
 			PreTab = 0;
 			break;
@@ -624,6 +674,14 @@ $(document).ready(function(){
 		}
 	});
 	bindstatusQ();
+	//adduser
+	if ($adduser.length) {
+		$adduser.click(function(){
+			$.post('/regContestAdd', {cid:cid,name:$(this).prev().val()}, function(){
+				window.location.reload(true);
+			});
+		});
+	}
 });
 
 //bind submit

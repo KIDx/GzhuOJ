@@ -84,50 +84,29 @@ User.find = function(Q, callback){
 };
 
 User.get = function(Q, page, callback){
-  users.find(Q).count(function(err, count){
+  users.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
     users.find(Q).sort({solved:-1,submit:1,privilege:-1,name:1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
-        console.log('User.get Error!');
+        console.log('User.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
   });
 };
 
-User.Find = function(key, q, callback){
-  users.find(q, function(err, docs){
+User.count = function(Q, callback){
+  users.count(Q, function(err, count){
     if (err) {
-      return callback('user Find Error!', null);
+      console.log('User.count failed!');
     }
-    var users = {};
-    docs.forEach(function(p){
-      if (key == 1) users[p.name] = {pvl:p.privilege,gde:p.grade,name:p.realname};
-      else users[p.name] = p.privilege;
-    });
-    return callback(err, users);
+    return callback(err, count);
   });
 };
 
-User.getRank = function(username, callback){
-  users.find({$nor:[{name:'admin'}]}).sort({solved:-1,submit:1,privilege:-1,name:1}).exec(function(err, docs){
-    if (err) {
-      return callback('user getRank Error!', -1);
-    }
-    var k = 'null';
-    docs.forEach(function(p, i){
-      if (p.name == username) {
-        k = i + 1;
-        return false;
-      }
-    });
-    return callback(err, k);
-  });
-};
-
-User.update = function update(Q, H, flg, callback) {
+User.update = function(Q, H, flg, callback){
   users.update(Q, H, { multi:flg }, function(err){
     if (err) {
       console.log('user.update failed');
@@ -136,7 +115,7 @@ User.update = function update(Q, H, flg, callback) {
   });
 };
 
-User.del = function del() {
+User.del = function(){
   users.find({}, function(err, docs){
     docs.forEach(function(doc) {
         doc.remove();

@@ -413,7 +413,7 @@ function buildRank(U) {
 	for (i = 0; i < prob_num; i++) {
 		var pid = fmap[F.charAt(i)];
 		html += '<td';
-		if (user.status[pid]) {
+		if (user.status && user.status[pid]) {
 			var WA = user.status[pid].wa;
 			if (WA >= 0) {
 				html += ' class="accept">'

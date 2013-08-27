@@ -65,6 +65,8 @@ app.get('/', routes.index);
 app.get('/user/:name', routes.user);
 //上传头像页面
 app.get('/avatar', routes.avatar);
+//addstudent页面
+app.get('/addstudent', routes.addstudent);
 //addproblem页面
 app.get('/addproblem', routes.addproblem);
 app.post('/addproblem', routes.doAddproblem);
@@ -77,6 +79,8 @@ app.post('/logout', routes.logout);
 app.get('/problemset', routes.problemset);
 //problem页面
 app.get('/problem', routes.problem);
+//题目代码文件上传功能
+app.post('/problem', routes.upload);
 //onecontest页面
 app.get('/onecontest/:cid', routes.onecontest);
 //status页面
@@ -133,8 +137,6 @@ app.post('/changeAddprob', routes.changeAddprob);
 app.post('/changeInfo', routes.changeInfo);
 //编辑题目分类标签
 app.post('/editTag', routes.editTag);
-//题目代码文件上传功能(problem.ejs)
-app.post('/problem', routes.upload);
 //单题重判
 app.post('/rejudge', routes.rejudge);
 //VIPContest增加指定用户
@@ -147,6 +149,8 @@ app.post('/imgUpload', routes.imgUpload);
 app.post('/avatarUpload', routes.avatarUpload);
 //上传数据
 app.post('/dataUpload', routes.dataUpload);
+//删除数据
+app.post('/delData', routes.delData);
 //获取指定runID的CE信息
 app.post('/getCE', routes.getCE);
 //获取验证码

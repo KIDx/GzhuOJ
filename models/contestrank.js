@@ -21,7 +21,7 @@ Rank.prototype.save = function(callback){
   //存入 Mongodb 的文档
   rank = new ranks();
   rank._id = this._id;
-  rank.value = {solved:0, penalty:0, status:{'x':false}};
+  rank.value = {solved:0, penalty:0};
   rank.save(function(err){
     if (err) {
       console.log('the rank is already exited!');

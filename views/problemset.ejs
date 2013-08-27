@@ -52,10 +52,13 @@
               <a href="/problem?pid=<%= p.problemID %>"><%= p.title %></a>
             <% if (p.tags && p.tags.length > 0) { %>
               <div class="table-tab prob-tag">
-            <% p.tags.forEach(function(t, i){ %>
-            <% if (i > 0) { %>,<% } %>
-              <a class="tag" href="javascript:;" title="<%= Pt[t] %>"><%= Tag[t] %></a>
-            <% }); %>
+              <% p.tags.forEach(function(t, i){ %>
+                <% if (i > 0) { %>,<% } %>
+                <a class="tag" href="javascript:;" title="<%= Pt[t] %>">
+                  <%= Tag[t] %>
+                </a>
+              <% }); %>
+              </div>
             <% } %>
             </td>
             <td class="ellipsis">

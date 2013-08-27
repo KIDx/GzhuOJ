@@ -1,55 +1,52 @@
-var $imgform = $("#image_form");
-var $imgload = $('#imgload');
-var $imgerr = $('#imgerr');
-var $choosebox = $('#choosebox');
-var $file = $('#file');
-
-function error_animate (){
-	$imgerr.stop().stop().animate({
-		'margin-left':'50px'
-	}).animate({
-		'margin-left':'10px'
-	});
-}
+var $imgform = $("#image_form")
+,   $imgload = $('#imgload')
+,   $imgerr = $('#imgerr')
+,   $file = $('#file')
+,   $upload = $('#upload')
+,   $ui = $('#upload-info');
 
 $(document).ready(function(){
-	$choosebox.click(function(){
-		$file.click();
-	});
-	$file.change(function(){
-		$choosebox.text($file.val());
-	});
-
-	$('#upload').click(function(){
+	$upload.click(function(){
 		if (!$file.val()) {
-			$imgerr.removeClass().addClass('text-error');
-			$imgerr.text('请选择文件！');
-			error_animate();
+			errAnimate($imgerr, '请选择文件！');
 			return false;
 		}
-		$imgerr.text('');
-		$imgload.show();
-		$imgform.ajaxForm({
-			url: $imgform.attr('action'),
-			type: 'POST',
-			success: function (res, status, xhr, $form) {
-				var tp;
-				if (!res) tp = '服务器异常错误！';
-				else if (res == '1') tp = '图片大小不得超过2m！';
-				else if (res == '2') tp = '文件类型必须是图片！';
-				else if (res == '3') window.location.reload(true);
-				$imgerr.removeClass().addClass('text-error');
-				error_animate();
-				$imgerr.text(tp);
-				$imgload.hide();
-				$choosebox.text('点击选择图片');
-				$imgform.clearForm();
-			},
-			error: function (res, status, e) {
-				alert(e);
-				$imgload.hide();
-				$imgform.clearForm();
-			}
-		});
 	});
+	$file.fileupload({
+        dataType: 'text',
+        add: function(e, data) {
+        	var f = data.files[0];
+        	$ui.text(f.name);
+            $upload.unbind();
+        	$upload.click(function(){
+                var img_pattern = new RegExp('^.*\.(jpg|jpeg|png)$');
+        		if (!img_pattern.test(f.name)) {
+        			errAnimate($imgerr, '不支持的格式！');
+					return false;
+        		}
+        		if (f.size && f.size > 2*1024*1024) {
+        			errAnimate($imgerr, '图片大小不得超过2m！');
+					return false;
+        		}
+                $imgerr.text('');
+        		$imgload.show();
+        		data.submit();
+        	});
+        },
+        progress: function(e, data) {
+            var p = parseInt(data.loaded/data.total*100, 10);
+            $ui.text(p+'%');
+        },
+        done: function(e, data) {
+            var res = data.response().result, tp;
+			if (!res) window.location.reload(true);
+			else if (res == '1') tp = '图片大小不得超过2m！';
+			else if (res == '2') tp = '不支持的格式！';
+			else if (res == '3') tp = '异常错误！';
+			if (tp) {
+                errAnimate($imgerr, tp);
+            }
+			$imgload.hide();
+        }
+    });
 });

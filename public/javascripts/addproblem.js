@@ -1,10 +1,15 @@
 
-var $imgform = $("#image_form");
-var $image = $('#image');
-var $imgload = $('#imgload');
-var $imgerr = $('#imgerr');
+var $submit = $('#submit')
+,	$image = $('#image')
+,	$imgerr = $('#imgerr')
+,   $si = $('#submit-info')
+,	submitTimeout;
 
-var $dataform = $('#data_form');
+var $data = $('#data')
+,	$dataerr = $('#dataerr')
+,	$ui = $('#upload-info');
+
+var pid = parseInt($('#addproblem').attr('pid'), 10);
 
 $(document).ready(function(){
 	CKEDITOR.replace( 'Description' );
@@ -14,89 +19,93 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
-	$image.click(function(){
-		$imgerr.text('');
-	});
-	$('#image_upload').click(function(){
+	$submit.click(function() {
 		if (!$image.val()) {
-			$imgerr.removeClass().addClass('error-text');
-			$imgerr.text('请选择文件！');
+			errAnimate($imgerr, '请选择文件！');
 			return false;
 		}
-		$imgload.show();
-		$imgform.ajaxForm({
-			url: '/imgUpload',
-			type: 'POST',
-			success: function (res, status, xhr, $form) {
-				var tp;
-				if (res == '0') {
-					tp = '上传完成！';
-					$imgerr.removeClass().addClass('success-text');
-				} else {
-					if (!res) tp = '异常错误！';
-					else if (res == '1') tp = '图片大小不得超过1m！';
-					else if (res == '2') tp = '文件类型必须是图片！';
-					else if (res == '3') window.location.reload(true);
-					$imgerr.removeClass().addClass('error-text');
-				}
-				$imgerr.text(tp);
-				$imgload.hide();
-				$('#myFormId').clearForm();
-			},
-			error: function (res, status, e) {
-				alert(e);
-				$imgload.hide();
-				$imgform.clearForm();
+	});
+	$image.fileupload({
+		dataType: 'text',
+		add: function(e, data) {
+			var f = data.files[0];
+			$si.text(f.name);
+			$submit.unbind();
+			$submit.click(function(){
+				clearTimeout(submitTimeout);
+				submitTimeout = setTimeout(function(){
+					var pattern = new RegExp('^.*\.(jpg|jpeg|png)$');
+					if (!pattern.test(f.name)) {
+						errAnimate($imgerr, '不支持的格式！');
+						return false;
+					}
+					if (f.size && f.size > 2*1024*1024) {
+						errAnimate($imgerr, '图片大小不得超过2m！');
+						return false;
+					}
+					$imgerr.html('&nbsp;');
+					data.submit();
+				}, 200);
+			});
+		},
+		progress: function(e, data) {
+			var p = parseInt(data.loaded/data.total*100, 10);
+			$si.text(p+'%');
+		},
+		done: function(e, data) {
+			var res = data.response().result, tp;
+			if (!res) {
+				$si.text(data.files[0].name);
+				ShowMessage('图片上传成功！');
+				return ;
 			}
+			if (res == '1') tp = '图片大小不得超过2m！';
+			else if (res == '2') tp = '不支持的格式！';
+			else if (res == '3') tp = '异常错误！';
+			if (tp) {
+				errAnimate($imgerr, tp);
+			}
+		}
+	});
+	
+
+	$data.fileupload({
+		dataType: 'text',
+		add: function(e, data) {
+			var f = data.files[0];
+			$ui.text(f.name);
+			var pattern = new RegExp('^.*\.(in|out)$');
+			if (!pattern.test(f.name)) {
+				return ;
+			}
+			if (f.size && f.size > 50*1024*1024) {
+				return ;
+			}
+			data.submit();
+		},
+		progress: function(e, data) {
+			var p = parseInt(data.loaded/data.total*100, 10);
+			$ui.text(p+'%');
+		},
+		done: function(e, data) {
+			var res = data.response().result, tp;
+			if (!res) {
+				window.location.reload(true);
+				return ;
+			}
+			if (res == '3') tp = '异常错误！';
+			if (tp) {
+				errAnimate($dataerr, tp);
+			}
+		}
+	});
+
+	$('a.del').click(function(){
+		$.post('/delData', {
+			pid 	: pid,
+			fname 	: $(this).parent().prev().text()
+		}, function(){
+			window.location.reload(true);
 		});
 	});
-	if ($dataform.length) {
-		var $datain = $('#data_in');
-		var $dataout = $('#data_out');
-		var $dataerr = $('#dataerr');
-		var $dataload = $('#dataload');
-		$datain.click(function(){$dataerr.text('');});
-		$dataout.click(function(){$dataerr.text('');});
-		$('#data_upload').click(function(){
-			var pattern = new RegExp('^.*\.in$');
-			if (!pattern.test($datain.val())) {
-				$dataerr.removeClass().addClass('error-text');
-				$dataerr.text('第一个文件类型必须是".in"');
-				return false;
-			}
-			pattern = new RegExp('^.*\.out$');
-			if (!pattern.test($dataout.val())) {
-				$dataerr.removeClass().addClass('error-text');
-				$dataerr.text('第二个文件类型必须是".out"');
-				return false;
-			}
-			$dataload.show();
-			$dataform.ajaxForm({
-				url: $dataform.attr('action'),
-				type: 'POST',
-				success: function (res, status, xhr, $form) {
-					var tp;
-					if (res == '0') {
-						tp = '上传完成！可继续增加其他文件数据，同名将会覆盖~';
-						$dataerr.removeClass().addClass('success-text');
-					} else {
-						if (!res) tp = '异常错误！';
-						else if (res == '1') tp = '文件名要相同（除了后缀）！';
-						else if (res == '2') tp = '文件类型必须是in, out！';
-						else if (res == '3') window.location.reload(true);
-						else tp = '文件保存出错！';
-						$dataerr.removeClass().addClass('error-text');
-					}
-					$dataerr.text(tp);
-					$dataload.hide();
-					$dataform.clearForm();
-				},
-				error: function (res, status, e) {
-					alert(e);
-					$dataload.hide();
-					$dataform.clearForm();
-				}
-			});
-		});
-	}
 });

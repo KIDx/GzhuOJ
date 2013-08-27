@@ -229,13 +229,21 @@ div.istyle em {
     font-family: times new roman, sans-serif; 
 }
 
-div.sidegroup > form {
+div.sidegroup {
+    margin: .5em;
+}
+
+div.sidegroup table td {
+    padding: 2px 0;
+}
+
+div.sidegroup .uibtn {
+    padding: 0 5px;
     margin: 0;
 }
 
-div.sidegroup {
-    margin: .5em;
-    text-align: right;
+div.sidegroup #submit {
+    width: 150px;
 }
 
 div.side-header {
@@ -251,7 +259,7 @@ div.side-header {
     height: 20px;
     line-height: 15px;
     padding: 0;
-    margin: 0 1.5em 0 .5em;
+    margin: 0;
     width: 150px!important  ;
 }
 
@@ -295,32 +303,6 @@ div#xbody textarea {
 
 div#preload_logo {
     height: 70px;
-}
-
-div.upload {
-    width: auto;
-    margin-bottom: 10px;
-}
-
-div.upload input {
-    border: 1px solid #ccc;
-    height: auto;
-    margin: 5px 0;
-}
-
-div.upload button {
-    margin: 0 0 5px 0;
-}
-
-div.upload img {
-    width: 18px;
-    height: 18px;
-    margin-left: 10px;
-    display: none;
-}
-
-div.upload form {
-    margin: 0;
 }
 
 /*********************CF*********************/
@@ -826,6 +808,55 @@ legend{
     color: #333;
     text-decoration: none;
     border: 1px solid #999;
+}
+
+.upload {
+    margin-bottom: 10px;
+}
+
+.uploaddiv > span {
+    margin: 0;
+}
+
+.uploaddiv > button {
+    margin: 18px 0 5px 0;
+    width: 150px;
+    display: block;
+}
+
+.upload-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-btn input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    opacity: 0;
+    height: 40px;
+    cursor: pointer;
+    filter: alpha(opacity=0);
+}
+
+.upload-info {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: .9em;
+    color: gray;
+}
+
+.ibox {
+    float: left;
+    margin: 0 15px 0 0;
+}
+
+.ibox_head {
+    padding: 10px;
+}
+
+.cb {
+    clear: both;
 }
 
 table.parity thead {

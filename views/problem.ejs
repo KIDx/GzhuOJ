@@ -19,18 +19,42 @@
       <div class="sidebox">
         <div class="side-header">→ Submit</div>
         <div class="sidegroup">
-          <form id="form" method="post" enctype="multipart/form-data">
-            Language:
-            <select class="side-input" name="lang">
-              <option value='1'>C</option>
-              <option value='2' selected="selected">C++</option>
-              <option value='3'>Java</option>
-            </select>
-            Choose file:
-          <div style="overflow: hidden; float:right;"><input type="file" class="side-input" name="info"></div>
-          </form>
-          <span id="error" class="error-text"></span>
-          <button class="side-input">submit</button>
+          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td>Language:</td>
+              <td>
+                <select class="side-input" id="lang">
+                  <option value='1'>C</option>
+                  <option value='2' selected="selected">C++</option>
+                  <option value='3'>Java</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Choose file:</td>
+              <td>
+                <span class="uibtn upload-btn">
+                  <span>选择文件</span>
+                  <input type="file" id="file" name="info" data-url="/problem?pid=<%= problem.problemID %>" />
+                </span>
+                <span id="upload-info" class="upload-info">未选择文件</span>
+            </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>
+                <button id="submit" class="uibtn">
+                  submit
+                </button>
+              </td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>
+                <span id="error" class="error-text">&nbsp;</span>
+              </td>
+            </tr>
+          </table>
         </div>
       </div>
     <% } %>
@@ -38,12 +62,20 @@
         <div class="side-header">→ Problem tags</div>
         <div id="#" style="padding:.5em;">
           <% problem.tags.forEach(function(p){ %>
-          <div style="display:none;" class="tag-box" id="<%= p %>">
+          <div class="tag-box" title="<%= PT[p] %>">
+            <%= Tag[p] %>
             <% if(pvl == 1) { %><span class="del" tag="<%= p %>">×</span><% } %>
           </div>
           <% }); %>
           <div style="text-align:right;clear:both;">
           <% if(pvl == 1) { %>
+            <div class="hidden">Add tag:
+              <select class="side-input">
+                <% Tag.forEach(function(p, i){ %>
+                <option value="<%= i %>"><%= p %></option>
+                <% }); %>
+              </select>
+            </div>
             <a href="javascript:;" id="add-tag">Add tag</a>
           <% } else { %>
             <span class="user-gray">No tag edit access</span>

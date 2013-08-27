@@ -1,5 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "
-http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE HTML>
 <html>
   <head>
     <title id="title"><%= title %></title>
@@ -27,10 +26,14 @@ http://www.w3.org/TR/html4/loose.dtd">
     <% } else { %>
         <li><a href="javascript:;" id="logout">Logout</a></li>
         <li><span class="user-gray">|</span></li>
+      <% if (user.privilege >= 81) { %>
+        <li><a href="/addstudent">Add Student</a></li>
+        <li><span class="user-gray">|</span></li>
+      <% } %>
       <% if (user.addprob == 1) { %>
-        <% if (key === 1000) { %>
+        <% if (key == 1000) { %>
         <li class="active">Add Problem</li>
-        <% } else if (key === 1001) { %>
+        <% } else if (key == 1001) { %>
         <li class="active">Edit Problem</li>
         <% } else { %>
         <li><a href="/addproblem">Add Problem</a></li>
@@ -111,6 +114,7 @@ http://www.w3.org/TR/html4/loose.dtd">
   <% } else if (key == 6) { %>
     <script src="/javascripts/contest.js"></script>
   <% } else if (key == 8) { %>
+    <script src="/javascripts/fileUpload.js"></script>
     <script src="/javascripts/problem.js"></script>
   <% } else if (key == 9) { %>
     <script src="/javascripts/onecontest.js"></script>
@@ -123,13 +127,13 @@ http://www.w3.org/TR/html4/loose.dtd">
     <script src="/highlighter/scripts/shBrushJava.js"></script>
     <script type="text/javascript">SyntaxHighlighter.all();</script>
   <% } else if (key == 12) { %>
-    <script src="/ajaxform/ajaxform.js"></script>
+    <script src="/javascripts/fileUpload.js"></script>
     <script src="/javascripts/avatar.js"></script>
   <% } else if (key == 1002) { %>
     <script src="/javascripts/addcontest.js"></script>
     <script src="/zd/javascript/zebra_datepicker.js"></script>
   <% } else if (key == 1000 || key == 1001) { %>
-    <script src="/ajaxform/ajaxform.js"></script>
+    <script src="/javascripts/fileUpload.js"></script>
     <script src="/ckeditor/ckeditor.js"></script>
     <script src="/javascripts/addproblem.js"></script>
   <% } %>

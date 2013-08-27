@@ -3,7 +3,7 @@
   <ul>
   <% var cp = 5, i = page - 2; if (i <= 0) i = 1; %>
     <li <% if (page == 1) { %>class="disabled"<% } %>>
-      <a id="1" href="javascript:;">&lt&lt</a>
+      <a id="1" href="javascript:;">&lt;&lt;</a>
     </li>
   <% if (i > 1) { %>
     <li class="disabled"><a href="javascript:;">...</a></li>
@@ -21,7 +21,7 @@
     <li class="disabled"><a href="javascript:;">...</a></li>
   <% } %>
     <li <% if (n == 0 || page == n) { %>class="disabled"<% } %>>
-      <a id="<%= n %>" href="javascript:;">&gt&gt</a>
+      <a id="<%= n %>" href="javascript:;">&gt;&gt;</a>
     </li>
   </ul>
 </div>

@@ -1,67 +1,88 @@
-var $sidebar = $('#sidebar');
-var $form = $sidebar.find('#form');
-var $file = $form.find('input');
-var $error = $form.next();
-var $submit = $error.next();
-var $add_tag = $('#add-tag');
-var $del_tag = $('span.del');
-var $tag_box = $sidebar.find('div.tag-box');
+var $sidebar = $('#sidebar')
+,	$lang = $sidebar.find('#lang')
+,	$file = $sidebar.find('#file')
+,	$error = $sidebar.find('#error')
+,	$submit = $sidebar.find('#submit')
+,	$add_tag = $('#add-tag')
+,	$selectdiv = $add_tag.prev()
+,	$select = $selectdiv.find('select')
+,	$del_tag = $('span.del')
+,	$tag_box = $sidebar.find('div.tag-box')
+,   $ui = $('#upload-info');
 
 var pid = $sidebar.attr('pid');
-var has = {};
 
 $(document).ready(function() {
 	$submit.click(function() {
-		if (!$file.attr('value')) {
-			$error.text('Choose file!');
+		if (!$file.val()) {
+			errAnimate($error, 'Choose file!');
 			return false;
 		}
-		$form.submit();
+	});
+	$file.fileupload({
+		dataType: 'text',
+		add: function(e, data) {
+			var f = data.files[0];
+			$ui.text(f.name);
+			$submit.unbind();
+			$submit.click(function(){
+				if (f.size) {
+					if (f.size < 50) {
+						errAnimate($error, 'too small! ( < 50B )');
+						return false;
+					} else if (f.size > 65535) {
+						errAnimate($error, 'too large! ( > 65535B )');
+						return false;
+					}
+				}
+				$error.text('');
+				data.submit();
+			});
+		},
+		progress: function(e, data) {
+			var p = parseInt(data.loaded/data.total*100, 10);
+			$ui.text(p+'%');
+		},
+		done: function(e, data) {
+			var res = data.response().result, tp;
+			if (!res) window.location.href = '/status';
+			else if (res == '1') tp = 'too small!(<50)';
+			else if (res == '2') tp = 'too large!(>65535)';
+			else if (res == '3') tp = '异常错误！';
+			if (tp) {
+				errAnimate($error, tp);
+			}
+		}
+	});
+	$file.bind('fileuploadsubmit', function(e, data){
+		data.formData = { lang: $lang.val() };
 	});
 });
 
-function Bind() {
-	if ($add_tag.length == 0) return ;
-	$add_tag.click(function(){
-		var $prediv = $(this).parent();
-		$(this).remove();
-		$prediv.css({'text-align':'left'});
-		html = 'Add tag: <select class="side-input">';
-		html += '<option value="" selected></option>';
-		for (i = 1; i < Tag.length; i++) {
-			if (has[i]) continue;
-			html += '<option value="'+i+'">'+Tag[i]+'</option>';
-		}
-		html += '</select>';
-		$prediv.html(html);
-		$prediv.find('select').change(function(res){
-			$.post('/editTag', {tag:$(this).val(), pid:pid, add:true}, function(){
+$(document).ready(function(){
+	if ($add_tag.length) {
+		$add_tag.unbind(); $del_tag.unbind();
+		$add_tag.click(function(){
+			$(this).addClass('hidden');
+			$selectdiv.show();
+			$select.change(function(res){
+				$.post('/editTag', {tag:$(this).val(), pid:pid, add:true}, function(){
+					window.location.reload(true);
+				});
+			});
+		});
+		$del_tag.click(function(){
+			$.post('/editTag', {tag:$(this).attr('tag'), pid:pid}, function(){
 				window.location.reload(true);
 			});
 		});
-	});
-	$del_tag.click(function(){
-		$.post('/editTag', {tag:$(this).attr('tag'), pid:pid}, function(){
-			window.location.reload(true);
-		});
-	});
-}
-
-$(document).ready(function(){
-	$tag_box.each(function(i, p){
-		var $tp = $(p);
-		var tid = $tp.attr('id');
-		$tp.prepend(Tag[tid]);
-		$tp.attr('title', ProTil[tid]);
-	});
-	$tag_box.show();
-	Bind();
+	}
 });
 
 var $rejudge = $('#rejudge');
 
 $(document).ready(function(){
-	if ($rejudge.length > 0) {
+	if ($rejudge.length) {
 		$rejudge.click(function(){
 			$.post('/rejudge', {pid:pid}, function(){
 				window.location.href = '/status?pID='+pid;

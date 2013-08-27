@@ -14,6 +14,7 @@
  10   : submit
  11   : sourcecode
  12   : avatar
+ 13   : addstudent
  1000/1001: addproblem
  1002 : addcontest
 
@@ -59,6 +60,8 @@ var settings = require('../settings')
 ,   ranklist_pageNum = settings.ranklist_pageNum
 ,   stats_pageNum = settings.stats_pageNum
 ,   contestRank_pageNum = settings.contestRank_pageNum;
+
+var data_path = settings.data_path;
 
 //return status color class
 function Col (n) {
@@ -847,52 +850,69 @@ exports.upload = function(req, res) {
   var sz = req.files.info.size;
   if (sz < 50 || sz > 65535) {
     fs.unlink(path, function() {
-      if (sz < 50) req.session.msg = 'Failed! Field should contain no less than 50 characters';
-      else req.session.msg = 'Failed! Field should contain no more than 65535 characters';
-      return res.redirect(req.url);
+      if (sz < 50) {
+        return res.end('1');
+      } else {
+        return res.end('2');
+      }
     });
   } else {
     fs.readFile(path, 'utf8', function(err, data){
       if (err) {
         console.log(err);
         req.session.msg = '系统错误！';
-        return res.redirect('/');
+        return res.end('3');
       }
       fs.unlink(path, function() {
-        var pid = parseInt(req.query.pID);
+        if (!req.body.lang) {
+          console.log('lang');
+          return res.end();   //language empty is not allow!!!
+        }
+        var pid = parseInt(req.query.pid, 10);
         if (!pid) {
-          req.session.msg = 'pid Error!';
-          return res.redirect('/');
+          console.log('pid');
+          return res.end();   //pid empty is not allow!!!
         }
-        if (!req.session.user) {
-          req.session.msg = 'Failed! Please login first!';
-          return res.redirect('/problem?pid='+pid);
-        }
-        IDs.get ('runID', function(err, id){
+        Problem.watch(pid, function(err, problem){
           if (err) {
             console.log(err);
             req.session.msg = '系统错误！';
-            return res.redirect('/');
+            return res.end('3');
           }
-          var newSolution = new Solution({
-            runID: id,
-            problemID: pid,
-            userName: req.session.user.name,
-            inDate: getDate(new Date()),
-            language: req.body.lang,
-            length: sz,
-            cID: -1,
-            code: data
-          });
-          newSolution.save(function(err){
+          if (!problem) {
+            return res.end();    //problem empty is not allow!!!
+          }
+          if (!req.session.user) {
+            req.session.msg = 'Failed! Please login first!';
+            return res.redirect('/problem?pid='+pid);
+          }
+          IDs.get ('runID', function(err, id){
             if (err) {
               console.log(err);
               req.session.msg = '系统错误！';
-              return res.redirect('/');
+              return res.end('3');
             }
-            Problem.update(pid, {$inc: {submit: 1}});
-            req.session.msg = 'The code for problem '+pid+' has been submited successfully.';
-            return res.redirect('/status');
+            var newSolution = new Solution({
+              runID: id,
+              problemID: pid,
+              userName: req.session.user.name,
+              inDate: getDate(new Date()),
+              language: req.body.lang,
+              length: sz,
+              cID: -1,
+              code: data
+            });
+            newSolution.save(function(err){
+              if (err) {
+                console.log(err);
+                req.session.msg = '系统错误！';
+                return res.end('3');
+              }
+              Problem.update(pid, {$inc: {submit: 1}}, function(err){
+                req.session.msg = 'The code for problem '+pid+' has been submited successfully.';
+                return res.end();
+              });
+            });
           });
         });
       });
@@ -1152,14 +1172,14 @@ exports.avatarUpload = function(req, res) {
     });
   } else {
     if (!req.session.user) {
-      return res.end('3');
+      return res.end();
     }
     var pre = 'public/img/avatar/' + req.session.user.name;
     exec('rm -r '+pre, function(){
       fs.mkdir(pre, function(err){
         if (err) {
           console.log(err);
-          return res.end();
+          return res.end('3');
         }
         var originImg = imageMagick(path);
         originImg.resize(250, 250, '!') //加('!')强行把图片缩放成对应尺寸250*250！
@@ -1167,41 +1187,41 @@ exports.avatarUpload = function(req, res) {
         .write(pre+'/1.'+imgType, function(err){
           if (err) {
             console.log(err);
-            return res.end();
+            return res.end('3');
           }
           originImg.resize(150, 150, '!')
           .autoOrient()
           .write(pre+'/2.'+imgType, function(err){
             if (err) {
               console.log(err);
-              return res.end();
+              return res.end('3');
             }
             originImg.resize(100, 100, '!')
             .autoOrient()
             .write(pre+'/3.'+imgType, function(err){
               if (err) {
                 console.log(err);
-                return res.end();
+                return res.end('3');
               }
               originImg.resize(50, 50, '!')
               .autoOrient()
               .write(pre+'/4.'+imgType, function(err){
                 if (err) {
                   console.log(err);
-                  return res.end();
+                  return res.end('3');
                 }
                 if (imgType != req.session.user.imgType) {
                   User.update({name:req.session.user.name}, {imgType:imgType}, false, function(err){
                     fs.unlink(path, function() {
                       req.session.user.imgType = imgType;
                       req.session.msg = '头像修改成功！';
-                      return res.end('3');
+                      return res.end();
                     });
                   });
                 } else {
                   fs.unlink(path, function() {
                     req.session.msg = '头像修改成功！';
-                    return res.end('3');
+                    return res.end();
                   });
                 }
               });
@@ -1364,6 +1384,23 @@ exports.doAddcontest = function(req, res) {
   }
 };
 
+exports.addstudent = function(req, res) {
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.redirect('/');
+  }
+  if (req.session.user.privilege < 81) {
+    req.session.msg = '抱歉，您的权限不足！';
+    return res.redirect('/');
+  }
+  res.render('addstudent', { title: 'addstudent',
+                             user: req.session.user,
+                             message: req.session.msg,
+                             time: (new Date()).getTime(),
+                             key: 13
+  });
+};
+
 exports.addproblem = function(req, res) {
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
@@ -1373,34 +1410,37 @@ exports.addproblem = function(req, res) {
     req.session.msg = 'You have no permission to Add or Edit problem!';
     return res.redirect('/');
   }
-  var tk = 1000, tpid = parseInt(req.query.pID);
-  if (!tpid) {
+  var tk = 1000, pid = parseInt(req.query.pID)
+  ,   RP = function(P, F) {
     res.render('addproblem', { title: 'addproblem',
                                user: req.session.user,
                                message: req.session.msg,
                                time: (new Date()).getTime(),
-                               problem: null,
-                               key: tk
+                               problem: P,
+                               key: tk,
+                               files: F
     });
+  }
+  if (!pid) {
+    return RP(null, null);
   } else {
-    Problem.watch (tpid, function(err, problem){
+    Problem.watch(pid, function(err, problem){
       if (err) {
-        req.session.msg = err;
+        console.log(err);
+        req.session.msg = '系统错误！';
         return res.redirect('/');
       }
-      if (problem) {
-        if (problem.hide == true && req.session.user.name != 'admin' && req.session.user.name != problem.manager) {
-          req.session.msg = 'You have no permission to edit this hidden problem!';
-          return res.redirect('/')
-        }
-        ++tk;
+      if (!problem) {
+        return RP(null, null);
       }
-      res.render('addproblem', { title: 'addproblem',
-                                 user: req.session.user,
-                                 message: req.session.msg,
-                                 time: (new Date()).getTime(),
-                                 problem: problem,
-                                 key: tk
+      if (problem.hide == true && req.session.user.name != 'admin' && req.session.user.name != problem.manager) {
+        req.session.msg = 'You have no permission to edit this hidden problem!';
+        return res.redirect('/');
+      }
+      ++tk;
+      fs.readdir(data_path+pid, function(err, files){
+        if (!files) files = [];
+        return RP(problem, files);
       });
     });
   }
@@ -1471,7 +1511,7 @@ exports.doAddproblem = function(req, res) {
           req.session.msg = err;
           return res.redirect('/addproblem');
         }
-        fs.mkdir('../OJ/judge/data/'+id, function(err){
+        fs.mkdir(data_path+id, function(err){
           if (err) {
             console.log('fs.mkdir err: ' + err);
             return res.redirect('/');
@@ -1488,53 +1528,42 @@ exports.imgUpload = function(req, res) {
   var path = req.files.info.path;
   var sz = req.files.info.size;
   res.header('Content-Type', 'text/plain');
-  if (sz > 1024*1024) {
-    fs.unlink(path, function(err) {
-      if (err) {
-        console.log(err);
-        return res.end();
-      }
+  if (sz > 2*1024*1024) {
+    fs.unlink(path, function() {
       return res.end('1');
     });
   } else if (req.files.info.type.split('/')[0] != 'image') {
-    fs.unlink(path, function(err) {
-      if (err) {
-        console.log(err);
-        return res.end();
-      }
+    fs.unlink(path, function() {
       return res.end('2');
     });
   } else {
     fs.readFile(path, function(err, data){
       if (err) {
         console.log(err);
-        return res.end();
+        return res.end('3');
       }
-      fs.unlink(path, function(err) {
-        if (err) {
-          console.log(err);
-          return res.end();
-        }
+      fs.unlink(path, function() {
         if (!req.session.user) {
-          req.session.msg = '你的权限不足';
-          return res.end('3');
+          return res.end();   //not allow
         }
-        var name = req.session.user.name;
-        User.watch(name, function(err, user) {
+        var pid = parseInt(req.query.pid, 10);
+        if (!pid) {
+          return res.end();   //not allow
+        }
+        User.watch(req.session.user.name, function(err, user) {
           if (err) {
             console.log(err);
-            return res.end();
+            return res.end('3');
           }
           if (!user || !user.addprob) {
-            req.session.msg = '你的权限不足';
-            return res.end('3');
+            return res.end(); //not allow
           }
           fs.writeFile('public/img/prob/'+req.files.info.name, data, function(err){
             if (err) {
               console.log(err);
-              return res.end();
+              return res.end('3');
             }
-            return res.end('0');
+            return res.end();
           });
         });
       });
@@ -1543,68 +1572,71 @@ exports.imgUpload = function(req, res) {
 };
 
 exports.dataUpload = function(req, res) {
-  var pid = parseInt(req.query.pID);
-  if (!pid)
+  var pid = parseInt(req.query.pid);
+  if (!pid) {
     return res.end();
-  var pin = req.files.in.path;
-  var pout = req.files.out.path;
-  var sin = req.files.in.name;
-  var sout = req.files.out.name;
-  var tin = '', tout = '', i, lin = sin.length-3, lout = sout.length-4;
-  for (i = 0; i < lin; i++) tin += sin.charAt(i);
-  for (i = 0; i < lout; i++) tout += sout.charAt(i);
-  if (tin != tout)
-    return res.end('1');
-  fs.readFile(pin, function(err, data){
+  }
+  var file = req.files.data
+  ,   path = file.path
+  ,   fname = file.name
+  ,   sz = file.size;
+  if (sz > 10*1024*1024) {
+    return res.end('2');
+  }
+  fs.readFile(path, function(err, data){
     if (err) {
       console.log(err);
-      return res.end();
+      return res.end('3');
     }
-    fs.unlink(pin, function(err) {
-      if (err) {
-        console.log(err);
+    fs.unlink(path, function() {
+      if (!req.session.user) {
         return res.end();
       }
-      if (!req.session.user) {
-        req.session.msg = '你的权限不足';
-        return res.end('3');
-      }
-      var name = req.session.user.name;
-      User.watch(name, function(err, user) {
+      User.watch(req.session.user.name, function(err, user){
         if (err) {
           console.log(err);
-          return res.end();
-        }
-        if (!user || !user.addprob) {
-          req.session.msg = '你的权限不足';
           return res.end('3');
         }
-        fs.writeFile('../OJ/judge/data/'+pid+'/'+sin, data, function(err){
+        if (!user || !user.addprob) {
+          return res.end();
+        }
+        fs.writeFile(data_path+pid+'/'+fname, data, function(err){
           if (err) {
             console.log(err);
-            return res.end();
+            return res.end('3');
           }
-          fs.readFile(pout, function(err, data){
-            if (err) {
-              console.log(err);
-              return res.end();
-            }
-            fs.unlink(pout, function(err) {
-              if (err) {
-                console.log(err);
-                return res.end();
-              }
-              fs.writeFile('../OJ/judge/data/'+pid+'/'+sout, data, function(err){
-                if (err) {
-                  console.log(err);
-                  return res.end();
-                }
-                return res.end('0');
-              });
-            });
-          });
+          req.session.msg = '数据上传完成！';
+          return res.end();
         });
       });
+    });
+  });
+};
+
+exports.delData = function(req, res) {
+  if (!req.session.user) {
+    return res.end();
+  }
+  var pid = parseInt(req.body.pid, 10);
+  if (!pid) {
+    return res.end();
+  }
+  var fname = req.body.fname;
+  if (!fname) {
+    return res.end();
+  }
+  User.watch(req.session.user.name, function(err, user){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (!user || !user.addprob) {
+      return res.end();
+    }
+    fs.unlink(data_path+pid+'/'+fname, function(){
+      req.session.msg = '删除成功！';
+      return res.end();
     });
   });
 };
@@ -1640,18 +1672,29 @@ exports.problem = function(req, res) {
       var pvl = 0;
       if (solution) pvl = 1;
       Problem.watch(pid, function(err, problem) {
-        if (err || (problem && (problem.hide == true &&
-          (!req.session.user || (req.session.user.name != 'admin' && req.session.user.name != problem.manager))))) {
-          problem = null;
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.redirect('/');
         }
-        if (pvl == 0 && (name == 'admin' || (problem && problem.manager == name))) pvl = 1;
+        if (problem) {
+          if (problem.hide == true && (!req.session.user ||
+            (req.session.user.name != 'admin' && req.session.user.name != problem.manager))) {
+              problem = null;
+          }
+          if (pvl == 0 && (name == 'admin' || problem.manager == name)) {
+            pvl = 1;
+          }
+        }
         res.render('problem', { title: 'Problem '+pid,
                                 user: req.session.user,
                                 message: req.session.msg,
                                 time: (new Date()).getTime(),
                                 key: 8,
                                 problem: problem,
-                                pvl: pvl
+                                pvl: pvl,
+                                Tag: Tag,
+                                PT: ProTil
         });
       });
     });
@@ -2023,10 +2066,14 @@ exports.doSubmit = function(req, res) {
         console.log(err);
         return res.end();
       }
-      if (contest && contest.type == 2 && name != contest.userName) {
-        if (!contest.contestants || !IsRegCon(contest.contestants, name)) {
-          req.session.msg = 'You can not submit because you have not registered the contest yet!';
-          return res.end('2');
+      if (!contest) {
+        cid = -1;
+      } else {
+        if (contest.type == 2 && name != contest.userName) {
+          if (!contest.contestants || !IsRegCon(contest.contestants, name)) {
+            req.session.msg = 'You can not submit because you have not registered the contest yet!';
+            return res.end('2');
+          }
         }
       }
       var newSolution = new Solution({
@@ -2449,8 +2496,20 @@ exports.doRegCon = function(req, res) {
                 return res.end();
               }
               Reg.update({regID: id}, {$set: {status: '2'}}, function(err){
-                req.session.msg = '报名成功！';
-                return res.end();
+                if (err) {
+                  console.log(err);
+                  req.session.msg = '系统错误！';
+                  return res.end();
+                }
+                regContestAndUpdate(cid, name, function(err){
+                  if (err) {
+                    console.log(err);
+                    req.session.msg = '系统错误！';
+                    return res.end();
+                  }
+                  req.session.msg = '报名成功！';
+                  return res.end();
+                })
               });
             });
           }

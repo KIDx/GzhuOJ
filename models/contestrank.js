@@ -45,6 +45,15 @@ Rank.get = function(Q, page, callback){
   });
 };
 
+Rank.remove = function(Q, callback) {
+  ranks.remove(Q, function(err){
+    if (err) {
+      console.log('Rank.remove failed!');
+    }
+    return callback(err);
+  });
+}
+
 Rank.del = function(){
   ranks.find({}, function(err, docs){
     docs.forEach(function(doc) {

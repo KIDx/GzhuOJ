@@ -145,3 +145,14 @@ $(document).ready(function(){
 		}).jqDrag('.jqDrag').jqResize('.jqResize');
 	}
 });
+
+$(document).ready(function(){
+	if ($logindialog.length) {
+		$.each($('a.check'), function(){
+			$(this).click(function(){
+				nextURL = '/onecontest/'+$(this).attr('id');
+				$logindialog.jqmShow();
+			});
+		})
+	}
+});

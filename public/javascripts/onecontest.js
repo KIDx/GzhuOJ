@@ -4,6 +4,7 @@ var interceptorTime = 300
 ,	cnt;	//行号
 
 var $contest = $('#contest')
+,	ctype = $contest.attr('ctype')
 ,	pageNum = $contest.attr('pageNum')
 ,	display = $contest.attr('display')
 ,	contest_private = $contest.attr('psw')
@@ -235,12 +236,12 @@ function OverviewResponse(json) {
 			$oi.html(_ac+'&nbsp/&nbsp'+_all);
 		});
 	}
-
 	if ($clone.length) {
 		$clone.unbind('click');
 		$clone.click(function(){
+
 			if ($logindialog.length > 0) {
-				nextURL = '/addcontest?cID=-'+document.URL.split('?cID=')[1]+'&type=1';
+				nextURL = '/addcontest?cID=-'+cid+'&type=1';
 				$logindialog.jqmShow();
 			} else {
 				window.location.href = '/addcontest?cID=-'+cid+'&type=1';
@@ -372,8 +373,7 @@ var $rank = $div.find('#ranktab')
 ,	rankTimeout;
 
 function buildRank(U) {
-	var user = U.value;
-	var html = '<tr class="';
+	var user = U.value, html = '<tr class="';
 
 	if (cnt % 2 == 1) html += 'odd';
 	else html += 'even';
@@ -724,33 +724,59 @@ $(document).ready(function(){
 		}).jqDrag('.jqDrag').jqResize('.jqResize');
 
 		$SubmitDialog.find('a#jqcodesubmit').click(function(){
-		var code = $SubmitDialog.find('textarea').val();
-		if (code.length < 50 || code.length > 65536) {
-			$SubmitDialog.find('span#error').text('the length of code must be between 50B to 65535B');
-			return false;
-		}
-		$.post('/submit', {
-			pid: pid_index,
-			cid: cid,
-			code: code,
-			lang: $SubmitDialog.find('select').val()
-		}, function(err){
-			if (err == '1') {
-				window.location.reload(true);
-				return ;
+			var code = $SubmitDialog.find('textarea').val();
+			if (code.length < 50 || code.length > 65536) {
+				$SubmitDialog.find('span#error').text('the length of code must be between 50B to 65535B');
+				return false;
 			}
-			$SubmitDialog.jqmHide();
-			if (!err) {
-				ShowMessage('Your code for problem '+pmap[pid_index]+' has been submited successfully!');
-			} else if (err == '2'){
-				ShowMessage('You can not submit because you have not registered the contest yet!');
-			} else if (err == '3') {
-				ShowMessage('系统错误！');
-			}
-			statusInit();
-			$tablink.eq(2).click();
-			
+			$.post('/submit', {
+				pid: pid_index,
+				cid: cid,
+				code: code,
+				lang: $SubmitDialog.find('select').val()
+			}, function(err){
+				if (err == '1') {
+					window.location.reload(true);
+					return ;
+				}
+				$SubmitDialog.jqmHide();
+				if (!err) {
+					ShowMessage('Your code for problem '+pmap[pid_index]+' has been submited successfully!');
+				} else if (err == '2'){
+					ShowMessage('You can not submit because you have not registered the contest yet!');
+				} else if (err == '3') {
+					ShowMessage('系统错误！');
+				}
+				statusInit();
+				$tablink.eq(2).click();
+			});
 		});
-	});
+	}
+});
+
+var $Delete = $('#deletedialog');
+
+$(document).ready(function(){
+	//delete the contest
+	if ($Delete.length > 0) {
+		$Delete.jqm({
+			overlay: 30,
+			trigger: $('a#delete'),
+			modal: true,
+			closeClass: 'deleteclose',
+			onShow: function(h) {
+				h.o.fadeIn(200);
+				h.w.fadeIn(200);
+			},
+			onHide: function(h) {
+				h.w.fadeOut(200);
+				h.o.fadeOut(200);
+			}
+		}).jqDrag('.jqDrag');
+		$Delete.find('a#sure').click(function(){
+			$.post('/contestDelete', {cid:cid}, function(){
+				window.location.href = '/contest/'+ctype;
+			});
+		});
 	}
 });

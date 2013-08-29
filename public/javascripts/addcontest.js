@@ -4,8 +4,7 @@ var $addcontestForm = $('#form');
 
 var FormData = {
 	type:$addcontestForm.attr('type'),
-	cid:$addcontestForm.attr('cid'),
-	manager:$addcontestForm.attr('manager')
+	cid:$addcontestForm.attr('cid')
 };
 
 $('document').ready(function() {
@@ -118,6 +117,11 @@ var $lhour = $len.eq(1);
 var $lmin = $len.eq(2);
 
 function CheckDate() {
+	if (!$date.eq(0).val()) {
+		$tr8.addClass('error');
+		$info.text('Date Can Not Be Empty!');
+		return false;
+	}
 	var hour = $hour.val();
 	var minute = $minute.val();
 	if (hour < 0 || hour >= 24 || minute < 0 || minute >= 60) {
@@ -209,7 +213,6 @@ $(document).ready(function(){
 	});
 	$('#addcontestSubmit').click(function(){
 		if (!CheckSubmit()) return false;
-		FormData.cnt = k;
 		FormData.ctitle = $title.val();
 		FormData.cdate = $date.eq(0).val();
 		FormData.chour = $hour.val(); FormData.cminute = $minute.val();
@@ -226,7 +229,11 @@ $(document).ready(function(){
 			FormData.ary.push([$pid.eq(i).val(), tmp]);
 		}
 		$.post('/addcontest', FormData, function(res){
-			window.location.href = res;
+			if (!res) {
+				window.location.href = '/';
+			} else {
+				window.location.href = '/onecontest/'+res;
+			}
 		});
 	});
 	InputLimit($hour);

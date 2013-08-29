@@ -276,7 +276,7 @@ function ShowMessage(msg) {
 }
 
 $(document).ready(function(){
-    if ($tablebg.length > 0) {
+    if ($tablebg.length) {
         $tablebg.prepend('<div class="lt"></div><div class="rt"></div><div class="lb"></div><div class="rb"></div>');
         $tablebg.find('div#tablediv').prepend('<div class="ilt"></div><div class="irt"></div>');
     }
@@ -356,7 +356,7 @@ $(document).ready(function(){
     }
 
     //logout
-    if ($logout.length > 0) {
+    if ($logout.length) {
         $logout.click(function(){
             $.post('/logout', function(){
                 window.location.reload(true);

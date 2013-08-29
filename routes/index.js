@@ -30,7 +30,7 @@
 
 ~addcontest~
  !cid     : add a new contest
- cid < 0  : clone a contest
+ cid < 0  : clone a contest(clone a contest to a DIY Contest)
  cid > 0  : edit a contest
 
 ~contest.type~
@@ -62,6 +62,10 @@ var settings = require('../settings')
 ,   contestRank_pageNum = settings.contestRank_pageNum;
 
 var data_path = settings.data_path;
+
+function nil(n) {
+  return (typeof(n) == 'undefined');
+}
 
 //return status color class
 function Col (n) {
@@ -849,8 +853,10 @@ exports.contestDelete = function(req, res) {
       req.session.msg = '系统错误！';
       return res.end();
     }
-    req.session.msg = 'Contest '+cid+' has been deleted successfully.';
-    return res.end();
+    ContestRank.remove({_id: new RegExp('^'+cid+'-.*$')}, function(err){
+      req.session.msg = 'Contest '+cid+' has been deleted successfully.';
+      return res.end();
+    });
   });
 };
 
@@ -1280,62 +1286,114 @@ exports.doAddcontest = function(req, res) {
   var type = parseInt(req.body.type);
   if (!req.session.user) {
     req.session.msg = 'Failed! Please login first!';
-    return res.end('/contest/'+type);
+    return res.end();
   }
   if (type == 2 && req.session.user.name != 'admin') {
     req.session.msg = 'Failed! You have no permission to add VIP Contest!';
-    return res.end('/contest/2');
+    return res.end();
   }
   if (type == 3 && parseInt(req.session.user.privilege, 10) < 82) {
     req.session.msg = 'Failed! You have no permission to add Course!';
-    return res.redirect('/contest/3');
+    return res.end();
   }
-  var cnt = req.body.cnt;
-  var password = '';
+  var password = ''
+  ,   ctitle = req.body.ctitle
+  ,   cdate = req.body.cdate
+  ,   chour = deal(req.body.chour)
+  ,   cmin = deal(req.body.cminute)
+  ,   cDay = parseInt(req.body.cDay, 10)
+  ,   cHour = parseInt(req.body.cHour, 10)
+  ,   cMin = parseInt(req.body.cMinute, 10)
+  ,   desc = req.body.Description
+  ,   anc = req.body.Announcement;
+
+  if (nil(ctitle) || nil(cdate) || nil(chour) ||
+      nil(cmin) || nil(cDay) || nil(cHour) || nil(cMin)) {
+    return res.end();
+  }
+  if (nil(desc)) {
+    desc = '';
+  }
+  if (nil(anc)) {
+    anc = '';
+  }
+
   if (type == 2) password = req.body.cpassword;
   else if (req.body.cpassword) {
     var md5 = crypto.createHash('md5');
     password = md5.update(req.body.cpassword).digest('base64');
   }
+  if (!password) {
+    password = '';
+  }
+
+  var ary = new Array();
+  if (req.body.ary && req.body.ary.length) {
+    req.body.ary.forEach(function(p){
+      ary.push(p);
+    });
+  }
+
   var newContest = new Contest({
-    title: req.body.ctitle,
-    startTime: req.body.cdate+' '+deal(req.body.chour)+':'+deal(req.body.cminute),
-    len: parseInt(req.body.cDay)*1440+parseInt(req.body.cHour)*60+parseInt(req.body.cMinute),
-    description: req.body.Description,
-    msg: req.body.Announcement,
+    title: ctitle,
+    startTime: cdate+' '+chour+':'+cmin,
+    len: cDay*1440+cHour*60+cMin,
+    description: desc,
+    msg: anc,
     password: password
   });
   var cid = parseInt(req.body.cid);
   if (cid >= 1000) {
-    if (!req.session.user || req.session.user.name != req.body.manager) {
-      req.session.msg = 'Update Failed! You are not the manager!';
-      return res.end('/onecontest/'+cid);
-    }
     newContest.contestID = cid;
     Contest.watch(cid, function(err, doc) {
-      if (!doc) err = 'Can not find contest ' + cid;
       if (err) {
         console.log(err);
         req.session.msg = '系统错误！';
-        return res.redirect('/');
+        return res.end();
+      }
+      if (!doc) {
+        return res.end();
+      }
+      if (req.session.user.name != doc.userName) {
+        req.session.msg = 'Update Failed! You are not the manager!';
+        return res.end();
       }
       doc.title = newContest.title;
-      doc.startTime = newContest.startTime;
-      doc.len = newContest.len;
+      var flg = false;
+      if (doc.startTime != newContest.startTime) {
+        doc.startTime = newContest.startTime;
+        flg = true;
+      }
+      if (doc.len != newContest.len) {
+        doc.len = newContest.len;
+        flg = true;
+      }
+      if (flg) doc.updateTime = 0;
       doc.description = newContest.description;
       doc.msg = newContest.msg;
-      doc.probs =  req.body.ary.slice(0);
+      doc.probs =  ary;
       doc.password = newContest.password;
       doc.save(function(err){
         if (err) {
           console.log(err);
           req.session.msg = '系统错误！';
-          return res.redirect('/');
+          return res.end();
         }
         var cstr = 'Contest';
         if (type == 3) cstr = 'Course';
         req.session.msg = 'Your '+cstr+' has been updated successfully.';
-        return res.end('/onecontest/'+cid);
+        var tp = cid.toString();
+        if (!flg) {
+          return res.end(tp);
+        }
+        ContestRank.remove({_id: new RegExp('^'+cid+'-.*$')}, function(err){
+          if (err) {
+            console.log(err);
+            req.session.msg = '系统错误！';
+            return res.end();
+          }
+          return res.end(tp);
+        });
       });
     });
   } else {
@@ -1343,22 +1401,22 @@ exports.doAddcontest = function(req, res) {
       if (err) {
         console.log(err);
         req.session.msg = '系统错误！';
-        return res.redirect('/');
+        return res.end();
       }
       newContest.contestID = id;
       newContest.userName = req.session.user.name;
-      newContest.probs = req.body.ary.slice(0);
+      newContest.probs = ary;
       newContest.type = type;
       newContest.save(function(err) {
         if (err) {
           console.log(err);
           req.session.msg = '系统错误！';
-          return res.redirect('/');
+          return res.end();
         }
         var cstr = 'Contest';
         if (type == 3) cstr = 'Course';
         req.session.msg = 'Your '+cstr+' has been added successfully.';
-        return res.end('/onecontest/'+id);
+        return res.end(id.toString());
       });
     });
   }
@@ -1879,13 +1937,13 @@ exports.onecontest = function(req, res) {
           }
         }
       }
-    }
-    var isContestant = false;
-    if (contest.type != 2 ||
-      (req.session.user &&
-        (req.session.user.name == contest.userName ||
-        IsRegCon(contest.contestants, req.session.user.name)))) {
-      isContestant = true;
+      var isContestant = false;
+      if (contest.type != 2 ||
+        (req.session.user &&
+          (req.session.user.name == contest.userName ||
+          IsRegCon(contest.contestants, req.session.user.name)))) {
+        isContestant = true;
+      }
     }
     res.render('onecontest', {title: 'OneContest',
                               user: req.session.user,

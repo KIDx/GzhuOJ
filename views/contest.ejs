@@ -68,7 +68,13 @@
           <tr class="<%= c %>">
             <td><%= p.contestID %></td>
             <td style="text-align:left;">
-              <% if (type != 2 && p.password && (!user || user.name != p.userName) && !CS[p.contestID]) { %>
+              <% if (type == 3) { %>
+                <% if (user) { %>
+                <a href="/onecontest/<%= p.contestID %>">
+                <% } else { %>
+                <a class="check" id="<%= p.contestID %>" href="javascript:;">
+                <% } %>
+              <% } else if (type != 2 && p.password && (!user || user.name != p.userName) && !CS[p.contestID]) { %>
               <a href="javascript:;" class="cid" id="<%= p.contestID %>">
               <% } else { %>
               <a href="/onecontest/<%= p.contestID %>">

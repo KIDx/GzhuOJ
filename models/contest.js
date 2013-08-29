@@ -105,11 +105,10 @@ Contest.multiupdate = function(callback){
 };
 
 Contest.dele = function(Q, callback){
-  contests.findOne(Q, function(err, doc){
+  contests.findOneAndRemove(Q, function(err){
     if (err) {
       console.log('Contest.dele failed');
     }
-    if (doc) doc.remove();
     return callback(err);
   });
 };

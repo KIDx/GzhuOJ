@@ -203,7 +203,9 @@ $(document).ready(function(){
 	$pid.each(function(i){
 		var $tpid = $pid.eq(i);
 		var $ttl = $ptitle.eq(i);
-		CheckTheProblem ($tpid.val(), $ttl, 1);
+		setTimeout(function(){
+			CheckTheProblem ($tpid.val(), $ttl, 1);
+		}, 300);
 		$tpid.keyup(function(){
 			clearTimeout(searchTimeout);
 			searchTimeout = setTimeout(function(){

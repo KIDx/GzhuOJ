@@ -292,6 +292,7 @@ td.center {
 }
 
 div#xbody {
+    overflow: visible;
     min-height: 680px;
 }
 
@@ -517,7 +518,8 @@ div.tablebg div#filter input {
 }
 
 div.tablebg div#filter input {
-    width: 115px;
+    line-height: 18px;
+    width: 120px;
 }
 
 div.tablebg div#filter input:focus {
@@ -808,6 +810,11 @@ legend{
     text-decoration: none;
 }
 
+.uibtn-mini {
+    padding: 1px 5px;
+    margin: 0;
+}
+
 .upload {
     margin-bottom: 10px;
 }
@@ -953,24 +960,15 @@ div#ranktab div.tablebg table th a {
     text-decoration: underline;
 }
 
-div.u-info {
-    position: relative;
+div#ranktab div.tablebg table td {
+    padding: .5em 0;
 }
 
-div.u-info > span {
-    font-size: 11px;
-    color: #BBB;
-    position: absolute;
-    left: -2%;
-}
-
-div.u-info span.u-info-u {
-    text-align: left;
-    bottom: 0%;
-}
-
-div.u-info span.u-info-d {
-    bottom: -65%;
+span.u-info {
+    font-size: 12px;
+    display: block;
+    width: 70px;
+    margin: 0 auto;
 }
 
 a.standings {
@@ -1012,22 +1010,34 @@ table.table-rank td {
     line-height: 15px;
 }
 
+.tab-content {
+    overflow: visible;
+}
+
 th.rank {
     width: 40px;
 }
 
 th.name {
-    width: 200px;
+}
+
+th.nick {
+    width: 80px;
 }
 
 th.solved {
-    width: 55px;
+    width: 40px;
+    cursor: pointer;
 }
 
 th.penalty {
-    width: 70px;
+    width: 60px;
+    cursor: pointer;
 }
 
+th.standing_status {
+    width: 80px;
+}
 
 td.red {
     background-color: rgb(255, 221, 221);

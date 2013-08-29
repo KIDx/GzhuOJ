@@ -47,8 +47,8 @@ app.configure(function(){
 //设置环境: production, development
 app.configure('development', function() {
   //使用静态资源服务以及设置缓存
-  //app.use(express.static(path.join(__dirname, 'public')));
-  app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
+  app.use(express.static(path.join(__dirname, 'public')));
+  //app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
   //若有错误，写入错误日志
   app.use(function(err, req, res, next){

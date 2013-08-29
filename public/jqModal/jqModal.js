@@ -61,7 +61,7 @@ params:{}};
 var s=0,H=$.jqm.hash,A=[],ie6=$.browser.msie&&($.browser.version == "6.0"),F=false,
 i=$('<iframe src="javascript:false;document.write(\'\');" class="jqm"></iframe>').css({opacity:0}),
 e=function(h){if(ie6)if(h.o)h.o.html('<p style="width:100%;height:100%"/>').prepend(i);else if(!$('iframe.jqm',h.w)[0])h.w.prepend(i); f(h);},
-f=function(h){try{$(':input:visible',h.w)[0].focus();}catch(_){}},
+f=function(h){try{$(':input:visible',h.w).eq(0).focus();}catch(_){}},
 L=function(t){$(document)[t]("keypress",m)[t]("keydown",m)[t]("mousedown",m);},
 m=function(e){var h=H[A[A.length-1]],r=(!$(e.target).parents('.jqmID'+h.s)[0]);if(r)f(h);return !r;},
 hs=function(w,t,c){return w.each(function(){var s=this._jqm;$(t).each(function() {

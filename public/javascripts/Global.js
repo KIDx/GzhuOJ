@@ -347,11 +347,12 @@ $(document).ready(function(){
             });
         });
 
-        $logininput.keyup(function(e){
-            if (e.keyCode == 13) {
-                $loginsubmit.click();
-            }
-            return false;
+        $.each($logininput, function(){
+            $(this).keyup(function(e){
+                if (e.keyCode == 13) {
+                    $loginsubmit.click();
+                }
+            });
         });
     }
 

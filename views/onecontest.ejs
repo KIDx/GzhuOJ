@@ -256,7 +256,7 @@
         </div>
       </div>
 <!--ranktab-->
-      <% var mw = 6 + 41 + 171 + 56 + 71 + 71*probNum; %>
+      <% var mw = 6 + 41 + 181 + 81 + 41 + 61 + 81*probNum; %>
       <div class="tab-pane" id="ranktab" style="margin:0px 10px;">
       <% if (contest.type == 2 && user && user.name == contest.userName) { %>
         <div class="input-append" align="left">
@@ -264,17 +264,18 @@
           <button class="btn" id="user-add">Add</button>
         </div>
       <% } %>
-        <div class="tablebg" style="width:<%= mw %>px;">
+        <div class="tablebg" style="width:<%= mw %>px">
           <div id="ranklist" class="pagination pagination-small">
           </div>
           <div id="tablediv">
             <table class="table table-rank tdcenter">
               <thead>
                 <tr>
-                  <th class="rank">Rank</th>
+                  <th class="rank">#</th>
                   <th class="name">Name</th>
-                  <th class="solved">Solved</th>
-                  <th class="penalty">Penalty</th>
+                  <th class="nick">Nick</th>
+                  <th class="solved" title="solved">S</th>
+                  <th class="penalty" title="penalty">P</th>
                   <% for(var i = 0; i < probNum; i++) { %>
                   <th class="standing_status">
                     <a class="rplink" href="#problem-<%= F[i] %>"><%= F[i] %></a>

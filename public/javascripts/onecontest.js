@@ -1,3 +1,9 @@
+var $div = $('#thumbnail');
+
+//deal with overflow rank table
+$(document).ready(function(){
+    $div.width($('#xbody').width());
+});
 
 //截流响应
 var interceptorTime = 300
@@ -21,7 +27,7 @@ var $progress = $('#progress')
 ,	$contain = $('#info-contain')
 ,	$lefttime = $('#lefttime');
 
-var $div = $('#thumbnail');
+
 
 function buildPager(page, n) {
     var cp = 5, html = '<ul>';
@@ -392,22 +398,21 @@ function buildRank(U) {
 
 	html += '>';
 	html += rank++;
-	html += '</td><td><div class="u-info">';
-
-	if (display == '1') {
-		if (I[U._id] && I[U._id].gde && I[U._id].name) {
-			html += '<span class="u-info-u">'+I[U._id].gde+'<br/>'+I[U._id].name+'</span>';
-		}
-	} else if (I[U._id]) {
-		html += '<span class="u-info-u">'+I[U._id]+'<br/>&nbsp</span>';
-	}
+	html += '</td>';
 
 	var pvl = parseInt(Users[U._id], 10);
-	html += '<a href="/user/'+U._id+'" class="user user-'+UserCol(pvl);
+	html += '<td><a href="/user/'+U._id+'" class="user user-'+UserCol(pvl);
 	html += '" title="'+UserTitle(pvl)+'">';
 	html += U._id+'</a>';
-	html += '</div></td>';
-	html += '<td>'+user.solved+'</td>';
+	html += '</div></td><td>';
+	if (display == '1') {
+		if (I[U._id] && I[U._id].gde && I[U._id].name) {
+			html += '<span class="u-info user-gray ellipsis">'+I[U._id].gde+'<br/>'+I[U._id].name+'</span></td>';
+		}
+	} else if (I[U._id]) {
+		html += '<span title="'+I[U._id]+'" class="u-info user-gray ellipsis">'+I[U._id]+'</span>';
+	}
+	html += '</td><td>'+user.solved+'</td>';
 	html += '<td>'+(user.penalty-user.solved*startTime)+'</td>';
 	
 	for (i = 0; i < prob_num; i++) {

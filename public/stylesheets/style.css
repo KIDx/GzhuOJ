@@ -1,0 +1,1350 @@
+body {
+    font-family: "微软雅黑","Helvetica Neue",Helvetica,Arial,sans-serif;
+    background-color: #f2f2f2;
+    max-width: 1300px;
+    min-width: 920px;
+    margin: auto;
+    color: #555;
+}
+
+pre, input, button, select, textarea {
+    font-family: "微软雅黑","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+.my-radio {
+    overflow: hidden;
+}
+
+.my-radio label, .my-radio input {
+    float: left;
+    margin-left: 25px;
+}
+
+.my-radio label {
+    margin-left: 5px;
+}
+
+.radio input {
+    margin-left: 20px;
+}
+
+td.accept {
+    background: #D4FFD0;
+}
+
+.fl {
+    float: left;
+}
+
+.fr {
+    float: right;
+}
+
+.w {
+    overflow: hidden;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 5px #ccc;
+    margin: 5px auto;
+    background: #fff;
+}
+
+.marquee {
+    color: #D33F74;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+ul.navigation > li {
+    margin-right: 5px;
+    float: right;
+    list-style: none;
+    list-style-position: outside;
+}
+
+ul.menu > li {
+    margin: 5px 15px 0 0;
+    float: left;
+}
+
+ul.menu > li > a {
+    color: #555!important;
+    text-decoration: none!important;
+    font-size: 18px;
+}
+
+div#wrapper {
+    min-height: 101%;
+}
+
+@media screen and (max-width: 1024px) {
+    body {
+        width: 950px;
+    }
+    div#wrapper {
+        min-height: 700px;
+    }
+}
+
+span.myhover {
+    cursor: pointer;
+}
+
+div#change-grade > input{
+    height: 16px;
+    margin-bottom: 3px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.error-text {
+    color: #AA1111;
+    font-weight: bold;
+}
+
+.success-text {
+    color: green;
+    font-weight: bold;
+}
+
+.info-text {
+    color: #DB8C15;
+}
+
+.accept-text {
+    color: #24A329;
+}
+
+.wrong-text {
+    color: #F12525;
+}
+
+.special-text {
+    color: #AE53C0;
+}
+
+a.special-text {
+    text-decoration: underline;
+}
+
+.user-red {
+    color: #E20000!important;
+}
+
+.user-orange {
+    color: #FF7000!important;
+}
+
+.user-violet {
+    color: #A0A!important;
+}
+
+.user-blue {
+    color: #7a22ff!important;
+}
+
+.user-cyan {
+    color: #08c!important;
+}
+
+.user-green {
+    color: green!important;
+}
+
+.user-gray {
+    color: gray!important;
+}
+
+.user-black {
+    color: #555!important;
+}
+
+.user-del {
+    float: right;
+    color: gray!important;
+    text-decoration: none!important;
+}
+
+.uin_del {
+    right: 2%;
+    top: 18%;
+    position: absolute;
+    background: url('img/icons.png');
+    z-index: 9999;
+    height: 14px;
+    width: 14px;
+}
+
+td.gold {
+    background: #ffe000;
+}
+
+td.silver {
+    background: #bad8ff;
+}
+
+td.bronze {
+    background: #f0c598;
+}
+
+span.user {
+    font-weight: bold;
+}
+
+a.user {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#sidebar {
+    float: left;
+    width: 20em;
+    margin-top: 1em;
+    top: 0;
+}
+
+div.sidebox {
+    font-size: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px 6px 0 0;
+    margin: 1em 1em 0 0;
+    background: white;
+}
+
+div.sidebox > ul {
+    margin: .5em 1.5em;
+    list-style: none outside none;
+}
+
+div.istyle em {
+    font-size: 125%;
+    font-family: times new roman, sans-serif; 
+}
+
+div.sidegroup {
+    margin: .5em;
+}
+
+div.sidegroup table td {
+    padding: 2px 0;
+}
+
+div.sidegroup .uibtn {
+    padding: 0 5px;
+    margin: 0;
+}
+
+div.sidegroup #submit {
+    width: 150px;
+}
+
+div.side-header {
+    color: #3B5998;
+    font-size: 15px;
+    font-weight: bold;
+    padding: .2em 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.side-input {
+    font-size: 12px;
+    height: 20px;
+    line-height: 15px;
+    padding: 0;
+    margin: 0;
+    width: 150px!important  ;
+}
+
+div.tag-box {
+    margin: 0 .5em .2em 0;
+    padding: 0 .3em;
+    border: 1px solid #ccc;
+    background: whitesmoke;
+    float: left;
+    border-radius: 3px;
+}
+
+div.tag-box span.del {
+    margin-left: .3em;
+    color: gray;
+    cursor: pointer;
+}
+
+div.prob-info {
+    padding-top: 5px;
+    font-size: 14px;
+}
+
+pre.sample {
+    color: #800;
+}
+
+td.center {
+    text-align: center;
+}
+
+div#xbody {
+    min-height: 680px;
+}
+
+div.tablebg,
+div#xbody input,
+div#xbody textarea {
+    font-size: 14px;
+}
+
+div#preload_logo {
+    height: 70px;
+}
+
+/*********************CF*********************/
+
+div.back {
+    background: url("img/lava.png") no-repeat right -20px;
+    width: 9px;
+    height: 20px;
+    z-index: 100;
+    position: absolute;
+}
+
+div.back > div.left{
+    background: url("img/lava.png") no-repeat top left;
+    height: 20px;
+    margin-right: 9px;
+}
+
+div.ilt {
+    background: url('img/tablebg.png') no-repeat scroll -26px 0 transparent;
+    width: 6px;
+    height: 6px;
+    left: 0;
+    top: 0;
+    position: absolute;
+    z-index: 1000;
+}
+
+div.irt {
+    background: url('img/tablebg.png') no-repeat scroll -20px 0 transparent;
+    width: 6px;
+    height: 6px;
+    right: 0;
+    top: 0;
+    position: absolute;
+    z-index: 1000;
+}
+
+div.lt {
+    background: url('img/tablebg.png') no-repeat scroll -14px 0 transparent;
+    width: 6px;
+    height: 6px;
+    left: 0;
+    top: 0;
+    position: absolute;
+}
+
+div.rt {
+    background: url('img/tablebg.png') no-repeat scroll -8px 0 transparent;
+    width: 6px;
+    height: 6px;
+    right: 0;
+    top: 0;
+    position: absolute;
+}
+
+div.lb {
+    background: url('img/tablebg.png') no-repeat scroll -4px 0 transparent;
+    width: 4px;
+    height: 4px;
+    left: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+div.rb {
+    background: url('img/tablebg.png') no-repeat scroll 0 0 transparent;
+    width: 4px;
+    height: 4px;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+}
+
+div.tablebg div.pagination {
+    margin: 0 0 4px 0;          /*must not change this*/
+    padding: 2px 10px 1px 8px;
+}
+
+div.tablebg div.pagination ul > li > a {
+    padding: 2px 5px;
+    color: #333;
+}
+
+div.tablebg div.pagination ul > li.disabled > a:hover,
+div.tablebg div.pagination ul > li.disabled > a {
+    background-color: whitesmoke;
+    color: #999;
+    cursor: default;
+}
+
+div.tablebg div.pagination ul > li.active > a {
+    font-weight: bold;
+    color: #999;
+}
+
+span.act-item {
+    margin: 0 0.5em;
+}
+
+/*********************CF*********************/
+
+table tr.highlight {
+    background-color: #def!important;
+}
+
+table tr.girllight {
+    background-color: #FFE2F2!important;
+}
+
+table.tdmini tr th {
+    padding: 0.30em;
+}
+
+table.mini tr th {
+    color: #444;
+}
+
+table.mini tr th,
+table.mini tr td {
+    padding: 0.35em;
+}
+
+table.tdmini tr td {
+    padding: 0.35em;
+}
+
+table.tdcenter tr td {
+    text-align: center;
+}
+
+div.mylist {
+    margin-top:10px;
+}
+
+div.mylist > div#tablediv {
+    padding: 0.7em;
+    text-align: center;
+}
+
+div.mylist > div#tablediv > a {
+    font-size: large;
+    margin-right: 0.3em;
+}
+
+div.tablebg {
+    padding-bottom: 3px;
+    background-color: #e1e1e1;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+div.tablebg div#pager {
+    height: 30px;
+    padding-right: 2px;
+    position: relative;
+}
+
+div.tablebg div#header {
+    text-align: left;
+    font-weight: bold;
+     color: #555;
+    padding: 3px 0 3px 6px;
+}
+
+div.tablebg div#tablediv {
+    margin: 0 3px 0 3px;
+    background-color: white;
+    position: relative;
+    clear: both;
+}
+
+div.tablebg table {
+    margin: 0;
+    padding: 0;
+}
+
+div.tablebg table td,
+div.tablebg table th {
+    border-left: 1px solid #e1e1e1;
+}
+
+div.tablebg table tr th:first-child,
+div.tablebg table tr td:first-child {
+    border-left: medium none;
+}
+
+div.tablebg div#filter {
+    margin: 0;
+    text-align: right;
+    padding: 2px 5px 1px 0;
+    position: relative;
+}
+
+div.tablebg div#filter span.add-on {
+    font-size: 12px;
+    border: 1px solid #aaa;
+    padding: 0 3px;
+}
+
+div.tablebg div#filter div {
+    position: relative;
+    float: left;
+    padding-left: 10px;
+}
+
+div.tablebg div#filter select,
+div.tablebg div#filter input {
+    margin: 0;
+    padding: 0;
+    border: 1px solid #aaa;
+}
+
+div.tablebg div#filter input {
+    width: 115px;
+}
+
+div.tablebg div#filter input:focus {
+    border-color: rgba(82, 168, 236, 0.8);
+}
+
+form div#simpleInput div select,
+div.tablebg div#filter select,
+div.tablebg div#filter button {
+    line-height: 15px;
+    font-size: 12px;
+    height: 22px;
+    padding: 0 5px;
+}
+
+form div#simpleInput div input,
+.table tr td input[type="text"],
+.table tr th input[type="text"] {
+    margin: 0;
+    padding: 0;
+}
+
+/**************bootstrap fixed**************/
+.hidden {
+    display: none;
+}
+
+.icon-search {
+    background: url('img/icons.png') -14px 0 transparent;
+}
+
+ul.nav-tabs {
+    border-radius: 6px 6px 0 0;
+    padding-top: 4px;
+    background: url('img/tab.png') repeat-x scroll 0 -43px transparent;
+}
+
+ul.nav-tabs > li > a{
+    margin-right: 4px;
+    color: #666;
+}
+
+ul.nav-tabs > li.active > a,
+ul.nav-tabs > li > a:hover{
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+ul.nav-tabs > li.active > a,
+ul.nav-tabs > li.active > a:hover {
+    color: #333;
+    border-bottom-color: #fff;
+    background: url('img/tab.png') repeat-x scroll 0 -2px white;
+}
+
+ul.nav-tabs > li > a:hover {
+    color: #333;
+    background: #d6d6d6;
+}
+
+.jqtop {
+    background: url('img/tab.png') repeat-x scroll 0 -43px white;
+}
+
+div.avatar {
+    border: 1px solid #ccc;
+    float: right;
+    margin: 20px 20px 0 0;
+    width: 250px;
+    height: 250px;
+}
+
+.avatar_b, .avatar_m, .avatar_s {
+    float: left;
+    text-align: center;
+    color: #666;
+    font-size: 12px;
+}
+
+.left {
+    float: left;
+    width: 250px;
+    height: 250px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    margin-right: 40px;
+    background: #f5f5f5;
+    text-align: center;
+}
+
+.right {
+    float: left;
+    width: 320px;
+    height: 270px;
+    border-left: 1px #ddd solid;
+    padding-left: 40px;
+}
+
+.fixed {
+    display: block;
+}
+
+.avatar_img {
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.avatar_b .avatar_img {
+    width: 150px;
+    height: 150px;
+}
+
+.avatar_m .avatar_img {
+    width: 100px;
+    height: 100px;
+}
+
+.avatar_s .avatar_img {
+    width: 50px;
+    height: 50px;
+}
+
+.avatar_b {
+    padding-top: 40px;
+}
+
+.avatar_m {
+    padding-left: 40px;
+    padding-top: 40px;
+    margin-bottom: 10px;
+}
+
+.avatar_s {
+    padding-left: 48px;
+    padding-top: 5px;
+}
+
+.avatar_setting {
+    min-height: 400px;
+    width: 660px;
+    padding: 30px 50px 0px 70px;
+    overflow: hidden;
+    margin: 0px auto;
+}
+
+#choosebox {
+    padding: 5px;
+    width: 220px;
+    border: 1px solid #ccc;
+    background: #E5E5E5;
+    cursor: pointer;
+}
+
+div.roundbox {
+    padding: 1em;
+    border: 1px solid #ddd;
+    border-radius: 6px 6px 6px 6px;
+    background-color: whitesmoke;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05) inset;
+    overflow: hidden;
+}
+
+div.roundbox > h3 {
+    margin: 0;
+}
+
+ul.user-info {
+    margin: 0;
+    list-style: none;
+}
+
+ul.user-info > li {
+    margin: 1em 0;
+}
+
+div.menu-list {
+    position: absolute;
+    left: 1.5em;
+    top: -3.8em;
+}
+
+div.menu-list > ul > li {
+    float: left;
+    list-style: none;
+}
+
+div.menu-list > ul > li > a {
+    position: relative;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 11px;
+    color: #333;
+    z-index: 10;
+    float: left;
+    display: block;
+    padding: 3px 5px;
+    margin-left: 10px;
+}
+
+div.menu-list > ul > li > a:hover {
+    background: #e5e5e5;
+}
+
+.divider {
+    color: #666;
+}
+
+.thumbnail {
+    min-height: 650px;
+    padding: 0;
+    margin-bottom: 8px;
+    border-radius: 6px 6px 4px 4px;
+    background-color: #f2f9ff;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+}
+
+div.form-actions {
+    border-top: 1px solid #CCC;
+    background-color: transparent;
+}
+
+.accordion-group {
+    margin-bottom: 0;
+    font-size:15px;
+}
+
+.accordion-toggle {
+    color: #3069BE;
+    padding: 10px!important;
+    margin: 4px 0;
+}
+
+.progress {
+    background-color: #e5e5e5;
+    margin: 0;
+    height: 15px;
+}
+
+.progress .bar {
+    width: 100%;
+    z-index: 100;
+}
+
+.contest_progress {
+    margin-bottom: 10px;
+}
+
+td .progress {
+    margin: 0;
+}
+
+/**************bootstrap fixed**************/
+
+legend{
+    color: #666;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table-cf thead th {
+    padding: 0.45em;
+}
+
+.table-cf td {
+    padding: 0.7em;
+}
+
+.uibtn {
+    background: #fff;
+    vertical-align: middle;
+    display: inline-block;
+    margin: 2px 3px;
+    padding: 2px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px 3px 3px 3px;
+    font-weight: bold;
+    font-size: 12px;
+    color: #555;
+    text-decoration: none;
+}
+
+.uibtn:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+.upload {
+    margin-bottom: 10px;
+}
+
+.uploaddiv > span {
+    margin: 0;
+}
+
+.uploaddiv > button {
+    margin: 18px 0 5px 0;
+    width: 150px;
+    display: block;
+}
+
+.upload-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-btn input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    opacity: 0;
+    height: 40px;
+    cursor: pointer;
+    filter: alpha(opacity=0);
+}
+
+.upload-info {
+    display: inline-block;
+    padding: 5px 10px;
+    font-size: .9em;
+    color: gray;
+}
+
+.ibox {
+    float: left;
+    margin: 0 15px 0 0;
+}
+
+.ibox_head {
+    padding: 10px;
+}
+
+.cb {
+    clear: both;
+}
+
+table.parity thead {
+    background-color: white;
+}
+
+tr.odd {
+    background-color: #f5f5f5;
+}
+
+tr.even {
+    background-color: white;
+}
+
+h3.problem-header {
+    color: #3069BE;
+    text-align: center;
+    margin: 10px 0;
+}
+
+#wrapper {
+    min-height: 105%;
+}
+
+#problemsview {
+    margin: 0 13%;
+}
+
+.table tr th,
+.table#statustable tr td,
+.table#contest tr td{
+    text-align: center;
+}
+
+.table.thright tr th{
+    text-align: right;
+}
+
+.my-table-bordered th,
+.my-table-bordered td {
+    border-left: 1px solid #e1e1e1;
+}
+
+table.table-head {
+    font-size: 15px;
+}
+
+.table#overviewtable th,
+.table#overviewtable td {
+    padding: 5px;
+    border-top: 0;
+}
+
+table#addcontest {
+    background-color: rgb(245,245,245);
+}
+
+div.des-box {
+    background-color: #e0eaff;
+    font-size: 15px;
+    margin: 10px 0;
+    padding: 8px;
+    border: 1px solid #c8d4f3;
+    border-radius: 3px;
+}
+
+table.sort th a {
+    position: relative;
+    display: block;
+    text-decoration: none!important;
+    color: #333!important;
+    z-index: 1000;
+}
+
+table.sort th a:hover {
+    background: #ddd;
+}
+
+table.sort th a.current {
+    background: #ccc;
+}
+
+table#problemset tr td div#dif_bg {
+    width: 80px;
+    height: 16px;
+    position: relative;
+}
+
+table#problemset tr td div#dif_bg img {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+div#ranktab div.tablebg table th a {
+    text-decoration: underline;
+}
+
+div.u-info {
+    position: relative;
+}
+
+div.u-info > span {
+    font-size: 11px;
+    color: #BBB;
+    position: absolute;
+    left: -2%;
+}
+
+div.u-info span.u-info-u {
+    text-align: left;
+    bottom: 0%;
+}
+
+div.u-info span.u-info-d {
+    bottom: -65%;
+}
+
+a.standings {
+    color: blue;
+    text-decoration: underline;
+}
+
+a.register {
+    color: white;
+    font-weight: bold;
+    background-color: red;
+    text-decoration: underline;
+}
+
+div.table-tab {
+    float: right;
+    font-size: 12px;
+}
+
+div.prob-tag {
+    color: gray;
+}
+
+div.prob-tag a.tag {
+    color: gray;
+    text-decoration: none;
+}
+
+table.table-rank tbody tr {
+    height: 45px;
+}
+
+table.table-rank th {
+    padding: 8px 0;
+}
+
+table.table-rank td {
+    padding: 0.5em;
+    line-height: 15px;
+}
+
+th.rank {
+    width: 40px;
+}
+
+th.name {
+    width: 200px;
+}
+
+th.solved {
+    width: 55px;
+}
+
+th.penalty {
+    width: 70px;
+}
+
+
+td.red {
+    background-color: rgb(255, 221, 221);
+}
+
+span.failed {
+    color: red;
+    font-weight: bold;
+    display: block;
+}
+
+span.cell-time {
+    color: #777;
+    font-size: 10px;
+    display: block;
+}
+
+span.FB {
+    color: blue!important;
+    font-weight: bold;
+}
+
+td.AC {
+    border-left: 6px solid #ceecc0!important;
+}
+
+td.AC-fill {
+    background-color: #D4EDC9;
+}
+
+td.WA {
+    border-left: 6px solid #ffd6d6!important;
+}
+
+td.WA-fill {
+    background-color: #FFE3E3;
+}
+
+table th img {
+    position: absolute;
+    right: 0%;
+    top: 27%;
+}
+
+#footer {
+    text-align: center;
+    font-size: 1em;
+}
+
+
+/*.table {word-break: break-all;}*/
+
+/* jqModal base Styling courtesy of;
+    Brice Burgess <bhb@iceburg.net> */
+
+/* The Window's CSS z-index value is respected (takes priority). If none is supplied,
+    the Window's z-index value will be set to 3000 by default (via jqModal.js). */
+
+.CeWindow {
+    display: none;
+    width: 40%;
+    top: 10%;
+    left: 30%;
+    position: fixed;
+    font-size: 13px;
+    padding: 0;
+    box-shadow: 0 5px 8px rgba(0,0,0, 0.35);
+}
+
+.jqmWindow {
+    display: none;
+    
+    position: fixed;
+    bottom: 2%;
+    right: 1%;
+    
+    height: 50px;
+    width: 260px;
+    
+    background-color: #000;
+    background: rgba(0,0,0,0.85);
+
+    
+    color: #fff;
+    border: 0;
+    border-radius: 4px 4px 4px 4px;
+    padding: 5px 30px 5px 10px;
+    font-size: 13px;
+    box-shadow: 0 5px 8px rgba(0,0,0, 0.35);
+}
+
+.jqmSubmit {
+    display: none;
+    position: fixed;
+    background-color: #e7f5ff;
+    color: #333;
+    border: 0;
+    padding: 2px;
+    overflow: hidden;
+    border-radius: 4px 4px 4px 4px;
+    box-shadow: 0 5px 8px rgba(0,0,0, 0.50);
+    background-image: -webkit-gradient(
+        linear,
+        left bottom,
+        left top,
+        color-stop(0.1, #D8EFFF),
+        color-stop(0.95, white)
+    );
+    background-image: -moz-linear-gradient(center bottom , #D8EFFF 10%, white 95%);
+    background-attachment: fixed;
+}
+
+.jqmOverlay { background-color: #000; }
+
+.jqDrag {
+    width: 100%;
+    cursor: move;
+}
+
+.jqResize {
+    width: 14px;
+    height: 14px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
+    background: url('img/icons.png') -28px 0 transparent;
+}
+
+.jqtop {
+    margin: 0 0 5px 0;
+    min-height:25px;
+    padding:2px 5px 0 0;
+    position: relative;
+    top: 0;
+    left: 0;
+    border: 1px solid #ddd;
+}
+
+.jqcontent {
+    border-bottom: 1px solid #CCC;
+    padding-left: 10px;
+    margin: 0;
+    position: absolute;
+    overflow: auto;    
+}
+
+div.jqcontent > small.error-text {
+    height: 15px;
+    display: block;
+    margin-top: 5px;
+}
+
+div.jqcontent textarea {
+    font-size: 12px;
+}
+
+div.jqcontent input {
+    font-size: 12px;
+    padding: 1px 3px;
+    margin: 0;
+}
+
+div.jqcontent select {
+    height: auto;
+    padding: 1px 3px;
+    margin: 0;
+}
+
+div.jqcontent span.add-on {
+    font-size: 12px;
+    padding: 1px 6px;
+}
+
+div.jqcontent label{
+    font-size: 12px;
+}
+
+div.jqcontent span.add-on {
+    background-color: #ddd;
+}
+
+div.jqcontent > div {
+    padding-top: 10px;
+    overflow: hidden;
+}
+
+div.jqcontent div.group input {
+    width: 200px;
+}
+
+div.jqcontent div.group > div{
+    float: left;
+}
+
+div.jqfoot .btn {
+    font-size: 12px;
+    padding: 3px 10px;
+}
+
+.jqfoot {
+    padding: 0;
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+.jqclose {
+    width: 14px;
+    height: 14px;
+    background: url('img/icons.png') 0 0 transparent;
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    cursor: pointer;
+}
+
+.jqmClose {
+    position: absolute;
+    top: 1%;
+    right: 3%;
+    cursor: pointer;
+}
+
+/*Made by Lrelia,a little girl forever:start*/
+.container{
+    width:100%;
+    height: 2650px; /*important:The height of FAQ web page depends on it.
+    When it changes,the height of its son divs will change,too*/
+    position: relative;
+    /*border: 1px solid red; if you are unsatisfied with the layout,I suggest you to use this code.*/
+}
+.set_picture_left{
+    width: 18%; /*important:this div's width is 20% of its father div*/
+    height: 95%;
+    min-height:2670px;
+    min-width:167px;
+    position:relative; /*important:this code makes your div fit the scanner size*/
+    float: left; 
+    /*border: 1px solid red;*/
+    background-image: url(/img/picture_left.png);
+    background-size: 100%;
+    z-index: 2;
+}
+.set_picture_right{
+    width: 18%;
+    height: 95%;
+    min-height:2670px;
+    min-width:167px;
+    position:relative;
+    float: right; 
+    /*border: 1px solid red;*/
+    background-image: url(/img/picture_right.png);
+    background-size: 100%;
+    z-index: 2;
+}
+.QA{
+    width:63%;
+    height: 95%;
+    min-height:2670px;
+    min-width:550px;
+    position:relative;
+    float: left;
+   /*border: 1px solid red;*/
+    border-left:1px solid yellow;
+    border-right:1px solid yellow;
+    font-family: Trebuchet MS,Arial; 
+    color: rgb(22,163,230); /*font color*/
+    font-size: 1em;
+    z-index:3px;
+    overflow: hidden;
+}
+.left_border{
+   width:20px;
+   height:100%;
+   position:relative;
+   float: left;
+   background-image: url(/img/border.jpg);
+}
+.right_border{
+    width:20px;
+    height:100%;
+    position:relative;
+    float: right;
+    background-image: url(/img/border.jpg);
+}
+.Q{
+    width: 550px;
+    margin: 0 auto; /*this code makes your div stay in the horizontal center*/
+    padding-top:5px;
+    padding-left: 3px;
+}
+.A{
+    width:550px;
+    margin: 0 auto;
+    padding-top:5px;
+    padding-left: 3px;
+}
+.QA_img{
+    float: left;
+    height: 22px;
+    width:34px;
+}
+/*Made by Lrelia,a little girl forever:end*/
+p.MsoNormal, li.MsoNormal, div.MsoNormal {
+    margin: 0cm;
+    margin-bottom: .0001pt;
+    text-align: justify;
+    text-justify: inter-ideograph;
+    font-size: 10.5pt;
+    font-family: "微软雅黑","sans-serif";
+}
+.MsoChpDefault {
+    font-family: "微软雅黑","sans-serif";
+}
+div.WordSection1 {
+    page: WordSection1;
+}
+/*上面的样式由Microsoft Word 2013自动生成*/
+

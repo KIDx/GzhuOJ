@@ -1,0 +1,142 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title id="title"><%= title %></title>
+    <link rel="shortcut icon" href="/favicon.ico" mce_href="/favicon.ico" type="image/x-icon">
+    <link href="/stylesheets/bootstrap.css" rel="stylesheet" type="text/css"/>
+    <link href="/stylesheets/style.css" rel="stylesheet" type="text/css"/>
+  <% if (key == 11) { %>
+    <link rel="stylesheet" type="text/css" href="/highlighter/styles/shCoreEclipse.css"/>
+    <link rel="stylesheet" type="text/css" href="/highlighter/styles/shThemeEclipse.css"/>
+  <% } else if (key == 1002) { %>
+    <link rel="stylesheet" href="/zd/css/zebra_datepicker.css" type="text/css"/>
+  <% } %>
+  <!--[if lt IE 9]>
+    <link href="/stylesheets/ie.css" rel="stylesheet"/>
+  <![endif]-->
+  </head>
+  <body id="wrapper">
+    <div class="w">
+      <div class="fl">ACM-ICPC</div>
+      <ul class="navigation">
+    <% if (!user) { %>
+        <li><a href="javascript:;" id="reg">Register</a></li>
+        <li><span class="user-gray">|</span></li>
+        <li><a href="javascript:;" id="login">Enter</a></li>
+    <% } else { %>
+        <li><a href="javascript:;" id="logout">Logout</a></li>
+        <li><span class="user-gray">|</span></li>
+      <% if (user.privilege >= 81) { %>
+        <li><a href="/addstudent">Add Student</a></li>
+        <li><span class="user-gray">|</span></li>
+      <% } %>
+      <% if (user.addprob == 1) { %>
+        <% if (key == 1000) { %>
+        <li class="active">Add Problem</li>
+        <% } else if (key == 1001) { %>
+        <li class="active">Edit Problem</li>
+        <% } else { %>
+        <li><a href="/addproblem">Add Problem</a></li>
+        <% } %>
+        <li><span class="user-gray">|</span></li>
+      <% } %>
+        <li><a href='/user/<%= user.name %>'><%= user.name %></a></li>
+    <% } %>
+      </ul>
+    </div>
+    <div class="w" id="preload_logo">
+      <a href="/"><img src="/img/logo.png" /></a>
+    </div>
+    <div class="w">
+      <ul class="navigation menu">
+        <li><a href="/">Home</a></li>
+        <li><a href="/problemset">Problemset</a></li>
+        <li><a href="/status">Status</a></li>
+        <li><a href="/ranklist">Ranklist</a></li>
+        <li><a href="/contest/1">DIY Contest</a></li>
+        <li><a href="/contest/2">VIP Contest</a></li>
+        <li><a href="/contest/3">Course</a></li>
+        <li><a href="/faq">FAQ</a></li>
+      </ul>
+      <div class="fr">
+        <input type="text" style="padding:2px;margin:0;font-size:12px;" class="input-small" placeholder=" Problem ID" title="Problem ID">
+        <a id="Go" class="uibtn" href="javascript:;">Go</a>
+      </div>
+    </div>
+    <div class="w"  id="xbody">
+      <%- body %>
+    </div>
+    <div class="w" id="footer">
+      <div><a href="#">GzhuOnlineJudge</a> (c) Copyright 2012-2013 KIDx, TT_last</div>
+      <div>Any bug please contect 972169909@qq.com</div>
+      <div>Server time: <span <% if(key == 6) { %>type="<%= type %>"<% } %> <% if (user) { %>user="<%= user.name %>"<% } %> time="<%= time %>" id="timer" <% if (message) { %>msg="<%= message %>"<% } %>></span></div>
+    </div>
+<!--****************Dialogs****************-->
+    <% if (!user) { %>
+      <%- partial('login') %>
+      <%- partial('register') %>
+    <% } %>
+    <% if (key == 2) { %>
+      <%- partial('regcontest', {u:user}) %>
+    <% } else if (key == 4) { %>
+      <%- partial('info') %>
+    <% } else if (key == 6) { %>
+      <% if (type != 2) { %>
+        <%- partial('logincontest') %>
+      <% } %>
+    <% } else if (key == 9) { %>
+      <%- partial('info') %>
+      <% if (user && isContestant) { %>
+      <%- partial('contestsubmit') %>
+      <% } %>
+    <% } %>
+<!--****************Dialogs****************-->
+  <!-- js Placed at the end of the document so the pages load faster -->
+    <script src="/javascripts/jquery.js"></script>
+    <script src="/javascripts/jquery-ui-EffectsCore-1.10.3.js"></script>
+  <!--[if lt IE 9]>
+    <script type="text/javascript" src="/javascripts/html5.js"></script>
+    <script src="/javascripts/mediaquerie.js"></script>
+  <![endif]-->
+    <script src="/jqModal/jqDnR.js"></script>
+    <script src="/jqModal/jqModal.js"></script>
+    <script src="/javascripts/Global.js"></script>
+  <% if (key == 0) { %>
+    <script src="/javascripts/user.js"></script>
+  <% } else if (key == 1) { %>
+    <script src="/javascripts/statistic.js"></script>
+  <% } else if (key == 2) { %>
+    <script src="/javascripts/regform.js"></script>
+  <% } else if (key == 3) { %>
+    <script src="/javascripts/problemset.js"></script>
+  <% } else if (key == 5) { %>
+    <script src="/javascripts/ranklist.js"></script>
+  <% } else if (key == 6) { %>
+    <script src="/javascripts/contest.js"></script>
+  <% } else if (key == 8) { %>
+    <script src="/javascripts/fileUpload.js"></script>
+    <script src="/javascripts/problem.js"></script>
+  <% } else if (key == 9) { %>
+    <script src="/javascripts/bootstrap.js"></script>
+    <script src="/javascripts/onecontest.js"></script>
+  <% } else if (key == 4) { %>
+    <script src="/javascripts/status.js"></script>
+    <script src="/javascripts/updatestatus.js"></script>
+  <% } else if (key == 11){ %>
+    <script src="/highlighter/scripts/shCore.js"></script>
+    <script src="/highlighter/scripts/shBrushCpp.js"></script>
+    <script src="/highlighter/scripts/shBrushJava.js"></script>
+    <script type="text/javascript">SyntaxHighlighter.all();</script>
+  <% } else if (key == 12) { %>
+    <script src="/javascripts/fileUpload.js"></script>
+    <script src="/javascripts/avatar.js"></script>
+  <% } else if (key == 1002) { %>
+    <script src="/javascripts/addcontest.js"></script>
+    <script src="/zd/javascript/zebra_datepicker.js"></script>
+  <% } else if (key == 1000 || key == 1001) { %>
+    <script src="/javascripts/fileUpload.js"></script>
+    <script src="/ckeditor/ckeditor.js"></script>
+    <script src="/javascripts/addproblem.js"></script>
+  <% } %>
+  </body>
+</html>

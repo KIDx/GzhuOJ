@@ -1,0 +1,97 @@
+<!--<html>-->
+<% var T = '班'; %>
+<% if (user && user.privilege == '82') { %>
+<% var g, c, cen = (new Date()).getFullYear()%100; %>
+  <% if (parseInt(user.grade, 10) > 99) { %>
+    <% g = parseInt(user.grade/10, 10); c = user.grade%10; %>
+  <% } else { %>
+    <% g = parseInt(user.grade, 10); c = -1; T = '级'; %>
+  <% } %>
+<% } %>
+<fieldset>
+  <div>
+    <legend>
+      课程<%= course.courseID %>：<%= course.title %>
+    </legend>
+  </div>
+  <div class="tablebg">
+    <div id="pager">
+      <div id="header" class="fl"><%= user.grade %><%= T %>排名</div>
+      <% if (user && user.privilege == '82') { %>
+      <div class="fr" id="filter">
+        <div>
+          <select style="width:50px;" id="grade">
+            <% for (var i = cen-10; i <= cen; i++) { %>
+            <% var v = i; if (i < 10) { v = '0'+i; } %>
+            <option value="<%= v %>" <% if (g == i) { %>selected<% } %>><%= v %></option>
+            <% } %>
+          </select>&nbsp;级
+        </div>
+        <div>
+          <select style="width:50px;" id="class">
+            <option value="" <% if (c < 0) { %>selected<% } %>>All</option>
+            <% for (var i = 1; i < 10; i++) { %>
+            <option value="<%= i %>" <% if (i == c) { %>selected<% } %>><%= i %></option>
+            <% } %>
+          </select>&nbsp;班
+        </div>
+        <div>
+          <a style="width:50px;margin-bottom:2px;" class="uibtn uibtn-mini" href="javascript:;" id="query" cid="<%= course.courseID %>">查询</a>
+        </div>
+      </div>
+      <% } %>
+    </div>
+    <div id="tablediv">
+      <table class="table tdcenter table-rank" style="table-layout:fixed;" id="rank">
+        <thead>
+          <tr>
+            <th style="width:5%;">名次</th>
+            <th style="width:14%;">用户名</th>
+            <th style="width:14%;">姓名</th>
+            <th>个性签名</th>
+            <th style="width:7%;">解决</th>
+            <th style="width:7%;">提交</th>
+            <th style="width:8%;">AC率</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% if (!ranks || ranks.length == 0) { %>
+          <tr class="odd">
+            <td class="error-text center" colspan="7">No Users are matched.</td>
+          </tr>
+        <% } else { %>
+        <% ranks.forEach(function(val, i){ %>
+        <% var c, h = '', res = '0.00', p = {name:val._id, solved: val.value.solved, submit: val.value.submit}; %>
+        <% if (i % 2 == 1) { %>
+        <% c = 'even'; %>
+        <% } else { %>
+        <% c = 'odd'; %>
+        <% } %>
+        <% if (user && user.name == p.name) { %>
+        <% h = ' highlight'; %>
+        <% } %>
+        <% if (p.submit > 0) res = (p.solved/p.submit*100).toFixed(2); %>
+          <tr class="<%= c %><%= h %>">
+            <td><%= i+1 %></td>
+            <td>
+              <a class="user user-<%= UI[p.name].col %>" href="/user/<%= p.name %>" title="<%= UI[p.name].til %>">
+                <%= p.name %>
+              </a>
+            </td>
+            <td>
+              <span class="u-info user-gray">
+                <%= UI[p.name].gde %><br/><%= UI[p.name].name %>
+              </span>
+            </td>
+            <td><% if (UI[p.name].sig) { %><%= UI[p.name].sig %><% } %></td>
+            <td><%= p.solved %></td>
+            <td><%= p.submit %></td>
+            <td><%= res %>%</td>
+          </tr>
+        <% }); %>
+        <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</fieldset>

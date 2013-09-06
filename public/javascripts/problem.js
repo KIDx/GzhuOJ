@@ -24,7 +24,7 @@ $(document).ready(function() {
 		add: function(e, data) {
 			var f = data.files[0];
 			$ui.text(f.name);
-			$submit.unbind();
+			$submit.unbind('click');
 			$submit.click(function(){
 				if (f.size) {
 					if (f.size < 50) {

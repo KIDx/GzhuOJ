@@ -38,10 +38,10 @@
           </select>
         </div>
         <div>
-          <button id="fil">Filter</button>
+          <a href="javascript:;" class="uibtn uibtn-mini" id="fil">Filter</a>
         </div>
         <div>
-          <button id="reset">Reset</button>
+          <a href="javascript:;" class="uibtn uibtn-mini" id="reset">Reset</a>
         </div>
       </div>
     </div>
@@ -89,9 +89,9 @@
             <% time = '<img src="img/running.gif"/>'; %>
             <% } %>
             <% if (p.result == 8 && user && (user.name == p.userName || user.name == 'admin')) { %>
-            <% v = '<a href="javascript:;" title="more information" rid="'+p.runID+'" class="user CE '+C[i]+'">'+R[i]+'</a>'; %>
+            <% v = '<a href="javascript:;" title="more information" rid="'+p.runID+'" class="CE special-text">Compilation Error</a>'; %>
             <% } else { %>
-            <% v = '<span class="user '+C[i]+' '+vc+'">'+R[i]+'</span>'; %>
+            <% v = R[i]; %>
             <% } %>
           <tr class="<%= c %>">
             <td><%= p.runID %></td>
@@ -103,7 +103,7 @@
             <td>
               <a href="/problem?pid=<%= p.problemID %>"><%= p.problemID %></a>
             </td>
-            <td <% if (p.result < 2) { %>rid="<%= p.runID %>"<% } %>>
+            <td class="bold <%= vc %> <%= C[i] %>" <% if (p.result < 2) { %>rid="<%= p.runID %>"<% } %>>
               <%- v %>
             </td>
             <td><%- time %></td>

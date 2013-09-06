@@ -95,15 +95,6 @@ Contest.update = function(cid, H, callback){
   });
 };
 
-Contest.multiupdate = function(callback){
-  contests.update({}, {updateTime:0}, {multi:true}, function(err){
-    if (err) {
-      console.log('err');
-    }
-    callback(err);
-  });
-};
-
 Contest.dele = function(Q, callback){
   contests.findOneAndRemove(Q, function(err){
     if (err) {

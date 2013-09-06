@@ -10,10 +10,10 @@
           <input type="text" id="search" <% if (search) { %>value="<%= search %>"<% } %> title="User or Nickname" placeholder=" user or nick">
         </div>
         <div>
-          <button id="fil">Filter</button>
+          <a href="javascript:;" class="uibtn uibtn-mini" id="fil">Filter</a>
         </div>
         <div>
-          <button id="reset">Reset</button>
+          <a href="javascript:;" class="uibtn uibtn-mini" id="reset">Reset</a>
         </div>
       </div>
     </div>
@@ -37,22 +37,29 @@
           </tr>
         <% } else { %>
         <% users.forEach(function(p, i){ %>
-        <% var c, res = '0.00'; %>
+        <% var c, h = '', res = '0.00'; %>
         <% if (i % 2 == 1) { %>
         <% c = 'even'; %>
         <% } else { %>
         <% c = 'odd'; %>
         <% } %>
+        <% if (user && user.name == p.name) { %>
+        <% h = ' highlight'; %>
+        <% } %>
         <% if (p.submit > 0) res = (p.solved/p.submit*100).toFixed(2); %>
-          <tr class="<%= c %>">
+          <tr class="<%= c %><%= h %>">
             <td><%= (page-1)*pageNum+i+1 %></td>
             <td>
               <a class="user user-<%= UC[i] %>" href="/user/<%= p.name %>" title="<%= UT[i] %>">
                 <%= p.name %>
               </a>
             </td>
-            <td><span class="user user-gray"><%= p.nick %></span></td>
-            <td><%= p.signature %></td>
+            <td>
+              <span class="user user-gray">
+                <%= p.nick %>
+              </span>
+            </td>
+            <td><% if (p.signature) { %><%= p.signature %><% } %></td>
             <td>
               <a href="/status?name=<%= p.name %>&result=2">
                 <%= p.solved %>

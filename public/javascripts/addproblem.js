@@ -7,7 +7,14 @@ var $submit = $('#submit')
 
 var $data = $('#data')
 ,	$dataerr = $('#dataerr')
-,	$ui = $('#upload-info');
+,	$ui = $('#upload-info')
+,	$del;
+
+var $datadiv = $('#datadiv')
+,	$cbs = $('div.cb')
+,	has = {}
+,	$datanum = $('#datanum')
+,	num = parseInt($datanum.text(), 10);
 
 var pid = parseInt($('#addproblem').attr('pid'), 10);
 
@@ -17,6 +24,29 @@ $(document).ready(function(){
 	CKEDITOR.replace( 'Output' );
 	CKEDITOR.replace( 'Hint' );
 });
+
+function bindDel () {
+	if ($del && $del.length) {
+		$del.unbind('click');
+	}
+	$del = $('a.del');
+	$.each($del, function(i, p){
+		$(p).click(function(){
+			$.post('/delData', {
+				pid 	: pid,
+				fname 	: $(p).parent().prev().text()
+			}, function(){
+				var $d = $(p).parent().parent();
+				$d.unbind('click');
+				has[$d.attr('fname')] = false;
+				$d.remove();
+				--num;
+				$datanum.text(num);
+				ShowMessage('删除成功！');
+			});
+		});
+	});
+}
 
 $(document).ready(function(){
 	$submit.click(function() {
@@ -30,7 +60,7 @@ $(document).ready(function(){
 		add: function(e, data) {
 			var f = data.files[0];
 			$si.text(f.name);
-			$submit.unbind();
+			$submit.unbind('click');
 			$submit.click(function(){
 				clearTimeout(submitTimeout);
 				submitTimeout = setTimeout(function(){
@@ -90,7 +120,30 @@ $(document).ready(function(){
 		done: function(e, data) {
 			var res = data.response().result, tp;
 			if (!res) {
-				window.location.reload(true);
+				$.each(data.files, function(i, p){
+					has[p.name] = true;
+				});
+				var F = new Array();
+				for (var i in has) {
+					if (has[i]) {
+						F.push(i.toString());
+					}
+				}
+				F.sort(function(a, b){
+					return a > b;
+				});
+				$cbs.remove();
+				var html = '';
+				$.each(F, function(i, p){
+					html += '<div class="cb" fname="'+p+'">';
+					html += '<div class="ibox">'+p+'</div>';
+					html += '<div class="ibox"><a class="del" href="javascript:;">删除</a></div></div>';
+				});
+				$datadiv.append(html);
+				bindDel();
+				$cbs = $('div.cb');
+				$datanum.text(num = F.length);
+				ShowMessage('数据上传完成！');
 				return ;
 			}
 			if (res == '3') tp = '异常错误！';
@@ -99,13 +152,8 @@ $(document).ready(function(){
 			}
 		}
 	});
-
-	$('a.del').click(function(){
-		$.post('/delData', {
-			pid 	: pid,
-			fname 	: $(this).parent().prev().text()
-		}, function(){
-			window.location.reload(true);
-		});
+	$.each($cbs, function(i, p){
+		has[$(p).attr('fname')] = true;
 	});
+	bindDel();
 });

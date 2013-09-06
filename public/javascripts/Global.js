@@ -6,22 +6,22 @@
 
 //return status color class
 function Col (n) {
-    switch(n) {
-        case 0:
-        case 1: return 'info-text';
-        case 2: return 'success-text';
-        case 3:
-        case 4:
-        case 5:
-        case 6:
-        case 7:
-        case 9:
-        case 10:
-        case 11:
-        case 12:
-        case 15: return 'error-text';
-        default: return 'special-text';
-    }
+  switch(n) {
+    case 0:
+    case 1: return 'info-text';
+    case 2: return 'accept-text';
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 15: return 'wrong-text';
+    default: return 'special-text';
+  }
 }
 
 //return status result string
@@ -370,12 +370,15 @@ $(document).ready(function(){
         var aid = $(this).attr('id');
         switch(aid) {
             case 'gotosubmit': {
+                var tp = '/submit?pid=' + $(this).attr('pid')
+                ,   cid = $(this).attr('cid');
+                if (cid) tp += '&cid='+cid;
                 if ($logindialog.length > 0) {
-                    nextURL = '/submit?pid=' + $(this).attr('pid');
+                    nextURL = tp;
                     $logindialog.jqmShow();
                     break;
                 }
-                window.location.href = '/submit?pid=' + $(this).attr('pid');
+                window.location.href = tp;
                 break;
             }
             case 'addcontest': {
@@ -388,6 +391,11 @@ $(document).ready(function(){
                     break;
                 }
                 window.location.href = '/addcontest?type='+contest_type;
+                break;
+            }
+            case 'addcourse': {
+                nextURL = '/addcourse';
+                $logindialog.jqmShow();
                 break;
             }
             case 'codesubmit': {
@@ -500,28 +508,26 @@ $(document).ready(function(){
                 return false;
             }
 
-            $.post('/getVerifycode', function(verifycode){
-                var tp = $reginput.eq(6).val().toLowerCase();
-                if (tp != verifycode) {
-                    errAnimate($regerr, '验证码错误!');
-                    return ;
+            $.post('/doReg', {
+                username: username,
+                password: password,
+                nick: nick,
+                school: $reginput.eq(4).val(),
+                email: email,
+                signature: $regdialog.find('textarea').attr('value'),
+                vcode: $('#reg_vcode').val()
+            }, function(res){
+                if (!res) {
+                     window.location.reload(true);
+                     return ;
                 }
-                $.post('/getUsername', {key: username}, function(res){
-                    if (res) {
-                        errAnimate($regerr, 'this user already exists!');
-                        return ;
-                    }
-                    $.post('/doReg', {
-                        username: username,
-                        password: password,
-                        nick: nick,
-                        school: $reginput.eq(4).val(),
-                        email: email,
-                        signature: $regdialog.find('textarea').attr('value')
-                    }, function(){
-                        window.location.reload(true);
-                    });
-                });
+                if (res == '1') {
+                    errAnimate($regerr, '验证码错误!');
+                } else if (res == '2') {
+                    errAnimate($regerr, 'this user already exists!');
+                } else {
+                    errAnimate($regerr, '系统错误！');
+                }
             });
         });
 

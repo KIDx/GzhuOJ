@@ -14,8 +14,8 @@ $(document).ready(function(){
     $usercol.html(tp);
     var $select = $usercol.next();
     if ($select.length) {
-        $select.next().click(function(){
-            $.post('/changePvl', {name:tname,pvl:$select.val()}, function(){
+        $('#submit').click(function(){
+            $.post('/changePvl', {name:tname,pvl:$select.val(),college:$('#college').val()}, function(){
                 window.location.reload(true);
             });
         });

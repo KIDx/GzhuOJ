@@ -64,6 +64,15 @@ Problem.prototype.save = function(callback){
   });
 };
 
+Problem.find = function(Q, callback) {
+  problems.find(Q, function(err, docs){
+    if (err) {
+      console.log('Problem.find failed!');
+    }
+    return callback(err, docs);
+  });
+};
+
 Problem.get = function(Q, page, callback){
   problems.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
@@ -71,9 +80,9 @@ Problem.get = function(Q, page, callback){
     }
     problems.find(Q).sort({problemID:1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
       if (err) {
-        console.log('Problem.get failed');
+        console.log('Problem.get failed!');
       }
-      return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
+      return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10), count);
     });
   });
 };
@@ -81,7 +90,7 @@ Problem.get = function(Q, page, callback){
 Problem.watch = function(pID, callback){
   problems.findOne({problemID: pID}, function(err, doc) {
     if (err) {
-      console.log('Problem.watch failed');
+      console.log('Problem.watch failed!');
     }
     return callback(err, doc);
   });
@@ -90,7 +99,7 @@ Problem.watch = function(pID, callback){
 Problem.update = function(pID, Q, callback){
   problems.update({problemID: pID}, Q, function(err){
     if (err) {
-      console.log('Problem.update failed');
+      console.log('Problem.update failed!');
     }
     return callback(err);
   });

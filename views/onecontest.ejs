@@ -47,7 +47,7 @@
   <div id="progress" class="contest_progress progress progress-striped active <%= ps %>">
     <div class="bar"></div>
   </div>
-  <div id="thumbnail" class="tabbable thumbnail">
+  <div id="thumbnail" class="tabbable thumbnail" style="width:960px;">
     <ul class="nav nav-tabs">
       <li style="padding-left:10px;">
         <a href="#overview" data-target="#overviewtab" data-toggle="tab">
@@ -274,8 +274,8 @@
                   <th class="rank">#</th>
                   <th class="name">Name</th>
                   <th class="nick">Nick</th>
-                  <th class="solved" title="solved">S</th>
-                  <th class="penalty" title="penalty">P</th>
+                  <th class="solved" title="solved"><span class="user-green">S</span></th>
+                  <th class="penalty" title="penalty"><span class="user-green">P</span></th>
                   <% for(var i = 0; i < probNum; i++) { %>
                   <th class="standing_status">
                     <a class="rplink" href="#problem-<%= F[i] %>"><%= F[i] %></a>

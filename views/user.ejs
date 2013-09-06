@@ -26,7 +26,7 @@
       <h3>
         <span id="usercol" name="<%= u.name %>" <% if (u.privilege) { %>pvl="<%= u.privilege %>"<% } %>>&nbsp;</span>
       <% if (X || Y) { %>
-        <select style="margin:0 0 0 20px;" class="input-medium">
+        <select style="margin:0 10px;" class="input-medium">
         <% if (X) { %>
           <option value="82">老师</option>
           <option value="81">队长</option>
@@ -37,12 +37,21 @@
           <option value="71">普通队员</option>
           <option value="70">本校学生</option>
         <% } %>
-          <option value="" seleted>取消认证</option>
+          <option value="" selected>取消认证</option>
         </select>
-        <button class="btn">提交</button>
+        <% if (X) { %>
+        <select id="college" style="margin:0;">
+          <% C.forEach(function(p, i){ %>
+          <option value="<%= i %>" <% if (u.college == i) { %>selected<% } %>>
+            <%= p %>
+          </option>
+          <% }); %>
+        </select>
+        <% } %>
+        <button class="btn" id="submit">提交</button>
       <% } %>
       <% if (user && user.name == 'admin') { %>
-        <button class="btn" id="addprob"><% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %>加题权限</button>
+        <button style="margin-left:20px;" class="btn" id="addprob"><% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %>加题权限</button>
       <% } %>
       </h3>
       <span class="user-gray" title="nick name"><%= u.nick %></span>
@@ -70,7 +79,10 @@
         <li>性别: <% if (u.sex=='0') { %>男<% } else { %>女<% } %></li>
       <% } %>
       <% if(u.college) { %>
-        <li>学院: <%= u.college %></li>
+        <li>学院: <%= C[u.college] %></li>
+      <% } %>
+      <% if(u.grade) { %>
+        <li>班级: <%= u.grade %>班</li>
       <% } %>
         <li>AddProblem: <% if(u.addprob == 1) { %>YES<% } else { %>NO<% } %></li>
       </ul>

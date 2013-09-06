@@ -8,7 +8,6 @@ var $fil = $('#fil')
 var $reglog = $('div#regcolog')
 ,	$number = $reglog.find('#number')
 ,	$realname = $reglog.find('#realname')
-,	$grade = $reglog.find('#grade')
 ,	$regc_submit = $reglog.find('#regc_submit')
 ,	$regerr = $reglog.find('#regc_error');
 
@@ -141,26 +140,16 @@ $(document).ready(function(){
 			}
 			$reglog.jqmShow();
 			$number.val($number.val());
-			$regc_submit.unbind();
+			$regc_submit.unbind('click');
 			$regc_submit.click(function(){
 				var num = $number.val();
 				if (!num) {
 					errAnimate($regerr, '学号不能为空!');
 					return false;
 				}
-				var pattern = new RegExp('^[0-9]*$');
-				if (!pattern.test(num)) {
-					errAnimate($regerr, '学号只能由数字组成!');
-					return false;
-				}
 				var name = $realname.val();
 				if (!name) {
 					errAnimate($regerr, '姓名不能为空!');
-					return false;
-				}
-				pattern = new RegExp('^([\u3007\u3400-\u4DB5\u4E00-\u9FCB\uE815-\uE864]|[\uD840-\uD87F][\uDC00-\uDFFF])*$');
-				if (!pattern.test(name)) {
-					errAnimate($regerr, '姓名只能由汉字组成!');
 					return false;
 				}
 				$.post('/doRegCon', {
@@ -169,7 +158,7 @@ $(document).ready(function(){
 				    realname: name,
 				    sex: $reglog.find('#sex').val(),
 				    college: $reglog.find('#college').val(),
-				    grade: $grade.val()
+				    grade: $('#grade').val()+$('#class').val()
 				}, function(){
 					window.location.reload(true);
 				});
@@ -177,7 +166,6 @@ $(document).ready(function(){
 		});
 		simulateClick($number, $regc_submit);
 		simulateClick($realname, $regc_submit);
-		simulateClick($grade, $regc_submit);
 	}
 });
 

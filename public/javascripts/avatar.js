@@ -17,7 +17,7 @@ $(document).ready(function(){
         add: function(e, data) {
         	var f = data.files[0];
         	$ui.text(f.name);
-            $upload.unbind();
+            $upload.unbind('click');
         	$upload.click(function(){
                 var img_pattern = new RegExp('^.*\.(jpg|jpeg|png)$');
         		if (!img_pattern.test(f.name)) {

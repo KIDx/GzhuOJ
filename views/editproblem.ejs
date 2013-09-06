@@ -18,7 +18,7 @@
       </div>
     </div>
     <div class="roundbox upload row-fluid">
-      <div class="span6 uploaddiv">
+      <div class="span6 uploaddiv" id="datadiv">
         <span class="success-text">上传数据：</span><br/>
         <span class="uibtn upload-btn">
           <span>选择并上传数据</span>
@@ -26,7 +26,7 @@
         </span>
         <span id="upload-info" class="upload-info">未选择文件 (".in, .out")</span><br/>
         <span class="error-text" id="dataerr">&nbsp;</span>
-        <div class="ibox user-gray">目前已保存了<%= f.length %>个数据文件</div>
+        <div class="ibox user-gray">目前已保存了<span id="datanum"><%= f.length %></span>个数据文件</div>
         <% f.forEach(function(p){ %>
         <div class="cb" fname="<%= p %>">
           <div class="ibox"><%= p %></div>

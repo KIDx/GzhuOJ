@@ -10,7 +10,7 @@
 <% if (contest) { cid += contest.contestID; } else { cid = '0'; } %>
 
 <% var cname = 'Contest'; %>
-<% if (tp == 3) cname = 'Course'; %>
+<% if (tp == 3) cname = 'Exam'; %>
 
 <fieldset>
   <div><legend><%= name %> <%= cname %></legend></div>
@@ -57,7 +57,7 @@
                 <input id="private" type="radio" value="1" name="p" <% if(contest && contest.password) { %>checked<% } %>>
                 <label for="private" class="user-green" title="Codeforce的注册模式">private</label>
                 <input id="public" type="radio" value="" name="p" <% if(!contest || !contest.password) { %>checked<% } %>>
-                <label for="public" class="user-blue" title="校内注册模式(需要填表)">public</label>
+                <label for="public" class="user-blue" title="校内注册模式(需要填报名表)">public</label>
               </div>
             </td>
           </tr>
@@ -117,7 +117,7 @@
     </div>
     <div class="form-actions" align="center">
       <a class="uibtn" href="javascript:;" id="addcontestSubmit">Submit</a>
-      <a class="btn-small uibtn" href="javascript:;" onclick="window.location.reload(true)">Reset</a>
+      <a class="uibtn" href="javascript:;" onclick="window.location.reload(true)">Reset</a>
     </div>
   </div>
 </fieldset>

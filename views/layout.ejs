@@ -26,7 +26,7 @@
     <% } else { %>
         <li><a href="javascript:;" id="logout">Logout</a></li>
         <li><span class="user-gray">|</span></li>
-      <% if (user.privilege >= 81) { %>
+      <% if (user.name == 'admin') { %>
         <li><a href="/addstudent">Add Student</a></li>
         <li><span class="user-gray">|</span></li>
       <% } %>
@@ -55,7 +55,8 @@
         <li><a href="/ranklist">Ranklist</a></li>
         <li><a href="/contest/1">DIY Contest</a></li>
         <li><a href="/contest/2">VIP Contest</a></li>
-        <li><a href="/contest/3">Course</a></li>
+        <li><a href="/contest/3">Exam</a></li>
+        <li><a href="/course">Course</a></li>
         <li><a href="/faq">FAQ</a></li>
       </ul>
       <div class="fr">
@@ -77,7 +78,9 @@
       <%- partial('register') %>
     <% } %>
     <% if (key == 2) { %>
-      <%- partial('regcontest', {u:user}) %>
+      <% if (user && user.name != 'admin') { %>
+      <%- partial('regcontest', {u:user, C:C}) %>
+      <% } %>
     <% } else if (key == 4) { %>
       <%- partial('info') %>
     <% } else if (key == 6) { %>
@@ -118,10 +121,11 @@
     <script src="/javascripts/problem.js"></script>
   <% } else if (key == 9) { %>
     <script src="/javascripts/bootstrap.js"></script>
+    <script src="/javascripts/updatestatus.js"></script>
     <script src="/javascripts/onecontest.js"></script>
   <% } else if (key == 4) { %>
-    <script src="/javascripts/status.js"></script>
     <script src="/javascripts/updatestatus.js"></script>
+    <script src="/javascripts/status.js"></script>
   <% } else if (key == 11){ %>
     <script src="/highlighter/scripts/shCore.js"></script>
     <script src="/highlighter/scripts/shBrushCpp.js"></script>
@@ -130,6 +134,15 @@
   <% } else if (key == 12) { %>
     <script src="/javascripts/fileUpload.js"></script>
     <script src="/javascripts/avatar.js"></script>
+  <% } else if (key == 13) { %>
+    <script src="/javascripts/fileUpload.js"></script>
+    <script src="/javascripts/addstudent.js"></script>
+  <% } else if (key == 14) { %>
+    <script src="/javascripts/course.js"></script>
+  <% } else if (key == 15) { %>
+    <script src="/javascripts/onecourse.js"></script>
+  <% } else if (key == 16) { %>
+    <script src="/javascripts/courserank.js"></script>
   <% } else if (key == 1002) { %>
     <script src="/javascripts/addcontest.js"></script>
     <script src="/zd/javascript/zebra_datepicker.js"></script>
@@ -137,6 +150,8 @@
     <script src="/javascripts/fileUpload.js"></script>
     <script src="/ckeditor/ckeditor.js"></script>
     <script src="/javascripts/addproblem.js"></script>
+  <% } else if (key == 1003) { %>
+    <script src="/javascripts/addcourse.js"></script>
   <% } %>
   </body>
 </html>

@@ -6,6 +6,7 @@ module.exports = {
   status_pageNum		  : 20,
   ranklist_pageNum		: 20,
   contest_pageNum     : 20,
+  course_pageNum      : 20,
   regform_pageNum     : 20,
   stats_pageNum       : 20,
   contestRank_pageNum	: 50,

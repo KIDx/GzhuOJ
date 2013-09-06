@@ -55,6 +55,10 @@ td.accept {
     margin-bottom: 20px;
 }
 
+.no {
+    text-decoration: line-through
+}
+
 ul.navigation > li {
     margin-right: 5px;
     float: right;
@@ -122,7 +126,7 @@ div#change-grade > input{
 }
 
 .special-text {
-    color: #AE53C0;
+    color: #AE53C0!important;
 }
 
 a.special-text {
@@ -264,7 +268,7 @@ div.side-header {
 }
 
 div.tag-box {
-    margin: 0 .5em .2em 0;
+    margin: .3em .5em .2em 0;
     padding: 0 .3em;
     border: 1px solid #ccc;
     background: whitesmoke;
@@ -739,7 +743,7 @@ div.menu-list > ul > li > a:hover {
 }
 
 div.form-actions {
-    border-top: 1px solid #CCC;
+    border-top: 1px solid #ddd;
     background-color: transparent;
 }
 
@@ -803,10 +807,11 @@ legend{
     font-size: 12px;
     color: #555;
     text-decoration: none;
+    text-align: center;
 }
 
 .uibtn:hover {
-    color: #333;
+    color: #555;
     text-decoration: none;
 }
 
@@ -1006,7 +1011,7 @@ table.table-rank th {
 }
 
 table.table-rank td {
-    padding: 0.5em;
+    padding: .3em 0;
     line-height: 15px;
 }
 

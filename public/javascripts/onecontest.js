@@ -10,7 +10,7 @@ var interceptorTime = 300
 ,	cnt;	//行号
 
 var $contest = $('#contest')
-,	ctype = $contest.attr('ctype')
+,	ctype = parseInt($contest.attr('ctype'), 10)
 ,	pageNum = $contest.attr('pageNum')
 ,	display = $contest.attr('display')
 ,	contest_private = $contest.attr('psw')
@@ -26,8 +26,6 @@ var $progress = $('#progress')
 ,	$info = $('#contest-info')
 ,	$contain = $('#info-contain')
 ,	$lefttime = $('#lefttime');
-
-
 
 function buildPager(page, n) {
     var cp = 5, html = '<ul>';
@@ -95,13 +93,15 @@ function buildRow(sol) {
 	html += UserCol(pvl)+'" title="'+UserTitle(pvl)+'">'+sol.userName+'</a></td>';
 	html += '<td><a class="plink" href="#problem-'+pmap[sol.problemID]+'">'+pmap[sol.problemID]+'</a></td>';
 
-	html += '<th';
+	html += '<td rid="'+sol.runID+'"';
 	if (sol.result == 8 && (sol.userName == current_user || current_user == 'admin')) {
-		html += '><a href="javascript:;" rid="'+sol.runID+'" class="CE '+Col(sol.result)+'">'+Res(sol.result)+'</a>';
+		html += ' class="bold"><a href="javascript:;" rid="'+sol.runID+'" class="CE special-text">Compilation Error</a>';
 	} else {
-		html += ' class="'+Col(sol.result)+'">'+Res(sol.result);
+		html += ' class="bold '+Col(sol.result);
+		if (sol.result == 0) html += ' unknow';
+		html += '">'+Res(sol.result);
 	}
-	html += '</th>';
+	html += '</td>';
 
 	var tpstr;
 	if (sol.result == 0) {
@@ -171,7 +171,10 @@ function Response(json) {
 		GetStatus();
 	});
 	BindCE();
-	$status.fadeIn(100);
+	$status.fadeIn(100, function(){
+		clearTimeout(updateInterval);
+		updateInterval = setInterval(getStatus, A);
+	});
 }
 
 function GetStatus() {
@@ -494,12 +497,20 @@ function GetRanklist() {
 	}, interceptorTime);
 }
 
+function clearTimer() {
+	clearTimeout(overviewTimeout);
+	clearTimeout(problemTimeout);
+	clearTimeout(searchTimeout);
+	clearTimeout(rankTimeout);
+}
+
 function run(str, key) {
 	if (!str) str = '#overview'
 	window.location.hash = str;
 	var sp = str.split('-');
 	var a = sp[0], b = sp[1], c = sp[2], d = sp[3], e = sp[4];
 	ID = 0;
+	clearTimer();
 	switch(a) {
 		case '#problem': {
 			if (WATCH == 0) break;
@@ -753,6 +764,9 @@ $(document).ready(function(){
 					ShowMessage('系统错误！');
 				}
 				statusInit();
+				if (ctype == 2 && current_user) {
+					$search.val(current_user);
+				}
 				$tablink.eq(2).click();
 			});
 		});

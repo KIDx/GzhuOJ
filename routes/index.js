@@ -15,11 +15,15 @@
  11   : sourcecode
  12   : avatar
  13   : addstudent
+ 14   : course
+ 15   : onecourse
+ 16   : courserank
  1000/1001: addproblem
  1002 : addcontest
+ 1003 : addcourse
 
 ~user.privilege~
- 99 : 'Administrator-管理员'
+ 99 : 'Administrator-管理员'(only user.name == admin)
  82 : 'Teacher-老师'
  81 : 'Captain-队长'
  73 : 'Visitant-贵宾'
@@ -36,7 +40,7 @@
 ~contest.type~
  1 : DIY Contest (all registered user can add)
  2 : VIP Contest (only admin can add)
- 3 : Course (user.privilege >= 82(teacher) can add)
+ 3 : Exam (user.privilege >= 82(teacher) can add)
 
 ~session~
  req.session.user : current user
@@ -44,6 +48,8 @@
 */
 var crypto = require('crypto')
 ,   fs = require('fs')
+,   csv = require('csv')
+,   Iconv  = require('iconv').Iconv
 ,   gm = require('gm')
 ,   imageMagick = gm.subClass({ imageMagick : true })
 ,   exec = require('child_process').exec
@@ -53,6 +59,7 @@ var crypto = require('crypto')
 ,   Solution = require('../models/solution.js')
 ,   Problem = require('../models/problem.js')
 ,   Contest = require('../models/contest.js')
+,   Course = require('../models/course.js')
 ,   Reg = require('../models/reg.js')
 ,   tCan = require('../models/can.js');
 
@@ -62,6 +69,28 @@ var settings = require('../settings')
 ,   contestRank_pageNum = settings.contestRank_pageNum;
 
 var data_path = settings.data_path;
+
+var Tag = ['','beginner','brute force','binary search','ternary search','constructive',
+'dp','games','geometry','graphs','greedy','hashing','implementation',
+'math','matrices','number theory','probabilities','dfs', 'bfs',
+'shortest paths','sortings','string suffix structures','strings',
+'combinatorics', 'divide and conquer', 'flow', 'STL', 'segment tree', 'binary indexed tree'];
+
+var ProTil = ['','Easy problem for new ACMer','Brute force','Binary search','Ternary search',
+'Constructive algorithms','Dynamic programming',
+'Games, Sprague Grundy theorem','Geometry, computational geometry',
+'Graphs','Greedy algorithms','Hashing, hashtables',
+'Implementation problems, programming technics, simulation',
+'Mathematics including integration, differential equations, etc',
+'Matrix multiplication, Cramer\'s rule, systems of linear equations',
+'Euler function, GCD, divisibility, etc',
+'Probabilities, expected values, statistics, random variables, etc',
+'Depth First Search','Breadth First Search','Shortest paths','Sortings, orderings',
+'Suffix arrays, suffix trees, suffix automatas, etc',
+'String processing', 'Combinatorics', 'Divide and Conquer', 'Flow',
+'Standard Template Library', 'Segment Tree', 'Binary Indexed Tree'];
+
+var College = ['其他学院', '计算机科学与教育软件学院', '数学与信息科学学院', '土木工程学院', '物理与电子工程学院', '机械与电气工程学院'];
 
 function nil(n) {
   return (typeof(n) == 'undefined');
@@ -111,10 +140,10 @@ function UserCol (n) {
   if (!n) return 'black';
   switch(n) {
       case 73:
-      case 99: return 'red';
+      case 99: 
+      case 81: return 'red';
       case 82: return 'orange';
-      case 81: return 'violet';
-      case 72: return 'blue';
+      case 72: return 'violet';
       case 71: return 'cyan';
       case 70: return 'green';
   }
@@ -134,26 +163,6 @@ function UserTitle (n) {
       case 70: return 'Student-本校学生';
   }
 }
-
-var Tag = ['','beginner','brute force','binary search','ternary search','constructive',
-'dp','games','geometry','graphs','greedy','hashing','implementation',
-'math','matrices','number theory','probabilities','dfs', 'bfs',
-'shortest paths','sortings','string suffix structures','strings',
- 'combinatorics', 'divide and conquer', 'flow', 'STL', 'segment tree', 'binary indexed tree'];
-
-var ProTil = ['','Easy problem for new ACMer','Brute force','Binary search','Ternary search',
-'Constructive algorithms','Dynamic programming',
-'Games, Sprague Grundy theorem','Geometry, computational geometry',
-'Graphs','Greedy algorithms','Hashing, hashtables',
-'Implementation problems, programming technics, simulation',
-'Mathematics including integration, differential equations, etc',
-'Matrix multiplication, Cramer\'s rule, systems of linear equations',
-'Euler function, GCD, divisibility, etc',
-'Probabilities, expected values, statistics, random variables, etc',
-'Depth First Search','Breadth First Search','Shortest paths','Sortings, orderings',
-'Suffix arrays, suffix trees, suffix automatas, etc',
-'String processing', 'Combinatorics', 'Divide and Conquer', 'Flow',
-'Standard Template Library', 'Segment tree', 'Binary Indexed Tree'];
 
 function deal(str) {
   var n = parseInt(str, 10);
@@ -207,6 +216,9 @@ function toEscape(str) {
 }
 
 function clearHtml(str) {
+  if (!str) {
+    return '';
+  }
   var res = '';
   for (var i = 0; i < str.length; i++) {
     var ch = str.charAt(i);
@@ -244,35 +256,53 @@ exports.disconnectMongodb = function() {
   });
 };
 
-exports.getUsername = function(req, res) {
-  if (!req.body.key) return res.end();
+exports.updateStatus = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  User.watch(req.body.key, function(err, user){
+  var id = req.body.runid;
+  if (!id) {
+    return res.end();
+  }
+  Solution.watch({runID:id}, function(err, sol){
     if (err) {
       console.log(err);
       return res.end();
     }
-    if (user) return res.end('1');
-    return res.end();
-  });
-};
-
-/*exports.getStatus = function(req, res) {
-  res.header('Content-Type', 'text/plain');
-  Solution.watch({runID:req.body.key}, function(err, solution){
-    if (err || !solution) {
-      console.log('getStatus failed');
+    if (!sol || sol.result == 0) {
       return res.end();
     }
-    var tp;
-    if (!req.body.manager || req.session.user &&
-      (req.session.user.name == solution.userName || req.session.user.name == req.body.manager)) {
-      tp = solution.result+'-'+solution.time+'-'+solution.memory;
+    var RP = function(X){
+      if (X > 0) {
+        sol.time = '---'; sol.memory = '---';
+      }
+      return res.json({result: sol.result, time: sol.time, memory: sol.memory, userName: sol.userName});
+    };
+    if (sol.cID == -1) {
+      return RP(0);
     }
-    else tp = solution.result+'-x-x';
-    return res.end(tp);
+    if (req.session.user) {
+      var me = req.session.user.name;
+      if (me == sol.userName || me == 'admin') {
+        return RP(0);
+      } else {
+        Contest.watch(sol.cID, function(err, contest){
+          if (err) {
+            console.log(err);
+            return res.end();
+          }
+          if (!contest) {
+            return res.end();
+          }
+          if (me == contest.userName) {
+            return RP(0);
+          }
+          return RP(1);
+        });
+      }
+    } else {
+      return RP(1);
+    }
   });
-};*/
+};
 
 exports.getOverview = function(req, res) {
   res.header('Content-Type', 'text/plain');
@@ -582,6 +612,7 @@ exports.getRanklist = function(req, res) {
 };
 
 exports.getCE = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user)
     return res.end('Please login first!');
   Solution.watch({runID:req.body.rid}, function(err, solution){
@@ -596,6 +627,7 @@ exports.getCE = function(req, res) {
 };
 
 exports.changePvl = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
     return res.end();
@@ -621,18 +653,20 @@ exports.changePvl = function(req, res) {
       return res.end();
     }
     user.privilege = req.body.pvl;
+    user.college = req.body.college;
     user.save(function(err){
       if (err) {
         console.log(err);
         return res.end();
       }
-      req.session.msg = 'The Information has been changed successfully.';
+      req.session.msg = 'The Information has been changed successfully!';
       return res.end();
     });
   });
 };
 
 exports.changeAddprob = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
     return res.end();
@@ -654,7 +688,7 @@ exports.changeAddprob = function(req, res) {
         console.log(err);
         return res.end();
       }
-      req.session.msg = 'The Information has been changed successfully.';
+      req.session.msg = 'The Information has been changed successfully!';
       return res.end();
     });
   });
@@ -704,7 +738,7 @@ exports.changeInfo = function(req, res) {
       if (err) {
         console.log(err);
         req.session.msg = '系统错误！';
-      } else req.session.msg = 'Your Information has been updated successfully.';
+      } else req.session.msg = 'Your Information has been updated successfully!';
       return res.end('F');
     });
   });
@@ -731,6 +765,7 @@ exports.getProblem = function(req, res) {
 };
 
 exports.editTag = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user)
     return res.end();
   var pid = parseInt(req.body.pid);
@@ -753,36 +788,115 @@ exports.editTag = function(req, res) {
         console.log(err);
         return res.end();
       }
-      if (req.body.add) req.session.msg = 'Tag has been added to the problem successfully.';
-      else req.session.msg = 'Tag has been removed from the problem successfully.';
+      if (req.body.add) req.session.msg = 'Tag has been added to the problem successfully!';
+      else req.session.msg = 'Tag has been removed from the problem successfully!';
       return res.end();
     });
   });
 };
 
-exports.doReg = function(req, res) {
-  //生成密码的散列值
-  var md5 = crypto.createHash('md5');
-  var password = md5.update(req.body.password).digest('base64');
-
-  var newUser = new User({
-    name: req.body.username,
-    password: password,
-    regTime: getDate(new Date()),
-    nick: req.body.nick,
-    school: req.body.school,
-    email: req.body.email,
-    signature: clearHtml(req.body.signature)
-  });
-
-  newUser.save(function(err) {
+exports.reg = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user || req.session.user.name != 'admin') {
+    return res.end('4');
+  }
+  var name = req.body.name
+  ,   realname = req.body.realname
+  ,   sex = req.body.sex
+  ,   gde = req.body.gde
+  ,   college = req.body.college;
+  if (!name || !realname || !sex || !gde || !college) {
+    return res.end('4');
+  }
+  User.watch(name, function(err, user){
     if (err) {
       console.log(err);
-      return res.end();
+      return res.end('3');
     }
-    req.session.user = newUser;
-    req.session.msg = 'Welcome, '+newUser.name+'. :)';
-    return res.end();
+    if (user) {
+      user.number = name;
+      user.realname = realname;
+      user.sex = sex;
+      user.grade = gde;
+      user.college = college;
+      user.save(function(err){
+        if (err) {
+          console.log(err);
+          return res.end('3');
+        }
+        return res.end('2');
+      });
+    } else {
+      var md5 = crypto.createHash('md5')
+      ,   psw = md5.update('123456').digest('base64');
+      (new User({
+        name      : name,
+        password  : psw,
+        regTime   : getDate(new Date()),
+        nick      : realname,
+        number    : name,
+        realname  : realname,
+        sex       : sex,
+        grade     : gde,
+        college   : college,
+        privilege : '70'
+      })).save(function(err){
+        if (err) {
+          console.log(err);
+          return res.end('3');
+        }
+        return res.end('1');
+      });
+    }
+  });
+};
+
+exports.doReg = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  var name = req.body.username
+  ,   nick = req.body.nick
+  ,   password = req.body.password
+  ,   vcode = req.body.vcode
+  ,   school = req.body.school
+  ,   email = req.body.email
+  ,   sig = clearHtml(req.body.signature);
+  if (!name || !password || !nick || !vcode) {
+    return res.end();   //not allow
+  }
+  if (!school) school = '';
+  if (!email) email = '';
+
+  if (vcode != req.session.verifycode) {
+    return res.end('1');
+  }
+
+  User.watch(name, function(err, user){
+    if (err) {
+      console.log(err);
+      return res.end('3');
+    }
+    if (user) {
+      return res.end('2');
+    }
+    var md5 = crypto.createHash('md5')
+    ,   psw = md5.update(password).digest('base64');
+    (new User({
+      name      : name,
+      password  : psw,
+      regTime   : getDate(new Date()),
+      nick      : nick,
+      school    : school,
+      email     : email,
+      signature : sig
+    })).save(function(err, user) {
+      if (err) {
+        console.log(err);
+        return res.end('3');
+      }
+      req.session.user = user;
+      req.session.msg = 'Welcome, '+name+'. :)';
+      return res.end();
+    });
   });
 };
 
@@ -835,32 +949,8 @@ exports.createVerifycode = function(req, res) {
   });
 };
 
-exports.contestDelete = function(req, res) {
-  if (!req.session.user) {
-    return res.end();
-  }
-  var cid = parseInt(req.body.cid, 10);
-  if (!cid) {
-    return res.end();
-  }
-  var name = req.session.user.name;
-  if (!name) {
-    return res.end();
-  }
-  Contest.dele({contestID: cid, userName: name}, function(err){
-    if (err) {
-      console.log(err);
-      req.session.msg = '系统错误！';
-      return res.end();
-    }
-    ContestRank.remove({_id: new RegExp('^'+cid+'-.*$')}, function(err){
-      req.session.msg = 'Contest '+cid+' has been deleted successfully.';
-      return res.end();
-    });
-  });
-};
-
 exports.upload = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   var path = req.files.info.path;
   var sz = req.files.info.size;
   if (sz < 50 || sz > 65535) {
@@ -924,7 +1014,7 @@ exports.upload = function(req, res) {
                 return res.end('3');
               }
               Problem.update(pid, {$inc: {submit: 1}}, function(err){
-                req.session.msg = 'The code for problem '+pid+' has been submited successfully.';
+                req.session.msg = 'The code for problem '+pid+' has been submited successfully!';
                 return res.end();
               });
             });
@@ -936,6 +1026,7 @@ exports.upload = function(req, res) {
 };
 
 exports.rejudge = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
     return res.end();
@@ -987,35 +1078,6 @@ exports.rejudge = function(req, res) {
   });
 };
 
-function resetPassword() {
-  /*if (!req.session.user) {
-    req.session.msg = 'Please login first!';
-    return res.end();
-  }
-  if (req.session.user.name != 'admin') {
-    req.session.msg = '你的权限不足';
-    return res.end();
-  }*/
-  //if (!req.body.name) return res.end('The user is not exist.');
-  User.watch('1206100021', function(err, user){
-    if (err) {
-      console.log(err);
-      return res.end();
-    }
-    if (!user) return ;//return res.end('The user is not exist.');
-    var md5 = crypto.createHash('md5');
-    var password = md5.update('gzhuacm').digest('base64');
-    user.password = password;
-    user.save(function(err){
-      if (err) {
-        console.log(err);
-        //return res.end();
-      }
-      //return res.end('Reset complete.');
-    });
-  });
-};
-
 //重新统计用户提交数和AC数
 function recalAfterClear() {
   User.update({}, {$set: {submit:0, solved:0}}, true, function(err){
@@ -1047,20 +1109,11 @@ function recalAfterClear() {
   });
 }
 
-//清空数据库
-function deleteAllData() {
-  Contest.del(); IDs.del(); Problem.del();
-  Reg.del(); Solution.del(); User.del();
-  ContestRank.del();
-}
-
 exports.index = function(req, res){
   //resetPassword();
   //IDs.Init();
   //recalAfterClear();
-  //deleteAllData();
   //ContestRank.del();
-  //Problem.change();
   res.render('index', { title: 'Gzhu Online Judge',
                         user: req.session.user,
                         message: req.session.msg,
@@ -1105,8 +1158,9 @@ exports.user = function(req, res) {
       },{
         $or:[
           { solved: {$gt: user.solved} },
-          { $and:[ {solved: user.solved}, {submit: {$lt: user.submit}} ] }
-          ]
+          { $and:[ {solved: user.solved}, {submit: {$lt: user.submit}} ] },
+          { $and:[ {solved: user.solved}, {submit: user.submit}, {name: {$lt: user.name}} ] }
+        ]
       }]},
         function(err, rank){
         if (err) {
@@ -1123,7 +1177,8 @@ exports.user = function(req, res) {
                             key: 0,
                             u: user,
                             A: A.sort(),
-                            B: B.sort()
+                            B: B.sort(),
+                            C: College
         });
       });
     });
@@ -1149,16 +1204,18 @@ exports.avatarUpload = function(req, res) {
   var tmp = req.files.img.type.split('/');
   var imgType = tmp[1];
   if (sz > 2*1024*1024) {
-    fs.unlink(path, function() {  //fs.unlink 删除用户上传的文件
+    fs.unlink(path, function(){  //fs.unlink 删除用户上传的文件
       return res.end('1');
     });
   } else if (tmp[0] != 'image') {
-    fs.unlink(path, function() {
+    fs.unlink(path, function(){
       return res.end('2');
     });
   } else {
     if (!req.session.user) {
-      return res.end();
+      fs.unlink(path, function(){
+        return res.end();
+      });
     }
     var pre = 'public/img/avatar/' + req.session.user.name;
     exec('rm -r '+pre, function(){
@@ -1219,204 +1276,34 @@ exports.avatarUpload = function(req, res) {
   }
 };
 
-exports.addcontest = function(req, res) {
-  var type = parseInt(req.query.type);
-  if (!type || type < 1 || type > 3)
-    return res.end('cannot GET this page.');
-  if (!req.session.user) {
-    req.session.msg = 'Please login first!';
-    return res.redirect('/contest/'+type);
-  }
-  tcid = parseInt(req.query.cID);
-  if (!tcid) {
-    if (type == 2 && req.session.user.name != 'admin') {
-      req.session.msg = 'You have no permission to add VIP Contest!';
-      return res.redirect('/contest/2');
-    }
-    if (type == 3 && parseInt(req.session.user.privilege, 10) < 82) {
-      req.session.msg = 'You have no permission to add Course!';
-      return res.redirect('/contest/3');
-    }
-    res.render('addcontest', {title: 'AddContest',
-                              user: req.session.user,
-                              message: req.session.msg,
-                              time: (new Date()).getTime(),
-                              contest: null,
-                              key: 1002,
-                              date: getDate(new Date()).split(' ')[0],
-                              clone: 0,
-                              type: type
-    });
-  } else {
-    var clone = 0;
-    if (tcid < 0) {
-      clone = 1;
-      tcid = -tcid;
-    }
-    Contest.watch (tcid, function(err, contest){
-      if (err || !contest) {
-        return res.redirect('/contest/'+type);
-      }
-      if (contest && clone == 0 && req.session.user.name != contest.userName) {
-        req.session.msg = 'You are not the manager of this contest!';
-        return res.redirect('/onecontest/'+tcid);
-      }
-      if (clone == 1 && (!req.session.user || req.session.user.name != contest.userName)) {
-        if ((contest.type != 2 && contest.password) ||
-          getDate(new Date()) <= calDate(contest.startTime, contest.len)) {
-            req.session.msg = 'Error! Illegal operation!';
-          return res.redirect('/contest/'+type);
-        }
-      }
-      res.render('addcontest', {title: 'AddContest',
-                                user: req.session.user,
-                                message: req.session.msg,
-                                time: (new Date()).getTime(),
-                                contest: contest,
-                                key: 1002,
-                                date: getDate(new Date()).split(' ')[0],
-                                clone: clone
-      });
-    });
-  }
-};
-
-exports.doAddcontest = function(req, res) {
+exports.csvUpload = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  var type = parseInt(req.body.type);
-  if (!req.session.user) {
-    req.session.msg = 'Failed! Please login first!';
-    return res.end();
-  }
-  if (type == 2 && req.session.user.name != 'admin') {
-    req.session.msg = 'Failed! You have no permission to add VIP Contest!';
-    return res.end();
-  }
-  if (type == 3 && parseInt(req.session.user.privilege, 10) < 82) {
-    req.session.msg = 'Failed! You have no permission to add Course!';
-    return res.end();
-  }
-  var password = ''
-  ,   ctitle = req.body.ctitle
-  ,   cdate = req.body.cdate
-  ,   chour = deal(req.body.chour)
-  ,   cmin = deal(req.body.cminute)
-  ,   cDay = parseInt(req.body.cDay, 10)
-  ,   cHour = parseInt(req.body.cHour, 10)
-  ,   cMin = parseInt(req.body.cMinute, 10)
-  ,   desc = req.body.Description
-  ,   anc = req.body.Announcement;
-
-  if (nil(ctitle) || nil(cdate) || nil(chour) ||
-      nil(cmin) || nil(cDay) || nil(cHour) || nil(cMin)) {
-    return res.end();
-  }
-  if (nil(desc)) {
-    desc = '';
-  }
-  if (nil(anc)) {
-    anc = '';
-  }
-
-  if (type == 2) password = req.body.cpassword;
-  else if (req.body.cpassword) {
-    var md5 = crypto.createHash('md5');
-    password = md5.update(req.body.cpassword).digest('base64');
-  }
-  if (!password) {
-    password = '';
-  }
-
-  var ary = new Array();
-  if (req.body.ary && req.body.ary.length) {
-    req.body.ary.forEach(function(p){
-      ary.push(p);
-    });
-  }
-
-  var newContest = new Contest({
-    title: ctitle,
-    startTime: cdate+' '+chour+':'+cmin,
-    len: cDay*1440+cHour*60+cMin,
-    description: desc,
-    msg: anc,
-    password: password
-  });
-  var cid = parseInt(req.body.cid);
-  if (cid >= 1000) {
-    newContest.contestID = cid;
-    Contest.watch(cid, function(err, doc) {
-      if (err) {
-        console.log(err);
-        req.session.msg = '系统错误！';
-        return res.end();
-      }
-      if (!doc) {
-        return res.end();
-      }
-      if (req.session.user.name != doc.userName) {
-        req.session.msg = 'Update Failed! You are not the manager!';
-        return res.end();
-      }
-      doc.title = newContest.title;
-      var flg = false;
-      if (doc.startTime != newContest.startTime) {
-        doc.startTime = newContest.startTime;
-        flg = true;
-      }
-      if (doc.len != newContest.len) {
-        doc.len = newContest.len;
-        flg = true;
-      }
-      if (flg) doc.updateTime = 0;
-      doc.description = newContest.description;
-      doc.msg = newContest.msg;
-      doc.probs =  ary;
-      doc.password = newContest.password;
-      doc.save(function(err){
-        if (err) {
-          console.log(err);
-          req.session.msg = '系统错误！';
-          return res.end();
-        }
-        var cstr = 'Contest';
-        if (type == 3) cstr = 'Course';
-        req.session.msg = 'Your '+cstr+' has been updated successfully.';
-        var tp = cid.toString();
-        if (!flg) {
-          return res.end(tp);
-        }
-        ContestRank.remove({_id: new RegExp('^'+cid+'-.*$')}, function(err){
-          if (err) {
-            console.log(err);
-            req.session.msg = '系统错误！';
-            return res.end();
-          }
-          return res.end(tp);
-        });
-      });
+  var path = req.files.csv.path;
+  if (!req.session.user || req.session.user.name != 'admin') {
+    fs.unlink(path, function(){
+      return res.end();
     });
   } else {
-    IDs.get ('contestID', function(err, id) {
+    fs.readFile(path, function(err, data){
       if (err) {
         console.log(err);
-        req.session.msg = '系统错误！';
-        return res.end();
+        return res.end('3');
       }
-      newContest.contestID = id;
-      newContest.userName = req.session.user.name;
-      newContest.probs = ary;
-      newContest.type = type;
-      newContest.save(function(err) {
-        if (err) {
-          console.log(err);
-          req.session.msg = '系统错误！';
-          return res.end();
-        }
-        var cstr = 'Contest';
-        if (type == 3) cstr = 'Course';
-        req.session.msg = 'Your '+cstr+' has been added successfully.';
-        return res.end(id.toString());
+      var str = data.toString();
+      if(str.indexOf('�') != -1){
+        var gbk_to_utf8 = new Iconv('GBK', 'UTF8');
+        str = gbk_to_utf8.convert(data).toString();
+      }
+      var results;
+      csv()
+      .from(str, {delimiter: ',', escape: '"'})
+      .to.array(function(data, count){
+        fs.unlink(path, function(){
+          return res.json(data);
+        });
+      })
+      .on('error', function(err){
+        console.log(err.message);
       });
     });
   }
@@ -1427,7 +1314,7 @@ exports.addstudent = function(req, res) {
     req.session.msg = '请先登录！';
     return res.redirect('/');
   }
-  if (req.session.user.privilege < 81) {
+  if (req.session.user.name != 'admin') {
     req.session.msg = '抱歉，您的权限不足！';
     return res.redirect('/');
   }
@@ -1435,7 +1322,8 @@ exports.addstudent = function(req, res) {
                              user: req.session.user,
                              message: req.session.msg,
                              time: (new Date()).getTime(),
-                             key: 13
+                             key: 13,
+                             C: College
   });
 };
 
@@ -1510,32 +1398,34 @@ exports.doAddproblem = function(req, res) {
     if (req.body.TC == '1') tc = true;
     else tc = false;
     Problem.update(pid, {$set: {
-        title: title,
-        description: req.body.Description,
-        input: req.body.Input,
-        output: req.body.Output,
-        sampleInput: req.body.sInput,
-        sampleOutput: req.body.sOutput,
-        hint: req.body.Hint,
-        source: req.body.Source,
-        spj: spj,
-        timeLimit: tle,
-        memoryLimit: mle,
-        hide: hide,
-        TC: tc
-      }}, function(err) {
+      title: title,
+      description: req.body.Description,
+      input: req.body.Input,
+      output: req.body.Output,
+      sampleInput: req.body.sInput,
+      sampleOutput: req.body.sOutput,
+      hint: req.body.Hint,
+      source: req.body.Source,
+      spj: spj,
+      timeLimit: tle,
+      memoryLimit: mle,
+      hide: hide,
+      TC: tc
+    }}, function(err) {
       if (err) {
-        req.session.msg = err;
-        return res.redirect('/problem?pid='+pid);
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
       }
-      req.session.msg = 'Problem '+pid+' has been updated successfully.';
+      req.session.msg = 'Problem '+pid+' has been updated successfully!';
       return res.redirect('/problem?pid='+pid);
     });
   } else {
     IDs.get ('problemID', function(err, id) {
       if (err) {
-        req.session.msg = err;
-        return res.redirect('/addproblem');
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
       }
       var manager = '';
       if (req.session.user.name != 'admin')
@@ -1546,16 +1436,17 @@ exports.doAddproblem = function(req, res) {
       });
       newProblem.save(function(err){
         if (err) {
-          req.session.msg = err;
-          return res.redirect('/addproblem');
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.redirect('/');
         }
         fs.mkdir(data_path+id, function(err){
           if (err) {
             console.log('fs.mkdir err: ' + err);
             return res.redirect('/');
           }
-          req.session.msg = 'Problem '+id+' has been created successfully.';
-          return res.redirect('/addproblem?pid='+id);
+          req.session.msg = 'Problem '+id+' has been created successfully!';
+          return res.redirect('/addproblem?pID='+id);
         });
       });
     });
@@ -1563,9 +1454,9 @@ exports.doAddproblem = function(req, res) {
 };
 
 exports.imgUpload = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   var path = req.files.info.path;
   var sz = req.files.info.size;
-  res.header('Content-Type', 'text/plain');
   if (sz > 2*1024*1024) {
     fs.unlink(path, function() {
       return res.end('1');
@@ -1610,6 +1501,7 @@ exports.imgUpload = function(req, res) {
 };
 
 exports.dataUpload = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   var pid = parseInt(req.query.pid);
   if (!pid) {
     return res.end();
@@ -1643,7 +1535,6 @@ exports.dataUpload = function(req, res) {
             console.log(err);
             return res.end('3');
           }
-          req.session.msg = '数据上传完成！';
           return res.end();
         });
       });
@@ -1652,6 +1543,7 @@ exports.dataUpload = function(req, res) {
 };
 
 exports.delData = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     return res.end();
   }
@@ -1673,13 +1565,13 @@ exports.delData = function(req, res) {
       return res.end();
     }
     fs.unlink(data_path+pid+'/'+fname, function(){
-      req.session.msg = '删除成功！';
       return res.end();
     });
   });
 };
 
 exports.logout = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user)
     return res.end();
   req.session.msg = 'Goodbye, '+req.session.user.name+'. Looking forward to seeing you at GzhuOnlineJudge.';
@@ -1689,7 +1581,7 @@ exports.logout = function(req, res) {
 };
 
 exports.problem = function(req, res) {
-  var pid = parseInt(req.query.pid);
+  var pid = parseInt(req.query.pid, 10);
   if (!pid) {
     res.render('problem', {title: 'Problem',
                             user: req.session.user,
@@ -1699,7 +1591,7 @@ exports.problem = function(req, res) {
                             problem: null
     });
   } else {
-    var name = '';
+    var name = '', cid = parseInt(req.query.cid, 10);
     if (req.session.user) name = req.session.user.name;
     Solution.watch({problemID:pid, userName:name, result:2}, function(err, solution) {
       if (err) {
@@ -1732,12 +1624,13 @@ exports.problem = function(req, res) {
                                 problem: problem,
                                 pvl: pvl,
                                 Tag: Tag,
-                                PT: ProTil
+                                PT: ProTil,
+                                cid: cid
         });
       });
     });
   }
-}
+};
 
 exports.problemset = function(req, res) {
   var page = parseInt(req.query.page, 10);
@@ -1908,8 +1801,210 @@ exports.status = function(req, res) {
   });
 };
 
+exports.addcontest = function(req, res) {
+  var type = parseInt(req.query.type);
+  if (!type || type < 1 || type > 3)
+    return res.end('cannot GET this page.');
+  if (!req.session.user) {
+    req.session.msg = 'Please login first!';
+    return res.redirect('/contest/'+type);
+  }
+  var RP = function(C, clone, type) {
+    res.render('addcontest', {title: 'AddContest',
+                              user: req.session.user,
+                              message: req.session.msg,
+                              time: (new Date()).getTime(),
+                              contest: C,
+                              key: 1002,
+                              date: getDate(new Date()).split(' ')[0],
+                              clone: clone,
+                              type: type
+    });
+  };
+  tcid = parseInt(req.query.cID);
+  if (!tcid) {
+    if (type == 2 && req.session.user.name != 'admin') {
+      req.session.msg = 'You have no permission to add VIP Contest!';
+      return res.redirect('/contest/2');
+    }
+    if (type == 3 && parseInt(req.session.user.privilege, 10) < 82) {
+      req.session.msg = 'You have no permission to add Exam!';
+      return res.redirect('/contest/3');
+    }
+    return RP(null, 0, type);
+  } else {
+    var clone = 0;
+    if (tcid < 0) {
+      clone = 1;
+      tcid = -tcid;
+    }
+    Contest.watch (tcid, function(err, contest){
+      if (err) {
+        req.session.msg = '系统错误！';
+        return res.redirect('/contest/'+type);
+      }
+      if (contest && clone == 0 && req.session.user.name != contest.userName) {
+        req.session.msg = 'You are not the manager of this contest!';
+        return res.redirect('/onecontest/'+tcid);
+      }
+      if (clone == 1 && (!req.session.user || req.session.user.name != contest.userName)) {
+        if ((contest.type != 2 && contest.password) ||
+          getDate(new Date()) <= calDate(contest.startTime, contest.len)) {
+            req.session.msg = 'Error! Illegal operation!';
+          return res.redirect('/contest/'+type);
+        }
+      }
+      return RP(contest, clone, null);
+    });
+  }
+};
+
+exports.doAddcontest = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  var type = parseInt(req.body.type);
+  if (!req.session.user) {
+    req.session.msg = 'Failed! Please login first!';
+    return res.end();
+  }
+  if (type == 2 && req.session.user.name != 'admin') {
+    req.session.msg = 'Failed! You have no permission to add VIP Contest!';
+    return res.end();
+  }
+  if (type == 3 && parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = 'Failed! You have no permission to add Exam!';
+    return res.end();
+  }
+  var password = ''
+  ,   ctitle = req.body.ctitle
+  ,   cdate = req.body.cdate
+  ,   chour = deal(req.body.chour)
+  ,   cmin = deal(req.body.cminute)
+  ,   cDay = parseInt(req.body.cDay, 10)
+  ,   cHour = parseInt(req.body.cHour, 10)
+  ,   cMin = parseInt(req.body.cMinute, 10)
+  ,   desc = req.body.Description
+  ,   anc = req.body.Announcement;
+
+  if (nil(ctitle) || nil(cdate) || nil(chour) ||
+      nil(cmin) || nil(cDay) || nil(cHour) || nil(cMin)) {
+    return res.end();
+  }
+  if (nil(desc)) {
+    desc = '';
+  }
+  if (nil(anc)) {
+    anc = '';
+  }
+
+  if (type == 2) password = req.body.cpassword;
+  else if (req.body.cpassword) {
+    var md5 = crypto.createHash('md5');
+    password = md5.update(req.body.cpassword).digest('base64');
+  }
+  if (!password) {
+    password = '';
+  }
+
+  var ary = new Array();
+  if (req.body.ary && req.body.ary.length) {
+    req.body.ary.forEach(function(p){
+      ary.push(p);
+    });
+  }
+
+  var newContest = new Contest({
+    title: ctitle,
+    startTime: cdate+' '+chour+':'+cmin,
+    len: cDay*1440+cHour*60+cMin,
+    description: desc,
+    msg: anc,
+    password: password
+  });
+  var cid = parseInt(req.body.cid);
+  if (cid >= 1000) {
+    newContest.contestID = cid;
+    Contest.watch(cid, function(err, doc) {
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      if (!doc) {
+        return res.end();
+      }
+      if (req.session.user.name != doc.userName) {
+        req.session.msg = 'Update Failed! You are not the manager!';
+        return res.end();
+      }
+      doc.title = newContest.title;
+      var flg = false;
+      if (doc.startTime != newContest.startTime) {
+        doc.startTime = newContest.startTime;
+        flg = true;
+      }
+      if (doc.len != newContest.len) {
+        doc.len = newContest.len;
+        flg = true;
+      }
+      if (flg) doc.updateTime = 0;
+      doc.description = newContest.description;
+      doc.msg = newContest.msg;
+      doc.probs =  ary;
+      doc.password = newContest.password;
+      doc.save(function(err){
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        var cstr = 'Contest';
+        if (type == 3) cstr = 'Exam';
+        req.session.msg = 'Your '+cstr+' has been updated successfully!';
+        var tp = cid.toString();
+        if (!flg) {
+          return res.end(tp);
+        }
+        ContestRank.remove({_id: new RegExp('^'+cid+'-.*$')}, function(err){
+          if (err) {
+            console.log(err);
+            req.session.msg = '系统错误！';
+            return res.end();
+          }
+          return res.end(tp);
+        });
+      });
+    });
+  } else {
+    IDs.get ('contestID', function(err, id) {
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      newContest.contestID = id;
+      newContest.userName = req.session.user.name;
+      newContest.probs = ary;
+      newContest.type = type;
+      newContest.save(function(err) {
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        var cstr = 'Contest';
+        if (type == 3) cstr = 'Exam';
+        req.session.msg = 'Your '+cstr+' has been added successfully!';
+        return res.end(id.toString());
+      });
+    });
+  }
+};
+
 exports.onecontest = function(req, res) {
   var cid = parseInt(req.params.cid, 10);
+  if (!cid) {
+    return res.redirect('/contest');
+  }
   Contest.watch(cid, function(err, contest) {
     if (err) {
       console.log(err);
@@ -1958,12 +2053,46 @@ exports.onecontest = function(req, res) {
   });
 };
 
+exports.contestDelete = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    return res.end();
+  }
+  var cid = parseInt(req.body.cid, 10);
+  if (!cid) {
+    return res.end();
+  }
+  var name = req.session.user.name;
+  if (!name) {
+    return res.end();
+  }
+  Solution.watch({cID: cid}, function(err, sol){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (sol) {
+      req.session.msg = 'Can\'t delete the contest, because there are some submits in this contest!';
+      return res.end();
+    }
+    Contest.dele({contestID: cid, userName: name}, function(err){
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      req.session.msg = 'Contest '+cid+' has been deleted successfully!';
+      return res.end();
+    });
+  });
+};
+
 exports.contest = function(req, res) {
   var type = parseInt(req.params.type, 10);
   if (!type || type < 0 || type > 3) {
     return res.redirect('/');
   }
-
   if (!req.query.page) {
     page = 1;
   } else {
@@ -1999,7 +2128,6 @@ exports.contest = function(req, res) {
     if (req.session.cid) {
       CS = req.session.cid;
     }
-
     res.render ('contest', {title: 'Contest',
                             user: req.session.user,
                             message: req.session.msg,
@@ -2014,6 +2142,455 @@ exports.contest = function(req, res) {
                             R: R,
                             CS: CS
     });
+  });
+};
+
+exports.addcourse = function(req, res) {
+  if (!req.session.user) {
+    req.session.msg = 'Please login first!';
+    return res.redirect('/course');
+  }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = 'You have no permission to Edit Course!';
+    return res.redirect('/course');
+  }
+  id = parseInt(req.query.id);
+  var RP = function(C, P){
+    res.render('addcourse', { title: 'AddCourse',
+                              user: req.session.user,
+                              message: req.session.msg,
+                              time: (new Date()).getTime(),
+                              course: C,
+                              key: 1003,
+                              pName: P
+    });
+  };
+  if (!id) {
+    return RP(null, {});
+  } else {
+    Course.watch(id, function(err, course){
+      if (err) {
+        req.session.msg = '系统错误！';
+        return res.redirect('/course');
+      }
+      Problem.find({problemID: {$in: course.probs}}, function(err, probs){
+        if (err) {
+          req.session.msg = '系统错误！';
+          return res.redirect('/course');
+        }
+        var pName = {};
+        if (probs) {
+          probs.forEach(function(p, i){
+            pName[p.problemID] = p.title;
+          });
+        }
+        return RP(course, pName);
+      });
+    });
+  }
+};
+
+exports.doAddcourse = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = 'Failed! Please login first!';
+    return res.end();
+  }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = 'You have no permission to Edit Course!';
+    return res.end();
+  }
+  var title = req.body.title
+  ,   a = parseInt(req.body.a, 10)
+  ,   b = parseInt(req.body.b, 10);
+  if (!title || b < a || b-a+1 > 100) {
+    return res.end();   //not allow
+  }
+  var cid = parseInt(req.body.cid, 10)
+  ,   RP = function(ary){
+    if (!cid) {
+      IDs.get('contestID', function(err, id){
+        if (err) {
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        var course = new Course({
+          courseID: id,
+          title   : title,
+          probs   : ary
+        });
+        course.save(function(err){
+          if (err) {
+            req.session.msg = '系统错误！';
+            return res.end();
+          }
+          req.session.msg = 'the Course has been added successfully!';
+          return res.end(id.toString());
+        });
+      });
+    } else {
+      Course.update(cid, {$set: {title: title}}, function(err){
+        if (err) {
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        if (ary.length == 0) {
+          req.session.msg = 'the Course has been updated successfully!';
+          return res.end();
+        }
+        Course.update(cid, {$addToSet: {probs: {$each: ary}}}, function(err){
+          if (err) {
+            req.session.msg = '系统错误！';
+            return res.end();
+          }
+          req.session.msg = 'the Course has been updated successfully!';
+          return res.end();
+        });
+      });
+    }
+  };
+  if (!a || !b) {
+    return RP([]);
+  }
+  Problem.find({problemID: {$gte:a, $lte:b}}, function(err, problems){
+    if (err) {
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (!problems) {
+      req.session.msg = 'the problems is Not exist!';
+      return res.end();
+    }
+    var ary = new Array();
+    problems.forEach(function(p, i){
+      ary.push(p.problemID);
+    });
+    return RP(ary);
+  });
+};
+
+exports.onecourse = function(req, res) {
+  var id = parseInt(req.params.id, 10);
+  if (!id) {
+    return res.end('404');
+  }
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.redirect('/course');
+  }
+  if (!req.session.user.privilege) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.redirect('/course');
+  }
+  var page = parseInt(req.query.page, 10);
+  if (!page) {
+    page = 1;
+  } else if (page < 0) {
+    return res.end('404');
+  }
+  User.watch(req.session.user.name, function(err, user){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.redirect('/');
+    }
+    req.session.user = user;  //update sesstion
+    Course.watch(id, function(err, course){
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
+      }
+      if (!course) {
+        return res.end('404');
+      }
+      var q = { problemID: { $in: course.probs } }
+      ,   Q, search = req.query.search;
+      if (search) {
+        q.title = new RegExp("^.*"+toEscape(search)+".*$", 'i');
+      }
+      if (!req.session.user) {
+        Q = {$and: [ q, {hide:false} ]};
+      } else if (req.session.user.name != 'admin') {
+        Q = {$and: [ q, {$or:[{hide:false}, {manager:req.session.user.name}]} ]};
+      } else Q = q;
+      Problem.get(Q, page, function(err, problems, n, total) {
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.redirect('/');
+        }
+        if (n < 0) {
+          return res.redirect('/course');
+        }
+        var RP = function(R){
+          if (!req.query.page && !req.query.search) {
+            req.session.msg = '欢迎来到《'+course.title+'》！';
+          }
+          res.render('onecourse', { title: 'OneCourse',
+                                    user: req.session.user,
+                                    message: req.session.msg,
+                                    time: (new Date()).getTime(),
+                                    key: 15,
+                                    n: n,
+                                    total: total,
+                                    problems: problems,
+                                    page: page,
+                                    search: search,
+                                    Tag: Tag,
+                                    Pt: ProTil,
+                                    R: R,
+                                    course: course
+          });
+        };
+        if (req.session.user && problems && problems.length > 0) {
+          var pids = new Array(), R = {};
+          problems.forEach(function(p){
+            pids.push(p.problemID);
+          });
+          Solution.find({
+            problemID: {$in: pids},
+            userName: req.session.user.name
+          }, function(err, sols){
+            if (err) {
+              console.log(err);
+              req.session.msg = '系统错误！';
+              return res.redirect('/');
+            }
+            if (sols) {
+              sols.forEach(function(s){
+                if (s.result != 2 && !R[s.problemID]) {
+                  R[s.problemID] = 1;
+                } else if (s.result == 2 && R[s.problemID] != 2) {
+                  R[s.problemID] = 2;
+                }
+              });
+              return RP(R);
+            }
+          });
+        } else {
+          return RP({});
+        }
+      });
+    });
+  });
+};
+
+exports.courseDelete = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = 'Failed! Please login first!';
+    return res.end();
+  }
+  if (parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = 'Failed! You have no permission to delete Course!';
+    return res.end();
+  }
+  var cid = parseInt(req.body.cid, 10);
+  if (!cid) {
+    return res.end();
+  }
+  Solution.watch({cID: cid}, function(err, sol){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (sol) {
+      req.session.msg = 'Can\'t delete the course, because there are some submits in this course!';
+      return res.end();
+    }
+    Course.dele({courseID: cid}, function(err){
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      req.session.msg = 'Course '+cid+' has been deleted successfully!';
+      return res.end();
+    });
+  });
+};
+
+exports.delCourseProb = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  var pid = parseInt(req.body.pid, 10)
+  ,   cid = parseInt(req.body.cid, 10);
+  if (!pid || !cid) {
+    return res.end(); //not allow
+  }
+  Course.update(cid, {$pull: {probs: pid}}, function(err){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    req.session.msg = '删除成功！';
+    return res.end();
+  });
+};
+
+exports.course = function(req, res) {
+  if (!req.query.page) {
+    page = 1;
+  } else {
+    page = parseInt(req.query.page, 10);
+  }
+  if (!page || page < 0) {
+    return res.redirect('/course');
+  }
+  
+  var q = {}, search = req.query.search;
+
+  if (search) {
+    q.title = new RegExp("^.*"+toEscape(search)+".*$", 'i');
+  }
+
+  Course.get (q, page, function(err, courses, n, total) {
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.redirect('/');
+    }
+    if (n < 0) {
+      return res.redirect('/course');
+    }
+    res.render ('course', {title: 'Course',
+                            user: req.session.user,
+                            message: req.session.msg,
+                            time: (new Date()).getTime(),
+                            key: 14,
+                            courses: courses,
+                            n: n,
+                            search: search,
+                            page: page
+    });
+  });
+};
+
+exports.courseRank = function(req, res) {
+  var id = parseInt(req.params.id);
+  if (!id) {
+    return res.end('404');
+  }
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.redirect('/course');
+  }
+  if (!req.session.user.privilege) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.redirect('/course');
+  }
+  if (req.session.user.privilege == '82' && !req.session.user.grade) {
+    var g = (new Date()).getFullYear()%100;
+    if (g < 10) g = '0' + g;
+    req.session.user.grade = g + '1';
+  }
+  if (!req.session.user.grade) {
+    req.session.msg = '您的班级信息为空，请找老师或管理员完善！';
+    return redirect('/course');
+  }
+  if (!req.session.user.college) {
+    req.session.msg = '您的学院信息为空，请找老师或管理员完善！';
+    return redirect('/course');
+  }
+  var RP = function(Q, U){
+    Course.watch(id, function(err, course){
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
+      }
+      if (!course) {
+        return res.end('404');
+      }
+      Solution.mapReduce({
+        map: function(){
+          emit(this.userName, {pid:this.problemID, AC:{}, solved:1, submit:1, result:this.result});
+        },
+        reduce: function(k, vals){
+          var val = {pid:null, AC:{}, solved:0, submit:0, result:null};
+          vals.forEach(function(p){
+            if (p.pid) {
+              if (!val.AC[p.pid] && p.result == 2) {
+                val.AC[p.pid] = true;
+                ++val.solved;
+              }
+            } else {
+              if (p.AC) {
+                for (var i in p.AC) {
+                  if (!val.AC[i]) {
+                    val.AC[i] = true;
+                    ++val.solved;
+                  }
+                }
+              }
+            }
+            val.submit += p.submit;
+          });
+          return val;
+        },
+        finalize: function(key, val){
+          if (val.pid) {
+            if (val.result != 2) {
+              return {solved:0, submit:1};
+            } else {
+              return {solved:1, submit:1};
+            }
+          }
+          return {solved: val.solved, submit: val.submit};
+        },
+        query: {$and: [{problemID: {$in: course.probs}}, Q] },
+        sort: {runID: 1}
+      }, function(err, ranks){
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.redirect('/');
+        }
+        if (ranks) {
+          ranks.sort(function(a, b){
+            if (a.value.solved == b.value.solved) {
+              if (a.value.submit == b.value.submit) {
+                return a._id < b._id ? -1 : 1;
+              }
+              return a.value.submit < b.value.submit ? -1 : 1;
+            }
+            return a.value.solved > b.value.solved ? -1 : 1;
+          });
+        }
+        res.render('courserank', {title: 'CourseRank',
+                                  user: req.session.user,
+                                  message: req.session.msg,
+                                  time: (new Date()).getTime(),
+                                  key: 16,
+                                  ranks: ranks,
+                                  course: course,
+                                  UI: U
+        });
+      });
+    });
+  };
+  User.find({college: req.session.user.college, grade: new RegExp('^'+req.session.user.grade+'.*$')}, function(err, users){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.redirect('/');
+    }
+    var names = new Array(), UI = {};
+    if (users) {
+      users.forEach(function(p){
+        names.push(p.name);
+        UI[p.name] = {
+          col : UserCol(p.privilege),
+          til : UserTitle(p.privilege),
+          gde : p.grade,
+          name: p.realname,
+          sig : p.signature
+        };
+      });
+    }
+    return RP({userName: {$in: names}}, UI);
   });
 };
 
@@ -2052,7 +2629,6 @@ exports.ranklist = function(req, res) {
                             message: req.session.msg,
                             time: (new Date()).getTime(),
                             key: 5,
-                            Q: req.session.rankQ,
                             n: n,
                             users: users,
                             page: page,
@@ -2089,30 +2665,15 @@ exports.doSubmit = function(req, res) {
     req.session.msg = 'Please login first!';
     return res.end('1');
   }
-  var cid = parseInt(req.body.cid);
-  var name = req.session.user.name;
-  if (!cid) cid = -1;
-  var pid = parseInt(req.body.pid);
-  var Str = req.body.code;
-  Contest.watch(cid, function(err, contest){
-    if (err) {
-      console.log(err);
-      return res.end();
-    }
-    IDs.get ('runID', function(err, id){
+  var cid = parseInt(req.body.cid)
+  ,   name = req.session.user.name
+  ,   pid = parseInt(req.body.pid)
+  ,   Str = req.body.code
+  ,   RP = function(){
+    IDs.get('runID', function(err, id){
       if (err) {
         console.log(err);
         return res.end();
-      }
-      if (!contest) {
-        cid = -1;
-      } else {
-        if (contest.type == 2 && name != contest.userName) {
-          if (!contest.contestants || !IsRegCon(contest.contestants, name)) {
-            req.session.msg = 'You can not submit because you have not registered the contest yet!';
-            return res.end('2');
-          }
-        }
       }
       var newSolution = new Solution({
         runID: id,
@@ -2140,13 +2701,36 @@ exports.doSubmit = function(req, res) {
               return res.end('3');
             }
             if (cid < 0)
-              req.session.msg = 'The code for problem '+pid+' has been submited successfully.';
+              req.session.msg = 'The code for problem '+pid+' has been submited successfully!';
             return res.end();
           });
         });
       });
     });
-  });
+  };
+  if (!cid) {
+    cid = -1;
+    return RP();
+  } else {
+    Contest.watch(cid, function(err, contest){
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      if (!contest) {
+        req.session.msg = 'the Contest is not exist!';
+        return res.end(); //not allow
+      }
+      if (contest.type == 2 && name != contest.userName) {
+        if (!contest.contestants || !IsRegCon(contest.contestants, name)) {
+          req.session.msg = 'You can not submit because you have not registered the contest yet!';
+          return res.end('2');
+        }
+      }
+      return RP();
+    });
+  }
 };
 
 exports.sourcecode = function(req, res) {
@@ -2381,7 +2965,8 @@ exports.regCon = function(req, res) {
                                 UC: UC,
                                 UT: UT,
                                 type: type,
-                                left: left
+                                left: left,
+                                C: College
         });
       });
     });
@@ -2424,12 +3009,13 @@ function regContestAndUpdate(cid, name, callback) {
     }
     var rank = new ContestRank({_id: cid+'-'+name});
     rank.save(function(){
-      return callback();  //insert multiple, no need to callback error.
+      return callback();  //if insert multiple no need to callback error.
     });
   });
 }
 
 exports.contestReg = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = "Please login first!";
     return res.end('1');
@@ -2469,6 +3055,7 @@ function isSameAsBefore(user, reg) {
 }
 
 exports.doRegCon = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = '请先登录!';
     return res.end('1');
@@ -2558,6 +3145,7 @@ exports.doRegCon = function(req, res) {
 };
 
 exports.regUpdate = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
     return res.end();
@@ -2633,6 +3221,7 @@ exports.regUpdate = function(req, res) {
 };
 
 exports.regContestAdd = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
     return res.end();
@@ -2681,6 +3270,7 @@ exports.regContestAdd = function(req, res) {
 };
 
 exports.changeGrade = function(req, res) {
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
     return res.end();

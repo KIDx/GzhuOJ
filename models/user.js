@@ -11,6 +11,12 @@ function User(user) {
   this.school = user.school;
   this.email = user.email;
   this.signature = user.signature;
+  this.number = user.number;
+  this.realname = user.realname;
+  this.sex = user.sex;
+  this.college = user.college;
+  this.grade = user.grade;
+  this.privilege = user.privilege;
 }
 
 module.exports = User;
@@ -41,9 +47,7 @@ mongoose.model('users', userObj);
 var users = mongoose.model('users');
 
 User.prototype.save = function(callback){
-  //存入 Mongodb 的文档
   user = new users();
-
   user.name = this.name;
   user.password = this.password;
   user.regTime = this.regTime;
@@ -51,17 +55,25 @@ User.prototype.save = function(callback){
   user.school = this.school;
   user.email = this.email;
   user.signature = this.signature;
-
+  user.number = this.number;
+  user.realname = this.realname;
+  user.sex = this.sex;
+  user.college = this.college;
+  user.grade = this.grade;
+  user.privilege = this.privilege;
   user.submit = 0;
   user.solved = 0;
-  addprob = false;
-  //user.privilege = 99;
-
+  if (user.name == 'admin') {
+    user.privilege = '99';
+    addprob = true;
+  } else {
+    addprob = false;
+  }
   user.save(function(err){
     if (err) {
       console.log('user insert Error: this user is already exited!');
     }
-    return callback(err);
+    return callback(err, user);
   });
 };
 
@@ -88,7 +100,7 @@ User.get = function(Q, page, callback){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
-    users.find(Q).sort({solved:-1,submit:1,privilege:-1,name:1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
+    users.find(Q).sort({solved:-1,submit:1,name:1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
         console.log('User.get failed!');
       }

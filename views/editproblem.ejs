@@ -1,19 +1,25 @@
 <!--<html>-->
   <div style="float:right;width:50%;">
     <div class="roundbox upload row-fluid">
-      <div class="span6 uploaddiv">
+      <div class="span6 uploaddiv" id="imgdiv">
         <span class="success-text">上传图片：</span><br/>
         <span class="uibtn upload-btn">
-          <span>选择文件</span>
+          <span>选择并上传图片</span>
           <input type="file" id="image" name="info" data-url="/imgUpload?pid=<%= p.problemID %>" />
         </span>
-        <span id="submit-info" class="upload-info">未选择文件 (支持jpeg, jpg, png格式)</span>
-        <button id="submit" class="uibtn">开始上传</button>
+        <span id="submit-info" class="upload-info">未选择文件 (支持jpeg, jpg, png格式)</span><br/>
         <span id="imgerr" class="error-text">&nbsp;</span>
+        <div class="ibox user-gray">目前已保存了<span id="imgnum"><%= imgs.length %></span>个张图片</div>
+        <% imgs.forEach(function(p){ %>
+        <div class="cb" fname="<%= p %>">
+          <div class="ibox"><%= p %></div>
+          <div class="ibox"><a class="imgdel" href="javascript:;">删除</a></div>
+        </div>
+        <% }); %>
       </div>
       <div class="span6">
         <span class="success-text">
-        注意：图片大小不得超过1M！<br/>使用方法：在下面编辑器中点击图象，源文件路径：“/img/prob/”+"文件全名"
+        注意：图片大小不得超过1M！<br/>使用方法：在下面编辑器中点击图象，源文件路径："/img/prob/<%= p.problemID %>/"+"文件名"
         </span>
       </div>
     </div>
@@ -69,7 +75,7 @@
         <input id="hide" type="radio" name="hide" value="1" <% if (p.hide) { %>checked<% } %>/>
         <label for="hide">YES</label>
         <input id="nohide" type="radio" name="hide" value="0" <% if (!p.hide) { %>checked<% } %>/>
-        <label id="nohide">NO</label>
+        <label for="nohide">NO</label>
       </div>
   </div>
 <% } %>

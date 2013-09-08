@@ -166,8 +166,10 @@ app.post('/dataUpload', routes.dataUpload);
 app.post('/csvUpload', routes.csvUpload);
 //addstudent 批量注册
 app.post('/reg', routes.reg);
-//删除数据
+//删除题目数据
 app.post('/delData', routes.delData);
+//删除题目图片
+app.post('/delImg', routes.delImg);
 //获取指定runID的CE信息
 app.post('/getCE', routes.getCE);
 //清除服务器消息

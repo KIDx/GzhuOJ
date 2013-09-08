@@ -1,5 +1,4 @@
 <!--<html>-->
-<% var submit = '<a class="uibtn checklogin" href="javascript:;" pid="'+problem.problemID+'" id="gotosubmit">Submit</a><a class="uibtn" href="/statistic/'+problem.problemID+'">Statistic</a>'; %>
 <fieldset>
   <div><legend>内容</legend></div>
 <% if (!problem) { %>
@@ -7,6 +6,7 @@
     <h1 align="center">The Problem is not Available!!</h1>
   </div>
 <% } else { %>
+<% var submit = '<a class="uibtn checklogin" href="javascript:;" pid="'+problem.problemID+'" id="gotosubmit">Submit</a><a class="uibtn" href="/statistic/'+problem.problemID+'">Statistic</a>'; %>
   <div class="thumbnail" style="padding:1em;"> 
     <div id="sidebar" pid="<%= problem.problemID %>">
       <div class="sidebox">

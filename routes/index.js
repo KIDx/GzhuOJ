@@ -66,29 +66,13 @@ var crypto = require('crypto')
 var settings = require('../settings')
 ,   ranklist_pageNum = settings.ranklist_pageNum
 ,   stats_pageNum = settings.stats_pageNum
-,   contestRank_pageNum = settings.contestRank_pageNum;
+,   contestRank_pageNum = settings.contestRank_pageNum
+,   Tag = settings.T
+,   ProTil = settings.P;
 
 var data_path = settings.data_path;
 
-var Tag = ['','beginner','brute force','binary search','ternary search','constructive',
-'dp','games','geometry','graphs','greedy','hashing','implementation',
-'math','matrices','number theory','probabilities','dfs', 'bfs',
-'shortest paths','sortings','string suffix structures','strings',
-'combinatorics', 'divide and conquer', 'flow', 'STL', 'segment tree', 'binary indexed tree'];
 
-var ProTil = ['','Easy problem for new ACMer','Brute force','Binary search','Ternary search',
-'Constructive algorithms','Dynamic programming',
-'Games, Sprague Grundy theorem','Geometry, computational geometry',
-'Graphs','Greedy algorithms','Hashing, hashtables',
-'Implementation problems, programming technics, simulation',
-'Mathematics including integration, differential equations, etc',
-'Matrix multiplication, Cramer\'s rule, systems of linear equations',
-'Euler function, GCD, divisibility, etc',
-'Probabilities, expected values, statistics, random variables, etc',
-'Depth First Search','Breadth First Search','Shortest paths','Sortings, orderings',
-'Suffix arrays, suffix trees, suffix automatas, etc',
-'String processing', 'Combinatorics', 'Divide and Conquer', 'Flow',
-'Standard Template Library', 'Segment Tree', 'Binary Indexed Tree'];
 
 var College = ['其他学院', '计算机科学与教育软件学院', '数学与信息科学学院', '土木工程学院', '物理与电子工程学院', '机械与电气工程学院'];
 
@@ -768,18 +752,12 @@ exports.editTag = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user)
     return res.end();
-  var pid = parseInt(req.body.pid);
-  var tag = parseInt(req.body.tag);
+  var pid = parseInt(req.body.pid)
+  ,   tag = parseInt(req.body.tag);
   if (!pid || !tag)
     return res.end();
-  var name = req.session.user.name;
-  Solution.watch({problemID:pid, userName:name, result:2}, function(err, solution) {
-    if (err) {
-      console.log(err);
-      return res.end();
-    }
-    if (!solution && name != 'admin')
-      return res.end();
+  var name = req.session.user.name
+  ,   RP = function(){
     var Q;
     if (req.body.add) Q = {$addToSet: {tags:tag}};
     else Q = {$pull: {tags:tag}};
@@ -791,6 +769,31 @@ exports.editTag = function(req, res) {
       if (req.body.add) req.session.msg = 'Tag has been added to the problem successfully!';
       else req.session.msg = 'Tag has been removed from the problem successfully!';
       return res.end();
+    });
+  };
+  if (name == 'admin') {
+    return RP();
+  }
+  Problem.watch(pid, function(err, problem){
+    if (err) {
+      console.log(err);
+      return res.end();
+    }
+    if (!problem) {
+      return res.end();
+    }
+    if (name == problem.manager) {
+      return RP();
+    }
+    Solution.watch({problemID:pid, userName:name, result:2}, function(err, solution) {
+      if (err) {
+        console.log(err);
+        return res.end();
+      }
+      if (!solution) {
+        return res.end();
+      }
+      return RP();
     });
   });
 };
@@ -1337,18 +1340,19 @@ exports.addproblem = function(req, res) {
     return res.redirect('/');
   }
   var tk = 1000, pid = parseInt(req.query.pID)
-  ,   RP = function(P, F) {
+  ,   RP = function(P, F, I) {
     res.render('addproblem', { title: 'addproblem',
                                user: req.session.user,
                                message: req.session.msg,
                                time: (new Date()).getTime(),
                                problem: P,
                                key: tk,
-                               files: F
+                               files: F,
+                               imgs: I
     });
   }
   if (!pid) {
-    return RP(null, null);
+    return RP(null, null, null);
   } else {
     Problem.watch(pid, function(err, problem){
       if (err) {
@@ -1357,16 +1361,19 @@ exports.addproblem = function(req, res) {
         return res.redirect('/');
       }
       if (!problem) {
-        return RP(null, null);
+        return RP(null, null, null);
       }
       if (problem.hide == true && req.session.user.name != 'admin' && req.session.user.name != problem.manager) {
         req.session.msg = 'You have no permission to edit this hidden problem!';
         return res.redirect('/');
       }
       ++tk;
-      fs.readdir(data_path+pid, function(err, files){
-        if (!files) files = [];
-        return RP(problem, files);
+      fs.readdir('public/img/prob/'+pid, function(err, imgs){
+        if (!imgs) imgs = [];
+        fs.readdir(data_path+pid, function(err, files){
+          if (!files) files = [];
+          return RP(problem, files, imgs);
+        });
       });
     });
   }
@@ -1487,12 +1494,15 @@ exports.imgUpload = function(req, res) {
           if (!user || !user.addprob) {
             return res.end(); //not allow
           }
-          fs.writeFile('public/img/prob/'+req.files.info.name, data, function(err){
-            if (err) {
-              console.log(err);
-              return res.end('3');
-            }
-            return res.end();
+          var pre = 'public/img/prob/'+pid;
+          fs.mkdir(pre, function(err){
+            fs.writeFile(pre+'/'+req.files.info.name, data, function(err){
+              if (err) {
+                console.log(err);
+                return res.end('3');
+              }
+              return res.end();
+            });
           });
         });
       });
@@ -1570,6 +1580,34 @@ exports.delData = function(req, res) {
   });
 };
 
+exports.delImg = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    return res.end();
+  }
+  var pid = parseInt(req.body.pid, 10);
+  if (!pid) {
+    return res.end();
+  }
+  var fname = req.body.fname;
+  if (!fname) {
+    return res.end();
+  }
+  User.watch(req.session.user.name, function(err, user){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (!user || !user.addprob) {
+      return res.end();
+    }
+    fs.unlink('public/img/prob/'+pid+'/'+fname, function(){
+      return res.end();
+    });
+  });
+};
+
 exports.logout = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user)
@@ -1608,12 +1646,12 @@ exports.problem = function(req, res) {
           return res.redirect('/');
         }
         if (problem) {
+          if (pvl == 0 && (name == 'admin' || problem.manager == name)) {
+            pvl = 1;
+          }
           if (problem.hide == true && (!req.session.user ||
             (req.session.user.name != 'admin' && req.session.user.name != problem.manager))) {
               problem = null;
-          }
-          if (pvl == 0 && (name == 'admin' || problem.manager == name)) {
-            pvl = 1;
           }
         }
         res.render('problem', { title: 'Problem '+pid,
@@ -1640,7 +1678,7 @@ exports.problemset = function(req, res) {
     return res.redirect('/problemset');
   }
 
-  var q1 = {}, q2 = {}, Q, search = req.query.search;
+  var q1 = {}, q2 = {}, q3 = {}, Q, search = req.query.search;
 
   if (search) {
     var pattern = new RegExp("^.*"+toEscape(search)+".*$", 'i'), tag = new Array();
@@ -1651,13 +1689,14 @@ exports.problemset = function(req, res) {
     }
     q1.title = pattern;
     q2.tags = {$in: tag};
+    q3.source = pattern;
   }
 
   if (!req.session.user) {
-    Q = {$and: [ {$or:[q1, q2]}, {hide:false} ]};
+    Q = {$and: [ {$or:[q1, q2, q3]}, {hide:false} ]};
   } else if (req.session.user.name != 'admin') {
-    Q = {$and: [ {$or:[q1, q2]}, {$or:[{hide:false}, {manager:req.session.user.name}]} ]};
-  } else Q = {$or:[q1, q2]};
+    Q = {$and: [ {$or:[q1, q2, q3]}, {$or:[{hide:false}, {manager:req.session.user.name}]} ]};
+  } else Q = {$or:[q1, q2, q3]};
 
   Problem.get(Q, page, function(err, problems, n) {
     if (err) {

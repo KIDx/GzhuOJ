@@ -379,7 +379,8 @@ var $rank = $div.find('#ranktab')
 ,	$adduser = $('#user-add')
 ,	rankQ = {cid:cid, page:1}
 ,	rank = 1, I
-,	rankTimeout;
+,	rankTimeout
+,	FB = {};
 
 function buildRank(U) {
 	var user = U.value, html = '<tr class="';
@@ -422,14 +423,19 @@ function buildRank(U) {
 		var pid = fmap[F.charAt(i)];
 		html += '<td';
 		if (user.status && user.status[pid]) {
-			var WA = user.status[pid].wa;
+			var WA = user.status[pid].wa, st, pt;
 			if (WA >= 0) {
-				html += ' class="accept">'
-				style = 'accept-text';
+				if (FB[pid] == U._id) {
+					style = 'fb-text'; st = 'first_blood'; pt = 'fb-cell-time';
+				} else {
+					style = 'accept-text'; st = 'accept'; pt = 'cell-time';
+				}
+				html += ' class="'+st+'">'
+				
 				html += '<span class="'+style+'">+';
 				if (WA > 0) html += WA;
 				html += '</span>';
-				html += '<span class="cell-time">'+deal((user.status[pid].inDate-startTime)*60, 1)+'</span>';
+				html += '<span class="'+pt+'">'+deal((user.status[pid].inDate-startTime)*60, 1)+'</span>';
 			} else if (WA < 0) {
 				html += '><span class="failed">'+WA+'</span>';
 			}
@@ -447,6 +453,7 @@ function buildRank(U) {
 
 function RankResponse(json) {
 	if (!json) return ;
+	FB = json.pop();
 	$ranklist.html( buildPager(rankQ.page, json.pop()) );
 	I = json.pop();
 	Users = json.pop();

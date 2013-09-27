@@ -32,6 +32,10 @@ td.accept {
     background: #D4FFD0;
 }
 
+td.first_blood {
+    background: #81c3e2;
+}
+
 .fl {
     float: left;
 }
@@ -119,6 +123,10 @@ div#change-grade > input{
 
 .accept-text {
     color: #24A329;
+}
+
+.fb-text {
+    color: #fff;
 }
 
 .wrong-text {
@@ -1060,9 +1068,10 @@ span.cell-time {
     display: block;
 }
 
-span.FB {
-    color: blue!important;
-    font-weight: bold;
+span.fb-cell-time {
+    color: #fff;
+    font-size: 10px;
+    display: block;
 }
 
 td.AC {

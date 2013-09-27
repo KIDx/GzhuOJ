@@ -7,9 +7,9 @@
           <span>选择并上传图片</span>
           <input type="file" id="image" name="info" data-url="/imgUpload?pid=<%= p.problemID %>" />
         </span>
-        <span id="submit-info" class="upload-info">未选择文件 (支持jpeg, jpg, png格式)</span><br/>
+        <span id="submit-info" class="upload-info">未选择文件</span><br/>
         <span id="imgerr" class="error-text">&nbsp;</span>
-        <div class="ibox user-gray">目前已保存了<span id="imgnum"><%= imgs.length %></span>个张图片</div>
+        <div class="ibox user-gray">(支持jpeg, jpg, png格式)<br/>目前已保存了<span id="imgnum"><%= imgs.length %></span>个张图片 </div>
         <% imgs.forEach(function(p){ %>
         <div class="cb" fname="<%= p %>">
           <div class="ibox"><%= p %></div>

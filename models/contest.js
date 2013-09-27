@@ -26,7 +26,8 @@ var contestObj = new Schema({
   password: String,
   type: Number,
   contestants: Array,
-  updateTime: Number
+  updateTime: Number,
+  FB: Object
 });
 
 mongoose.model('contests', contestObj);

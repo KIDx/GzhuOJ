@@ -124,10 +124,10 @@ function UserCol (n) {
   if (!n) return 'black';
   switch(n) {
       case 73:
-      case 99: 
-      case 81: return 'red';
+      case 99: return 'red';
+      case 81: return 'violet';
       case 82: return 'orange';
-      case 72: return 'violet';
+      case 72: return 'blue';
       case 71: return 'cyan';
       case 70: return 'green';
   }
@@ -319,22 +319,21 @@ exports.getOverview = function(req, res) {
   }, function(err, results){
     if (err) {
       console.log(err);
-      res.end();
+      return res.end();
     }
     if (req.session.user) {
       Solution.aggregate([
       { $match: { userName: req.session.user.name, cID: cid } }
-    , { $group: { _id: '$problemID', result: {$first: '$result'} } }
-    , { $sort: { result: -1 } }
+    , { $group: { _id: '$problemID', result: {$min: '$result'} } }
       ], function(err, sols){
         if (err) {
           console.log(err);
-          res.end();
+          return res.end();
         }
-        res.json([results, sols]);
+        return res.json([results, sols]);
       });
     } else {
-      res.json([results, null]);
+      return res.json([results, null]);
     }
   });
 };
@@ -477,8 +476,7 @@ exports.getRanklist = function(req, res) {
         User.find({name: {$in:names}}, function(err, U){
           if (err) {
             console.log(err);
-            req.session.msg = '系统错误！';
-            return res.redirect('/');
+            return res.end();
           }
           var pvl = {}, I = {};
           if (U) {
@@ -491,7 +489,7 @@ exports.getRanklist = function(req, res) {
               }
             });
           }
-          return res.json([users, pvl, I, n]);
+          return res.json([users, pvl, I, n, con.FB]);
         });
       });
     };
@@ -507,6 +505,11 @@ exports.getRanklist = function(req, res) {
         return RP(con);
       });
     } else {
+      var Q = { $and: [
+        {cID: cid},
+        {$nor: [{userName:'admin'}]},
+        {inDate: {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)}},
+      ] };
       Solution.mapReduce({
         out: { merge: 'ranks' },
         map: function(){
@@ -578,18 +581,35 @@ exports.getRanklist = function(req, res) {
           }
           return { solved: val.solved, penalty: val.penalty, status: val.status };
         },
-        query: { $and: [
-          {cID: cid},
-          {$nor: [{userName:'admin'}]},
-          {inDate: {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)}},
-        ] },
+        query: Q,
         sort: {runID: 1}
       }, function(err){
         if (err) {
           console.log(err);
           return res.end();
         }
-        return RP(contest);
+        Solution.aggregate([
+        { $match: Q}
+      , { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
+        ], function(err, results){
+          if (err) {
+            console.log(err);
+            return res.end();
+          }
+          var FB = {};
+          if (results) {
+            results.forEach(function(p){
+              FB[p._id] = p.userName;
+            });
+          }
+          Contest.findOneAndUpdate({contestID: cid}, {$set: {FB: FB}}, {new: true}, function(err, con){
+            if (err) {
+              console.log(err);
+              return res.end();
+            }
+            return RP(con);
+          });
+        });
       });
     }
   });
@@ -1112,11 +1132,22 @@ function recalAfterClear() {
   });
 }
 
+function clearRunning() {
+  Solution.find({result:1}, function(err, docs){
+    docs.forEach(function(p){
+      p.result = 0;
+      p.save();
+      console.log(p.runID);
+    });
+  });
+}
+
 exports.index = function(req, res){
   //resetPassword();
   //IDs.Init();
   //recalAfterClear();
   //ContestRank.del();
+  //clearRunning();
   res.render('index', { title: 'Gzhu Online Judge',
                         user: req.session.user,
                         message: req.session.msg,
@@ -2739,8 +2770,9 @@ exports.doSubmit = function(req, res) {
               console.log(err);
               return res.end('3');
             }
-            if (cid < 0)
+            if (cid < 0) {
               req.session.msg = 'The code for problem '+pid+' has been submited successfully!';
+            }
             return res.end();
           });
         });

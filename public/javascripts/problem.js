@@ -85,7 +85,7 @@ $(document).ready(function(){
 	if ($rejudge.length) {
 		$rejudge.click(function(){
 			$.post('/rejudge', {pid:pid}, function(){
-				window.location.href = '/status?pID='+pid;
+				window.location.href = '/status?pid='+pid;
 			})
 		});
 	}

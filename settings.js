@@ -25,7 +25,8 @@ module.exports = {
   regform_pageNum     : 20,
   stats_pageNum       : 20,
   contestRank_pageNum	: 50,
-  data_path           : '../OJ/judge/data/',
+  root_path           : '/home/kidx/GzhuOJ/',
+  data_path           : '/home/kidx/OJ/judge/data/',
   T                   : Tag,
   P                   : ProTil
 };

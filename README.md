@@ -1,5 +1,5 @@
-# Gzhu Online Judge v3.4
+# Gzhu Online Judge v3.5
 
-* fix a bug in contest overview, problem status for current user is not right (accept:green, else:red)
-* add a FirstBlood to contest rank
-
+* add a problem link in edit problem page
+* update node.js to v0.10.20, change all the relative paths to absolute paths
+* fix a bug in contest rank, getting  wrong FBs because of not matching result == accept

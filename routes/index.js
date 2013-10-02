@@ -70,7 +70,8 @@ var settings = require('../settings')
 ,   Tag = settings.T
 ,   ProTil = settings.P;
 
-var data_path = settings.data_path;
+var data_path = settings.data_path
+,   root_path = settings.root_path;
 
 
 
@@ -588,8 +589,9 @@ exports.getRanklist = function(req, res) {
           console.log(err);
           return res.end();
         }
+        Q.result = 2;
         Solution.aggregate([
-        { $match: Q}
+        { $match: Q }
       , { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
         ], function(err, results){
           if (err) {
@@ -1251,8 +1253,8 @@ exports.avatarUpload = function(req, res) {
         return res.end();
       });
     }
-    var pre = 'public/img/avatar/' + req.session.user.name;
-    exec('rm -r '+pre, function(){
+    var pre = root_path+'public/img/avatar/' + req.session.user.name;
+    exec('rm -rf '+pre, function(){
       fs.mkdir(pre, function(err){
         if (err) {
           console.log(err);
@@ -1399,7 +1401,7 @@ exports.addproblem = function(req, res) {
         return res.redirect('/');
       }
       ++tk;
-      fs.readdir('public/img/prob/'+pid, function(err, imgs){
+      fs.readdir(root_path+'public/img/prob/'+pid, function(err, imgs){
         if (!imgs) imgs = [];
         fs.readdir(data_path+pid, function(err, files){
           if (!files) files = [];
@@ -1525,8 +1527,8 @@ exports.imgUpload = function(req, res) {
           if (!user || !user.addprob) {
             return res.end(); //not allow
           }
-          var pre = 'public/img/prob/'+pid;
-          fs.mkdir(pre, function(err){
+          var pre = root_path+'public/img/prob/'+pid;
+          fs.mkdir(pre, function(){
             fs.writeFile(pre+'/'+req.files.info.name, data, function(err){
               if (err) {
                 console.log(err);
@@ -1633,7 +1635,7 @@ exports.delImg = function(req, res) {
     if (!user || !user.addprob) {
       return res.end();
     }
-    fs.unlink('public/img/prob/'+pid+'/'+fname, function(){
+    fs.unlink(root_path+'public/img/prob/'+pid+'/'+fname, function(){
       return res.end();
     });
   });

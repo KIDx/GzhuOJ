@@ -59,7 +59,9 @@
       <% if(u.signature) { %>
         <li>Signature: <%= u.signature %></li>
       <% } %>
+      <% if (u.name != 'admin') { %>
         <li>Rank: <%= u.rank %></li>
+      <% } %>
         <li>Solved: <%= u.solved %></li>
         <li>Submissions: <%= u.submit %></li>
       <% if(u.email) { %>
@@ -96,7 +98,7 @@
         <span class="error-text">No problems has been solved :(</span>
       <% } %>
       <% for (var i = 0; i < A.length; i++) { %>
-        <a href="/problem?pID=<%= A[i] %>"><%= A[i] %></a>
+        <a href="/problem?pid=<%= A[i] %>"><%= A[i] %></a>
       <% } %>
       </div>
     </div>
@@ -109,10 +111,25 @@
         <p class="success-text">No unsolved problems :)</p>
       <% } %>
       <% for (var i = 0; i < B.length; i++) { %>
-        <a href="/problem?pID=<%= B[i] %>"><%= B[i] %></a>
+        <a href="/problem?pid=<%= B[i] %>"><%= B[i] %></a>
       <% } %>
       </div>
     </div>
+    <% if (u.name == 'admin') { %>
+    <div class="tablebg mylist">
+      <div id="header">
+        List of <span class="error-text">hidden</span> problems
+      </div>
+      <div id="tablediv">
+      <% if (H.length == 0) { %>
+        <p class="success-text">No hidden problems :)</p>
+      <% } %>
+      <% for (var i = 0; i < H.length; i++) { %>
+        <a href="/problem?pid=<%= H[i].problemID %>"><%= H[i].problemID %></a>
+      <% } %>
+      </div>
+    </div>
+    <% } %>
   </div>
   <%- partial('settings', {u:u}) %>
 </fieldset>

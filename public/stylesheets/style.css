@@ -458,7 +458,8 @@ div.mylist > div#tablediv {
 
 div.mylist > div#tablediv > a {
     font-size: large;
-    margin-right: 0.3em;
+    margin-right: .3em;
+    line-height: 25px;
 }
 
 div.tablebg {

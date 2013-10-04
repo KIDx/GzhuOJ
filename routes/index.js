@@ -1166,14 +1166,18 @@ exports.user = function(req, res) {
   User.watch(name, function(err, user){
     if (err) {
       req.session.msg = err;
+      console.log(err);
       return res.redirect('/');
     }
     if (!user) {
       return res.end('the user is not exist.');
     }
+    if (!user.addprob) user.addprob = 0;
+    else user.addprob = 1;
     Solution.find({userName:name}, function(err, solutions) {
       if (err) {
         req.session.msg = err;
+        console.log(err);
         return res.redirect('/');
       }
       var A = new Array(), B = new Array(), AC = {}, WA = {};
@@ -1189,23 +1193,7 @@ exports.user = function(req, res) {
           WA[p.problemID] = true;
         }
       });
-      User.count({$and: [{
-        $nor: [{name: 'admin'}]
-      },{
-        $or:[
-          { solved: {$gt: user.solved} },
-          { $and:[ {solved: user.solved}, {submit: {$lt: user.submit}} ] },
-          { $and:[ {solved: user.solved}, {submit: user.submit}, {name: {$lt: user.name}} ] }
-        ]
-      }]},
-        function(err, rank){
-        if (err) {
-          req.session.msg = err;
-          return res.redirect('/');
-        }
-        user.rank = rank + 1;
-        if (!user.addprob) user.addprob = 0;
-        else user.addprob = 1;
+      var RP = function(H) {
         res.render('user', {title: 'User',
                             user: req.session.user,
                             message: req.session.msg,
@@ -1214,9 +1202,38 @@ exports.user = function(req, res) {
                             u: user,
                             A: A.sort(),
                             B: B.sort(),
-                            C: College
+                            C: College,
+                            H: H
         });
-      });
+      };
+      if (user.name != 'admin') {
+        User.count({$and: [{
+          $nor: [{name: 'admin'}]
+        },{
+          $or:[
+            { solved: {$gt: user.solved} },
+            { $and:[ {solved: user.solved}, {submit: {$lt: user.submit}} ] },
+            { $and:[ {solved: user.solved}, {submit: user.submit}, {name: {$lt: user.name}} ] }
+          ]
+        }]}, function(err, rank){
+          if (err) {
+            req.session.msg = err;
+            console.log(err);
+            return res.redirect('/');
+          }
+          user.rank = rank + 1;
+          return RP(null);
+        });
+      } else {
+        Problem.find({hide:true}, function(err, problems){
+          if (err) {
+            req.session.msg = err;
+            console.log(err);
+            return res.redirect('/');
+          }
+          return RP(problems);
+        });
+      }
     });
   });
 };
@@ -3355,6 +3372,7 @@ exports.changeGrade = function(req, res) {
   Reg.findOne({cid: req.body.cid, user: req.body.name}, function(err, reg){
     if (err) {
       req.session.msg = err;
+      console.log(err);
       return res.end();
     }
     if (!reg) {

@@ -67,7 +67,7 @@ Problem.prototype.save = function(callback){
 Problem.find = function(Q, callback) {
   problems.find(Q, function(err, docs){
     if (err) {
-      console.log('Problem.find failed!');
+      console.log('Problem.find Error!');
     }
     return callback(err, docs);
   });

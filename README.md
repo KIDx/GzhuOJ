@@ -1,5 +1,4 @@
-# Gzhu Online Judge v3.5
+# Gzhu Online Judge v3.6
 
-* add a problem link in edit problem page
-* update node.js to v0.10.20, change all the relative paths to absolute paths
-* fix a bug in contest rank, getting  wrong FBs because of not matching result == accept
+* add hidden problems list to '/user/admin' [index.js]
+* fixed a bug in '/user/xxx' page (problem link) [user.ejs]

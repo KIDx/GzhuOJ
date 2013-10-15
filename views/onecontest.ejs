@@ -6,25 +6,25 @@
     <h1 align="center">The Contest is not Available!!</h1>
   </div>
 <% } else { %>
-<% var F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", probNum = 0; %>
-<% var startTime = (new Date(contest.startTime)).getTime() %>
-<% var pending = parseInt((startTime - time)/1000, 10); %>
-<% var c = '', s = '', ts, ps = '', display = '0'; %>
-<% if (pending > 0) { %>
-<% c = 'info'; s = 'Pending'; ts = 0; %>
-<% } else if (pending + contest.len*60 > 0) { %>
-<% c = 'wrong'; s = 'Running'; ts = 1; %>
-<% } else { %>
-<% c = 'accept'; s = 'Ended'; ts = 2; %>
-<% } %>
-<% if (ts == 1) { %>
-<% ps = 'progress-danger'; %>
-<% } else if (ts == 2) { %>
-<% ps = 'progress-success'; %>
-<% } %>
-<% if (contest.type == 3 || (contest.type == 2 && contest.password)) { %>
-<% display = '1'; %>
-<% } %>
+  <% var F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", probNum = 0; %>
+  <% var startTime = (new Date(contest.startTime)).getTime() %>
+  <% var pending = parseInt((startTime - time)/1000, 10); %>
+  <% var c = '', s = '', ts, ps = '', display = '0'; %>
+  <% if (pending > 0) { %>
+  <% c = 'info'; s = 'Pending'; ts = 0; %>
+  <% } else if (pending + contest.len*60 > 0) { %>
+  <% c = 'wrong'; s = 'Running'; ts = 1; %>
+  <% } else { %>
+  <% c = 'accept'; s = 'Ended'; ts = 2; %>
+  <% } %>
+  <% if (ts == 1) { %>
+  <% ps = 'progress-danger'; %>
+  <% } else if (ts == 2) { %>
+  <% ps = 'progress-success'; %>
+  <% } %>
+  <% if (contest.type == 3 || (contest.type == 2 && contest.password)) { %>
+  <% display = '1'; %>
+  <% } %>
   <div>
     <legend id="contest" ctype="<%= contest.type %>" pageNum="<%= pageNum %>" display="<%= display %>" startTime="<%= startTime/60000 %>" cid="<%= contest.contestID %>" len="<%= contest.len %>" pending="<%= pending %>" status="<%= ts %>" <% if (user && user.name == contest.userName) { %>watch="1"<% } %>>
       比赛
@@ -98,7 +98,7 @@
               <td><%= getDate(new Date(startTime+contest.len*60000)) %></td>
               <th>Manager:</th>
               <td>
-                <a href="/user/<%= contest.userName %>">
+                <a class="user-gray" title="check his/her infomation" href="/user/<%= contest.userName %>">
                   <%= contest.userName %>
                 </a>
               </td>
@@ -110,6 +110,7 @@
           <%- partial('contestdelete') %>
           <a class="uibtn" href="/addcontest?cID=<%= contest.contestID %>&type=<%= contest.type %>">Edit</a>
           <a class="uibtn" href="javascript:;" id="delete">Delete</a>
+          <a class="uibtn" href="javascript:;" id="show">Show Problems in Problemset</a>
       <% } %>
       <% if (s == 'Ended') { %>
         <a href="javascript:;" class="uibtn checklogin" id="clone" title="To create a DIY Contest whit the same problems">Clone this contest</a>
@@ -187,7 +188,7 @@
           <div id="content" style="padding:15px 40px;">
           </div>
           <div align="center" style="padding-bottom:20px;">
-            <a id="probsubmit" class="uibtn consubmit" href="javascript:;">Submit</a>
+            <a id="probsubmit2" class="uibtn consubmit" href="javascript:;">Submit</a>
             <a class="uibtn" href="javascript:;" res="-1">Status</a>
           </div>
         </div>
@@ -266,8 +267,8 @@
       <% } %>
         <div class="tablebg" style="width:<%= mw %>px">
           <div class="fr" style="margin:5px;">
-            <span class="user user-cyan">蓝色：最快通过(FB)</span>，<span class="user user-green">绿色：通过</span>，<span class="user user-red">红色：错误</span>
-            <span class="user user-gray">(每分钟更新一次排名，请耐心等候)</span>
+            <span class="user user-cyan">蓝：最快通过(FB)</span>，<span class="user user-green">绿：通过</span>，<span class="user user-red">红：错误</span>
+            <span class="user user-gray">(每分钟更新一次排名)</span>
           </div>
           <div id="ranklist" class="pagination pagination-small">
           </div>

@@ -238,8 +238,8 @@ function OverviewResponse(json) {
 	}
 
 	if (res) {
-		$.each(res, function(i, p){
-			var $oi = $o_sol.eq(i), idx = index(p._id)
+		$.each(res, function(i, p){//console.log(charCode(pmap[p._id])-65);
+			var $oi = $o_sol.eq(pmap[p._id].charCodeAt(0)-65), idx = index(p._id)
 			,	_ac = '<a href="javascript:;" res="2" pid="'+idx+'">'+p.value.AC+'</a>'
 			,	_all = '<a href="javascript:;" res="-1" pid="'+idx+'">'+p.value.all+'</a>';
 			$oi.html(_ac+'&nbsp/&nbsp'+_all);
@@ -248,7 +248,6 @@ function OverviewResponse(json) {
 	if ($clone.length) {
 		$clone.unbind('click');
 		$clone.click(function(){
-
 			if ($logindialog.length > 0) {
 				nextURL = '/addcontest?cID=-'+cid+'&type=1';
 				$logindialog.jqmShow();
@@ -293,6 +292,7 @@ var $content = $('#content');
 
 var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Output', 'Hint', 'Source']
 ,	$probsubmit = $('#probsubmit')
+,	$probsubmit2 = $('#probsubmit2')
 ,	$rejudge = $('#rejudge');
 
 function ProblemsResponse(prob) {
@@ -326,9 +326,9 @@ function ProblemsResponse(prob) {
 	$problemlink.eq(ID).addClass('active');
 
 	//增加题号,题目属性
-	$probsubmit.attr('pid', pid_index);
-	$probsubmit.next().attr('pid', ID);
-	$probsubmit.attr('tname', pid_name);
+	$probsubmit.attr('pid', pid_index); $probsubmit2.attr('pid', pid_index);
+	$probsubmit.next().attr('pid', ID); $probsubmit2.next().attr('pid', ID);
+	$probsubmit.attr('tname', pid_name); $probsubmit2.attr('tname', pid_name);
 	if ($rejudge.length) {
 		$rejudge.unbind('click');
 		$rejudge.click(function(){
@@ -459,7 +459,7 @@ function RankResponse(json) {
 	Users = json.pop();
 	var users = json.pop();
 	if (!users || users.length == 0) {
-		html = '<tr class="odd"><td class="error-text center" colspan="'+(4+prob_num)+'">No Submits till Now.</tr>';
+		html = '<tr class="odd"><td class="error-text center" colspan="'+(5+prob_num)+'">No Submits till Now.</tr>';
 	} else {
 		rank = (rankQ.page-1)*pageNum+1;
 		cnt = 1;
@@ -708,25 +708,28 @@ $(document).ready(function(){
 });
 
 //bind submit
-var $SubmitDialog = $('#submitdialog');
+var $SubmitDialog = $('#submitdialog')
+,	$sublink = $('a.consubmit');
 
 $(document).ready(function(){
-	$('a.consubmit').click(function(){
-		if ($logindialog.length > 0) {
-			nextURL = '';
-			$logindialog.jqmShow();
-			return false;
-		}
-		if ($SubmitDialog.length == 0) {
-			ShowMessage('You can not submit because you have not registered the contest yet!');
-			return false;
-		}
-		$SubmitDialog.find('#error').html('&nbsp;');
-		$SubmitDialog.find('#lang').val(2);
-		$SubmitDialog.find('textarea').val('');
-		pid_index = $(this).attr('pid');
-		$SubmitDialog.find('span#pid').text(pmap[pid_index]+' - '+$(this).attr('tname'));
-		$SubmitDialog.jqmShow();
+	$.each($sublink, function(i, p) {
+		$(p).click(function(){
+			if ($logindialog.length > 0) {
+				nextURL = '';
+				$logindialog.jqmShow();
+				return false;
+			}
+			if ($SubmitDialog.length == 0) {
+				ShowMessage('You can not submit because you have not registered the contest yet!');
+				return false;
+			}
+			$SubmitDialog.find('#error').html('&nbsp;');
+			$SubmitDialog.find('#lang').val(2);
+			$SubmitDialog.find('textarea').val('');
+			pid_index = $(this).attr('pid');
+			$SubmitDialog.find('span#pid').text(pmap[pid_index]+' - '+$(this).attr('tname'));
+			$SubmitDialog.jqmShow();
+		});
 	});
 
 	if ($SubmitDialog.length > 0) {
@@ -802,6 +805,23 @@ $(document).ready(function(){
 		$Delete.find('a#sure').click(function(){
 			$.post('/contestDelete', {cid:cid}, function(){
 				window.location.href = '/contest/'+ctype;
+			});
+		});
+	}
+});
+
+//show problems in problemset
+var $show = $('#show');
+
+$(document).ready(function(){
+	if ($show.length) {
+		$show.click(function(){
+			$.post('/show', {cid:cid}, function(res){
+				if (res) {
+					ShowMessage('系统错误！');
+				} else {
+					ShowMessage('Problems have been Updated successfully!');
+				}
 			});
 		});
 	}

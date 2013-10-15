@@ -1,4 +1,6 @@
 # Gzhu Online Judge v3.6
 
-* add hidden problems list to '/user/admin' [index.js]
-* fixed a bug in '/user/xxx' page (problem link) [user.ejs]
+* fixed a bug in contest overview page
+* fixed the below submit button in contest problem page
+* fixed a bug in statistic page, the aggregate result is not right(added a sort before $group)
+* added a button to show all the problems in problemset in contest overview page

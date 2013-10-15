@@ -124,6 +124,8 @@ app.post('/loginContest', routes.loginContest);
 app.post('/getProblem', routes.getProblem);
 //删除一个比赛或考试
 app.post('/contestDelete', routes.contestDelete);
+//显示比赛的题目到problemset
+app.post('/show', routes.show);
 //删除一个课程
 app.post('/courseDelete', routes.courseDelete);
 //删除课程里的一道题

@@ -105,6 +105,15 @@ Problem.update = function(pID, Q, callback){
   });
 };
 
+Problem.multiUpdate = function(Q, H, callback){
+  problems.update(Q, H, {multi:true}, function(err){
+    if (err) {
+      console.log('Problem.multiUpdate failed!');
+    }
+    return callback(err);
+  });
+};
+
 Problem.del = function(){
   problems.find({}, function(err, docs){
     docs.forEach(function(doc, i) {

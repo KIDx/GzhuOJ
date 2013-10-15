@@ -73,8 +73,6 @@ var settings = require('../settings')
 var data_path = settings.data_path
 ,   root_path = settings.root_path;
 
-
-
 var College = ['其他学院', '计算机科学与教育软件学院', '数学与信息科学学院', '土木工程学院', '物理与电子工程学院', '机械与电气工程学院'];
 
 function nil(n) {
@@ -300,7 +298,7 @@ exports.getOverview = function(req, res) {
       emit(this.problemID, { AC:1, all:1, result:this.result });
     },
     reduce: function(key, vals){
-      val = { AC:0, all:0, result:2 };
+      val = { AC:0, all:0, result:null };
       vals.forEach(function(p, i){
         val.all += p.all;
         if (p.result == 2) {
@@ -310,8 +308,12 @@ exports.getOverview = function(req, res) {
       return val;
     },
     finalize: function(key, val){
-      if (val.result != 2) {
-        return { AC:0, all:1 };
+      if (val.result) {
+        if (val.result == 2) {
+          return {AC:1, all:1};
+        } else {
+          return {AC:0, all:1};
+        }
       }
       return { AC:val.AC, all:val.all };
     },
@@ -2171,7 +2173,34 @@ exports.contestDelete = function(req, res) {
         req.session.msg = '系统错误！';
         return res.end();
       }
-      req.session.msg = 'Contest '+cid+' has been deleted successfully!';
+      req.session.msg = 'Contest '+cid+' has been Deleted successfully!';
+      return res.end();
+    });
+  });
+};
+
+exports.show = function(req, res) {
+  var cid = parseInt(req.body.cid, 10);
+  if (!cid) {
+    return res.end();
+  }
+  Contest.watch(cid, function(err, contest){
+    if (err) {
+      console.log(err);
+      return res.end('1');
+    }
+    if (!contest || !contest.probs) {   //impossible, not allow
+      return res.end();
+    }
+    var pids = new Array();
+    contest.probs.forEach(function(p){
+      pids.push(p[0]);
+    });
+    Problem.multiUpdate({problemID: {$in: pids}}, {hide: false}, function(err){
+      if (err) {
+        console.log(err);
+        return res.end('1');
+      }
       return res.end();
     });
   });
@@ -2757,8 +2786,11 @@ exports.doSubmit = function(req, res) {
   var cid = parseInt(req.body.cid)
   ,   name = req.session.user.name
   ,   pid = parseInt(req.body.pid)
-  ,   Str = req.body.code
-  ,   RP = function(){
+  ,   Str = req.body.code;
+  if (!pid || !Str) {
+    return res.end('3');
+  }
+  var RP = function(){
     IDs.get('runID', function(err, id){
       if (err) {
         console.log(err);
@@ -2914,7 +2946,7 @@ exports.statistic = function(req, res) {
       }
       Solution.aggregate([{
         $match: Q1
-      }, {
+      }, {$sort: sq}, {
         $group: {
           _id       : '$userName',
           runID     : { $first : '$runID' },

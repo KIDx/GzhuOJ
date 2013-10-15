@@ -1,4 +1,4 @@
-# Gzhu Online Judge v3.6
+# Gzhu Online Judge v3.7
 
 * fixed a bug in contest overview page
 * fixed the below submit button in contest problem page

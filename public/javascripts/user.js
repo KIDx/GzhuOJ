@@ -20,11 +20,39 @@ $(document).ready(function(){
             });
         });
     }
-    var $ap = $('#addprob');
+    
+    
+});
+
+var $ap = $('#addprob');
+
+$(document).ready(function(){
     if ($ap.length) {
         $ap.click(function(){
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
+            $(this).addClass('disabled');
             $.post('/changeAddprob', {name:tname}, function(){
                 window.location.reload(true);
+            });
+        });
+    }
+});
+
+var $recal = $('#recal');
+
+$(document).ready(function(){
+    if ($recal.length) {
+        $recal.click(function(){
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
+            $(this).text('处理中...');
+            $(this).addClass('disabled');
+            $.post('/recal', function(res){
+                console.log(res);
+                window.location.href = '/ranklist';
             });
         });
     }

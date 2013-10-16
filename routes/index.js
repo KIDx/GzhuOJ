@@ -79,7 +79,7 @@ function nil(n) {
   return (typeof(n) == 'undefined');
 }
 
-//return status color class
+//return status' color
 function Col (n) {
   switch(n) {
     case 0:
@@ -99,7 +99,7 @@ function Col (n) {
   }
 }
 
-//return status result string
+//return status' result
 function Res (n) {
   switch(n) {
     case 0: return 'Pending...';
@@ -1105,37 +1105,6 @@ exports.rejudge = function(req, res) {
   });
 };
 
-//重新统计用户提交数和AC数
-function recalAfterClear() {
-  User.update({}, {$set: {submit:0, solved:0}}, true, function(err){
-    if (err) {
-      console.log(err);
-    }
-    User.find({}, function(err, users){
-      users.forEach(function(user){
-        Solution.count({userName:user.name}, function(err, submitN){
-          if (err) {
-            console.log(err);
-          }
-          Solution.distinct('problemID', {userName:user.name, result:2}, function(err, docs){
-            if (err) {
-              console.log(err);
-            }
-            user.submit = submitN;
-            if (docs) user.solved = docs.length;
-            else user.solved = 0;
-            user.save(function(err){
-              if (err) {
-                console.log(err);
-              }
-            });
-          });
-        });
-      });
-    });
-  });
-}
-
 function clearRunning() {
   Solution.find({result:1}, function(err, docs){
     docs.forEach(function(p){
@@ -1145,6 +1114,82 @@ function clearRunning() {
     });
   });
 }
+
+exports.recal = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = 'Please login first!';
+    return res.end();
+  }
+  if (req.session.user.name != 'admin') {
+    req.session.msg = 'Failed! You have no permission to Add or Edit problem.';
+    return res.end();
+  }
+  Solution.mapReduce({
+    map: function() {
+      emit(this.userName, {pids:null, submit:1, pid:this.problemID, result:this.result});
+    },
+    reduce: function(k, vals) {
+      var val = {submit:0};
+      val.pids = new Array();
+      vals.forEach(function(p){
+        val.submit += p.submit;
+        if (p.pids) {
+          p.pids.forEach(function(i){
+            val.pids.push(i);
+          });
+        } else if (p.result == 2) {
+          val.pids.push(p.pid);
+        }
+      });
+      return val;
+    },
+    finalize: function(key, val) {
+      if (!val.pids) {
+        if (val.result == 2) {
+          return {solved:1, submit:1};
+        } else {
+          return {solved:0, submit:1};
+        }
+      } else {
+        var has = {}, solved = 0;
+        val.pids.sort().forEach(function(p){
+          if (!has[p]) {
+            has[p] = true;
+            ++solved;
+          }
+        });
+        return {solved:solved, submit:val.submit};
+      }
+    },
+    sort: {runID: -1}
+  }, function(err, U){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (!U) {
+      return res.end();
+    }
+    var k = U.length
+    , dfs = function(x) {
+      if (x == k) {
+        req.session.msg = '统计完成！';
+        return res.end();
+      }
+      User.update({name:U[x]._id}, {$set:U[x].value}, false, function(err){
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        dfs(x+1);
+      });
+    };
+    return dfs(0);
+  });
+};
 
 exports.index = function(req, res){
   //resetPassword();
@@ -1294,7 +1339,7 @@ exports.avatarUpload = function(req, res) {
               console.log(err);
               return res.end('3');
             }
-            originImg.resize(100, 100, '!')
+            originImg.resize(75, 75, '!')
             .autoOrient()
             .write(pre+'/3.'+imgType, function(err){
               if (err) {
@@ -2816,7 +2861,7 @@ exports.doSubmit = function(req, res) {
             console.log(err);
             return res.end('3');
           }
-          User.update({'name': name}, {$inc: {submit: 1}}, true, function(err){
+          User.update({name: name}, {$inc: {submit: 1}}, false, function(err){
             if (err) {
               console.log(err);
               return res.end('3');
@@ -2844,11 +2889,10 @@ exports.doSubmit = function(req, res) {
         req.session.msg = 'the Contest is not exist!';
         return res.end(); //not allow
       }
-      if (contest.type == 2 && name != contest.userName) {
-        if (!contest.contestants || !IsRegCon(contest.contestants, name)) {
-          req.session.msg = 'You can not submit because you have not registered the contest yet!';
-          return res.end('2');
-        }
+      if (contest.type == 2 && name != contest.userName &&
+        (!contest.contestants || !IsRegCon(contest.contestants, name))) {
+        req.session.msg = 'You can not submit because you have not registered the contest yet!';
+        return res.end('2');
       }
       return RP();
     });

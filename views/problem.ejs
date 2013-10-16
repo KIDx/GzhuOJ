@@ -12,8 +12,12 @@
       <div class="sidebox">
         <div class="side-header">→ Information</div>
         <ul class="info">
-          <li>Solved Number: <%= problem.AC %></li>
-          <li>Submit Number: <%= problem.submit %></li>
+          <li>Solved Number: 
+            <a href="/status?pid=<%= problem.problemID %>&result=2"><%= problem.AC %></a>
+          </li>
+          <li>Submit Number: 
+            <a href="/status?pid=<%= problem.problemID %>"><%= problem.submit %></a>
+          </li>
         </ul>
       </div>
     <% if (user) { %>

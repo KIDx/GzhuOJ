@@ -22,7 +22,7 @@
       </ul>
     </div>
     <div class="roundbox avatar_box">
-      <div class="avatar"><img alt="avatar" src="<%= img %>" /></div>
+      <div class="border avatar"><img alt="avatar" src="<%= img %>" /></div>
       <h3>
         <span id="usercol" name="<%= u.name %>" <% if (u.privilege) { %>pvl="<%= u.privilege %>"<% } %>>&nbsp;</span>
       <% if (X || Y) { %>
@@ -50,11 +50,14 @@
         <% } %>
         <button class="btn" id="submit">提交</button>
       <% } %>
-      <% if (user && user.name == 'admin') { %>
-        <button style="margin-left:20px;" class="btn" id="addprob"><% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %>加题权限</button>
-      <% } %>
       </h3>
-      <span class="user-gray" title="nick name"><%= u.nick %></span>
+      <% if (user && user.name == 'admin') { %>
+      <div style="margin:10px 0;">
+        <a style="margin:0;" href="javascript:;" class="uibtn" id="addprob"><% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %>加题权限</a>
+        <a style="margin:0 10px;" href="javascript:;" class="uibtn" id="recal">重新统计所有用户提交数和AC数</a>
+      </div>
+      <% } %>
+      <div><span class="user-gray" title="nick name"><%= u.nick %></span></div>
       <ul class="user-info">
       <% if(u.signature) { %>
         <li>Signature: <%= u.signature %></li>

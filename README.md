@@ -1,6 +1,5 @@
-# Gzhu Online Judge v3.7
+# Gzhu Online Judge v3.8
 
-* fixed a bug in contest overview page
-* fixed the below submit button in contest problem page
-* fixed a bug in statistic page, the aggregate result is not right(added a sort before $group)
-* added a button to show all the problems in problemset in contest overview page
+* fixed a bug in onecourse page(onecourse.js)
+* add a button in user page for admin, to recalculate the number of AC and submit
+* display current user's avatar in home page

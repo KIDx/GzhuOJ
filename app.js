@@ -174,6 +174,8 @@ app.post('/delData', routes.delData);
 app.post('/delImg', routes.delImg);
 //获取指定runID的CE信息
 app.post('/getCE', routes.getCE);
+//重新统计用户提交数和AC数
+app.post('/recal', routes.recal);
 //清除服务器消息
 app.post('/msgClear', function(req, res){
   req.session.msg = null;

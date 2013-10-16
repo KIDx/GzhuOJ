@@ -45,7 +45,16 @@
       </ul>
     </div>
     <div class="w" id="preload_logo">
-      <a href="/"><img src="/img/logo.png" /></a>
+      <a href="/" title="Gzhu Online Judge">
+        <img src="/img/logo.png" alt="Gzhu Online Judge" />
+      </a>
+    <% if (user) { %>
+      <% var img = '/img/avatar/%3Ddefault%3D/3.jpeg'; %>
+      <% if (user.imgType) { img = '/img/avatar/'+user.name+'/3.'+user.imgType; } %>
+      <a class="border fr" title="go to change picture" href="/avatar">
+        <img alt="avatar" src="<%= img %>" />
+      </a>
+    <% } %>
     </div>
     <div class="w">
       <ul class="navigation menu">

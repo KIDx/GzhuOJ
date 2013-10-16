@@ -11,6 +11,11 @@ pre, input, button, select, textarea {
     font-family: "微软雅黑","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
 
+a.disabled {
+    color: gray!important;
+    background: #fff!important;
+}
+
 .my-radio {
     overflow: hidden;
 }
@@ -315,7 +320,7 @@ div#xbody textarea {
 }
 
 div#preload_logo {
-    height: 70px;
+    height: 77px;
 }
 
 /*********************CF*********************/
@@ -597,8 +602,11 @@ ul.nav-tabs > li > a:hover {
     background: url('img/tab.png') repeat-x scroll 0 -43px white;
 }
 
+.border {
+    border: 1px solid #ddd;
+}
+
 div.avatar {
-    border: 1px solid #ccc;
     float: right;
     margin: 20px 20px 0 0;
     width: 250px;

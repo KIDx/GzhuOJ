@@ -6,7 +6,6 @@ function go(page){
 	var F = new Array(), G = new Array();
 
 	if (page) F.push('page'), G.push(page);
-
 	var url = '/onecourse/'+cid, flg = true;
 	for (var i = 0; i < F.length; i++) {
 		if (flg) {
@@ -33,8 +32,7 @@ $(document).ready(function(){
 	});
 });
 
-var $rank = $('#rank')
-,	cid = parseInt($rank.attr('cid'), 10);
+var $rank = $('#rank');
 
 $(document).ready(function(){
 	if ($rank.length) {

@@ -3,12 +3,9 @@
 <% if (user && user.privilege && parseInt(user.privilege) > 80) { pvl = true; } %>
 <fieldset>
   <div>
-    <legend id="regform" type="<%= type %>">
-      <% if (contest) { %>报名<% } else { %>申请<% } %>列表
-    </legend>
+    <legend id="regform" type="<%= type %>">报名列表</legend>
   </div>
-<% if (contest) { %>
-  <h3 class="problem-header"><%= contest.title %></h3>
+  <h3 class="problem-header"><%= CT %></h3>
   <div align="center" style="margin-bottom:10px;width:100%;height:25px;">
   <% if (left > 0) { %>
     <span class="error-text">距离报名结束还有：</span><span class="error-text" id="leftTime" left="<%= left/1000 %>"></span><img src="/img/hot.gif"/>
@@ -16,15 +13,14 @@
     <span class="success-text">报名已结束</span>
   <% } %>
   <% if (pvl) { %>
-    <a style="margin-left:10px;" href="javascript:;" id="submit" class="uibtn">提交</a>
+    <a style="margin-left:10px;" href="javascript:;" id="submit" class="uibtn">提交审核</a>
   <% } %>
   </div>
-<% } %>
 <% if (pvl) { %>
   <div id="change-grade">
     <input type="text" class="input-medium" placeholder="用户名">
     <input type="text" class="input-small" placeholder="班别">
-    <a id="change" class="uibtn" href="javascript:;">修改</a>
+    <a id="change" class="uibtn" href="javascript:;">修改该用户班别</a>
   </div>
 <% } %>
   <div class="tablebg">
@@ -32,14 +28,9 @@
       <%- partial('pager', {page:page, n:n}) %>
       <div class="fr" id="filter">
         <div>
-        <% if (contest) { %>
-          <% if (left > 0 && (!user || user.name != 'admin')) { %>
+        <% if (left > 0 && (!user || user.name != 'admin')) { %>
           <button id="signup" class="error-text">我要报名</button>
           <span class="user-gray">（注：重复报名可修改信息并重新审核）</span>
-          <% } %>
-        <% } else { %>
-          <button id="signup" class="error-text">申请认证</button>
-          <span class="user-gray">（注：重复申请可修改信息并重新审核）</span>
         <% } %>
         </div>
         <div class="input-prepend">
@@ -64,7 +55,7 @@
             <th style="width:10%;">姓名</th>
             <th style="width:5%;">性别</th>
             <th style="width:19%;">学院</th>
-            <th style="width:8%;">班级</th>
+            <th style="width:8%;">班别</th>
             <th>报名时间</th>
           <% if (pvl) { %>
             <th style="width:5%;">

@@ -3,14 +3,14 @@ var mongoose = require('mongoose')
 ,   Schema = mongoose.Schema
 ,   pageNum = require('../settings.js').contestRank_pageNum;
 
-function Rank(rank) {
-  this._id = rank._id
+function Rank(id) {
+  this._id = id;
 };
 
 module.exports = Rank;
 
 var rankObj = new Schema({
-  _id: {type: String, index: {unique: true}},
+  _id: {type: Object, index: {unique: true}},
   value: Object
 });
 
@@ -30,6 +30,15 @@ Rank.prototype.save = function(callback){
   });
 };
 
+Rank.findOne = function(Q, callback) {
+  ranks.findOne(Q, function(err, doc){
+    if (err) {
+      console.log('Rank.fineOne failed!');
+    }
+    return callback(err, doc);
+  });
+};
+
 Rank.get = function(Q, page, callback){
   ranks.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
@@ -45,6 +54,15 @@ Rank.get = function(Q, page, callback){
   });
 };
 
+Rank.update = function(Q, H, callback) {
+  ranks.update(Q, H, {multi:true}, function(err){
+    if (err) {
+      console.log('Rank.update failed!');
+    }
+    return callback(err);
+  });
+};
+
 Rank.remove = function(Q, callback) {
   ranks.remove(Q, function(err){
     if (err) {
@@ -52,7 +70,7 @@ Rank.remove = function(Q, callback) {
     }
     return callback(err);
   });
-}
+};
 
 Rank.del = function(){
   ranks.find({}, function(err, docs){

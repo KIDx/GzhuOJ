@@ -68,83 +68,18 @@ var settings = require('../settings')
 ,   stats_pageNum = settings.stats_pageNum
 ,   contestRank_pageNum = settings.contestRank_pageNum
 ,   Tag = settings.T
-,   ProTil = settings.P;
+,   ProTil = settings.P
+,   Col = settings.C
+,   Res = settings.R
+,   UserCol = settings.UC
+,   UserTitle = settings.UT
+,   College = settings.College;
 
 var data_path = settings.data_path
 ,   root_path = settings.root_path;
 
-var College = ['其他学院', '计算机科学与教育软件学院', '数学与信息科学学院', '土木工程学院', '物理与电子工程学院', '机械与电气工程学院'];
-
 function nil(n) {
   return (typeof(n) == 'undefined');
-}
-
-//return status' color
-function Col (n) {
-  switch(n) {
-    case 0:
-    case 1: return 'info-text';
-    case 2: return 'accept-text';
-    case 3:
-    case 4:
-    case 5:
-    case 6:
-    case 7:
-    case 9:
-    case 10:
-    case 11:
-    case 12:
-    case 15: return 'wrong-text';
-    default: return 'special-text';
-  }
-}
-
-//return status' result
-function Res (n) {
-  switch(n) {
-    case 0: return 'Pending...';
-    case 1: return 'Running...';
-    case 2: return 'Accepted';
-    case 3: return 'Presentation Error';
-    case 4: return 'Time Limit Exceeded';
-    case 5: return 'Memory Limit Exceeded';
-    case 6: return 'Wrong Answer';
-    case 7: return 'Output Limit Exceeded';
-    case 8: return 'Compilation Error';
-    case 13: return 'Dangerous Code';
-    case 14: return 'System Error';
-    default: return 'Runtime Error';
-  }
-}
-
-//return user color style
-function UserCol (n) {
-  n = parseInt(n, 10);
-  if (!n) return 'black';
-  switch(n) {
-      case 73:
-      case 99: return 'red';
-      case 81: return 'violet';
-      case 82: return 'orange';
-      case 72: return 'blue';
-      case 71: return 'cyan';
-      case 70: return 'green';
-  }
-}
-
-//return user title
-function UserTitle (n) {
-  n = parseInt(n, 10);
-  if (!n) return 'Normal-普通用户';
-  switch(n) {
-      case 99: return 'Administrator-创界者';
-      case 82: return 'Teacher-老师';
-      case 81: return 'Captain-队长';
-      case 73: return 'Visitant-贵宾';
-      case 72: return 'Expert-资深队员';
-      case 71: return 'Specialist-普通队员';
-      case 70: return 'Student-本校学生';
-  }
 }
 
 function deal(str) {
@@ -295,29 +230,21 @@ exports.getOverview = function(req, res) {
   }
   Solution.mapReduce({
     map: function(){
-      emit(this.problemID, { AC:1, all:1, result:this.result });
+      var val = { AC:0, all:1 };
+      if (this.result == 2) {
+        val.AC = 1;
+      }
+      emit(this.problemID, val);
     },
     reduce: function(key, vals){
       val = { AC:0, all:0, result:null };
       vals.forEach(function(p, i){
         val.all += p.all;
-        if (p.result == 2) {
-          val.AC += p.AC;
-        }
+        val.AC += p.AC;
       });
       return val;
     },
-    finalize: function(key, val){
-      if (val.result) {
-        if (val.result == 2) {
-          return {AC:1, all:1};
-        } else {
-          return {AC:0, all:1};
-        }
-      }
-      return { AC:val.AC, all:val.all };
-    },
-    query: {cID: cid},
+    query: {$nor: [{userName:'admin'}], cID: cid},
     sort: {runID: 1}
   }, function(err, results){
     if (err) {
@@ -326,7 +253,7 @@ exports.getOverview = function(req, res) {
     }
     if (req.session.user) {
       Solution.aggregate([
-      { $match: { userName: req.session.user.name, cID: cid } }
+      { $match: { userName: req.session.user.name, cID: cid, result:{$gt:1} } }
     , { $group: { _id: '$problemID', result: {$min: '$result'} } }
       ], function(err, sols){
         if (err) {
@@ -396,7 +323,8 @@ exports.getStatus = function(req, res) {
         solutions.forEach(function(p, i){
           var T = '', M = '', L = '';
           if (req.session.user && (req.session.user.name == p.userName ||
-              req.session.user.name == contest.userName)) {
+              req.session.user.name == contest.userName) ||
+              calDate(contest.startTime, contest.len) < getDate(new Date())) {
             T = p.time; M = p.memory; L = p.length;
           }
           sols.push({
@@ -448,7 +376,7 @@ exports.getRanklist = function(req, res) {
   var now = (new Date()).getTime();
   Contest.findOneAndUpdate({
     contestID   : cid,
-    updateTime  : { $lt: now-60000 }
+    updateTime  : { $lt: now-10000 }
   }, {
     $set: { updateTime: now }
   }, {
@@ -459,7 +387,7 @@ exports.getRanklist = function(req, res) {
       return res.end();
     }
     var RP = function(con){
-      ContestRank.get({_id: new RegExp('^'+cid+'-.*$')}, page, function(err, users, n){
+      ContestRank.get({'_id.cid': cid}, page, function(err, users, n){
         if (err) {
           console.log(err);
           return res.end();
@@ -471,7 +399,7 @@ exports.getRanklist = function(req, res) {
         if (users) {
           var has = {};
           users.forEach(function(p, i){
-            p._id = p._id.split('-')[1];
+            p._id = p._id.name;
             has[p._id] = true;
             names.push(p._id);
           });
@@ -508,45 +436,28 @@ exports.getRanklist = function(req, res) {
         return RP(con);
       });
     } else {
-      var Q = { $and: [
-        {cID: cid},
-        {$nor: [{userName:'admin'}]},
-        {inDate: {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)}},
-      ] };
+      var Q = {
+        cID: cid,
+        $nor: [{userName:'admin'}],
+        inDate: {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)},
+      };
       Solution.mapReduce({
-        out: { merge: 'ranks' },
+        query: Q,
+        sort: {runID: 1},
         map: function(){
-          return emit(this.cID+'-'+this.userName, {
-            solved: 0,
-            pid: this.problemID,
-            result: this.result,
-            status: {},
-            inDate: parseInt((new Date(this.inDate)).getTime()/60000, 10)
-          });
+          var val = { solved:0, penalty:0, status:{} };
+          if (this.result == 2) {
+            val.solved = 1;
+            val.penalty = parseInt((new Date(this.inDate)).getTime()/60000, 10);
+            val.status[this.problemID] = {wa: 0, inDate: val.penalty};
+          } else {
+            val.status[this.problemID] = {wa: -1};
+          }
+          return emit({cid: this.cID, name: this.userName}, val);
         },
         reduce: function(key, vals){
-          var val = { solved: 0, penalty: 0, pid: null, result: null, status: {}, inDate: null };
+          var val = { solved: 0, penalty: 0, status: {} };
           vals.forEach(function(p){
-            if (p.pid) {
-              if (p.result == 2) {
-                if (!val.status[p.pid]) {
-                  ++val.solved;
-                  val.penalty += p.inDate;
-                  val.status[p.pid] = { wa: 0, inDate: p.inDate };
-                } else if (val.status[p.pid].wa < 0) {
-                  ++val.solved;
-                  val.status[p.pid].wa = -val.status[p.pid].wa;
-                  val.penalty += val.status[p.pid].wa*20 + p.inDate;
-                  val.status[p.pid].inDate = p.inDate;
-                }
-              } else {
-                if (!val.status[p.pid]) {
-                  val.status[p.pid] = { wa: -1 };
-                } else if (val.status[p.pid].wa < 0) {
-                  --val.status[p.pid].wa;
-                }
-              }
-            } else {
               for (var i in p.status) {
                 var o = p.status[i];
                 if (!val.status[i]) {
@@ -559,33 +470,17 @@ exports.getRanklist = function(req, res) {
                   if (o.wa >= 0) {
                     val.solved++;
                     val.status[i].wa = o.wa - val.status[i].wa;
+                    val.status[i].inDate = o.inDate;
                     val.penalty += val.status[i].wa*20 + o.inDate;
                   } else {
                     val.status[i].wa += o.wa;
                   }
                 }
               }
-            }
           });
           return val;
         },
-        finalize: function(key, val){
-          if (val.pid) {
-            var tp = { solved:0, penalty:0, status:{} };
-            if (val.result == 2) {
-              tp.solved = 1;
-              tp.penalty = val.inDate;
-              tp.status[val.pid] = { wa: 0, inDate: val.inDate };
-              return tp;
-            } else {
-              tp.status[val.pid] = { wa: -1 };
-              return tp;
-            }
-          }
-          return { solved: val.solved, penalty: val.penalty, status: val.status };
-        },
-        query: Q,
-        sort: {runID: 1}
+        out: { merge: 'ranks' }
       }, function(err){
         if (err) {
           console.log(err);
@@ -640,36 +535,24 @@ exports.changePvl = function(req, res) {
     req.session.msg = 'Please login first!';
     return res.end();
   }
-  if (!req.session.user.privilege) {
+  if (req.session.user.name != 'admin') {
     req.session.msg = 'Failed! You have no permission to do that!';
     return res.end();
   }
-  var ch = req.session.user.privilege.charAt(0);
-  if (ch <= req.body.pvl.charAt(0)) {
-    req.session.msg = 'Failed! Your permission is not high enough!';
-    return res.end();
-  }
-  User.watch(req.body.name, function(err, user){
+  User.update({name:req.body.name}, {$set: {
+    privilege   : req.body.pvl,
+    college     : req.body.college,
+    realname    : req.body.realname,
+    sex         : req.body.sex,
+    grade       : req.body.grade
+  }}, false, function(err){
     if (err) {
       console.log(err);
-      req.session.msg = err;
+      req.session.msg = '系统错误！';
       return res.end();
     }
-    if (user.privilege &&
-      user.privilege.charAt(0) >= ch) {
-      req.session.msg = 'Failed! Your permission is not high enough!';
-      return res.end();
-    }
-    user.privilege = req.body.pvl;
-    user.college = req.body.college;
-    user.save(function(err){
-      if (err) {
-        console.log(err);
-        return res.end();
-      }
-      req.session.msg = 'The Information has been changed successfully!';
-      return res.end();
-    });
+    req.session.msg = 'The Information has been changed successfully!';
+    return res.end();
   });
 };
 
@@ -686,7 +569,7 @@ exports.changeAddprob = function(req, res) {
   User.watch(req.body.name, function(err, user){
     if (err) {
       console.log(err);
-      req.session.msg = err;
+      req.session.msg = '系统错误！';
       return res.end();
     }
     if (!user.addprob) user.addprob = true;
@@ -694,6 +577,7 @@ exports.changeAddprob = function(req, res) {
     user.save(function(err){
       if (err) {
         console.log(err);
+        req.session.msg = '系统错误！';
         return res.end();
       }
       req.session.msg = 'The Information has been changed successfully!';
@@ -1105,16 +989,6 @@ exports.rejudge = function(req, res) {
   });
 };
 
-function clearRunning() {
-  Solution.find({result:1}, function(err, docs){
-    docs.forEach(function(p){
-      p.result = 0;
-      p.save();
-      console.log(p.runID);
-    });
-  });
-}
-
 exports.recal = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
@@ -1196,7 +1070,6 @@ exports.index = function(req, res){
   //IDs.Init();
   //recalAfterClear();
   //ContestRank.del();
-  //clearRunning();
   res.render('index', { title: 'Gzhu Online Judge',
                         user: req.session.user,
                         message: req.session.msg,
@@ -1254,15 +1127,14 @@ exports.user = function(req, res) {
         });
       };
       if (user.name != 'admin') {
-        User.count({$and: [{
-          $nor: [{name: 'admin'}]
-        },{
+        User.count({
+          $nor: [{name: 'admin'}],
           $or:[
             { solved: {$gt: user.solved} },
-            { $and:[ {solved: user.solved}, {submit: {$lt: user.submit}} ] },
-            { $and:[ {solved: user.solved}, {submit: user.submit}, {name: {$lt: user.name}} ] }
+            { solved: user.solved, submit: {$lt: user.submit} },
+            { solved: user.solved, submit: user.submit, name: {$lt: user.name} }
           ]
-        }]}, function(err, rank){
+        }, function(err, rank){
           if (err) {
             req.session.msg = err;
             console.log(err);
@@ -1790,10 +1662,10 @@ exports.problemset = function(req, res) {
   }
 
   if (!req.session.user) {
-    Q = {$and: [ {$or:[q1, q2, q3]}, {hide:false} ]};
+    Q = { $or:[q1, q2, q3], hide:false };
   } else if (req.session.user.name != 'admin') {
-    Q = {$and: [ {$or:[q1, q2, q3]}, {$or:[{hide:false}, {manager:req.session.user.name}]} ]};
-  } else Q = {$or:[q1, q2, q3]};
+    Q = { $or:[q1, q2, q3], $or:[{hide:false}, {manager:req.session.user.name}] };
+  } else Q = { $or:[q1, q2, q3] };
 
   Problem.get(Q, page, function(err, problems, n) {
     if (err) {
@@ -2059,35 +1931,35 @@ exports.doAddcontest = function(req, res) {
   var cid = parseInt(req.body.cid);
   if (cid >= 1000) {
     newContest.contestID = cid;
-    Contest.watch(cid, function(err, doc) {
+    Contest.watch(cid, function(err, con) {
       if (err) {
         console.log(err);
         req.session.msg = '系统错误！';
         return res.end();
       }
-      if (!doc) {
+      if (!con) {
         return res.end();
       }
-      if (req.session.user.name != doc.userName) {
+      if (req.session.user.name != con.userName) {
         req.session.msg = 'Update Failed! You are not the manager!';
         return res.end();
       }
-      doc.title = newContest.title;
+      con.title = newContest.title;
       var flg = false;
-      if (doc.startTime != newContest.startTime) {
-        doc.startTime = newContest.startTime;
+      if (con.startTime != newContest.startTime) {
+        con.startTime = newContest.startTime;
         flg = true;
       }
-      if (doc.len != newContest.len) {
-        doc.len = newContest.len;
+      if (con.len != newContest.len) {
+        con.len = newContest.len;
         flg = true;
       }
-      if (flg) doc.updateTime = 0;
-      doc.description = newContest.description;
-      doc.msg = newContest.msg;
-      doc.probs =  ary;
-      doc.password = newContest.password;
-      doc.save(function(err){
+      if (flg) con.updateTime = 0;
+      con.description = newContest.description;
+      con.msg = newContest.msg;
+      con.probs =  ary;
+      con.password = newContest.password;
+      con.save(function(err){
         if (err) {
           console.log(err);
           req.session.msg = '系统错误！';
@@ -2100,14 +1972,25 @@ exports.doAddcontest = function(req, res) {
         if (!flg) {
           return res.end(tp);
         }
-        ContestRank.remove({_id: new RegExp('^'+cid+'-.*$')}, function(err){
-          if (err) {
-            console.log(err);
-            req.session.msg = '系统错误！';
-            return res.end();
-          }
-          return res.end(tp);
-        });
+        if (con.type == 2) {
+          ContestRank.update({'_id.cid':cid}, {$set:{value:{solved:0,penalty:0,status:{}}}}, function(err){
+            if (err) {
+              console.log(err);
+              req.session.msg = '系统错误！';
+              return res.end();
+            }
+            return res.end(tp);
+          });
+        } else {
+          ContestRank.remove({'_id.cid':cid}, function(err){
+            if (err) {
+              console.log(err);
+              req.session.msg = '系统错误！';
+              return res.end();
+            }
+            return res.end(tp);
+          });
+        }
       });
     });
   } else {
@@ -2771,7 +2654,7 @@ exports.ranklist = function(req, res) {
     q1.name = q2.nick = new RegExp("^.*"+toEscape(search)+".*$", 'i');
   }
 
-  User.get({$and:[{$or:[q1, q2]}, {$nor:[{name:'admin'}]} ]}, page, function(err, users, n){
+  User.get({ $or:[q1, q2], $nor:[{name:'admin'}] }, page, function(err, users, n){
     if (err) {
       console.log(err);
       req.session.msg = '系统错误！';
@@ -3073,6 +2956,12 @@ exports.statistic = function(req, res) {
 };
 
 exports.regCon = function(req, res) {
+
+  var cid = parseInt(req.params.type, 10);
+  if (!cid || cid < 0) {
+    return res.end('404');
+  }
+
   var page = parseInt(req.query.page, 10);
   if (!page) {
     page = 1;
@@ -3115,15 +3004,13 @@ exports.regCon = function(req, res) {
           });
         }
         var left, now = (new Date()).getTime();
-        if (C) {
-          left = (new Date(C.startTime)).getTime() - now - 300000;
-        }
+        left = (new Date(C.startTime)).getTime() - now - 300000;
         res.render('regform', { title: 'Register Form',
                                 user: req.session.user,
                                 message: req.session.msg,
                                 time: now,
                                 key: 2,
-                                contest: C,
+                                CT: C.title,
                                 n: n,
                                 page: page,
                                 search: search,
@@ -3138,22 +3025,10 @@ exports.regCon = function(req, res) {
     });
   };
 
-  var q1 = {}, q2 = {};
+  var q1 = {cid:cid}, q2 = {cid:cid};
   if (search) {
     q1.user = q2.realname = new RegExp("^.*"+toEscape(search)+".*$", 'i');
   }
-
-  if (req.params.type == 'apply') {
-    return RP(null, {cid:-1}, 'apply');
-  }
-
-  var cid = parseInt(req.params.type, 10);
-  if (!cid || cid < 0) {
-    return res.redirect('/');
-  }
-
-  q1.cid = q2.cid = cid;
-  
   Contest.watch(cid, function(err, contest){
     if (err) {
       console.log(err);
@@ -3161,7 +3036,7 @@ exports.regCon = function(req, res) {
       return res.redirect('/');
     }
     if (!contest || contest.type != 2 || !contest.password) {
-      return res.redirect('/');
+      return res.end('404');
     }
     return RP(contest, {$or:[q1, q2]}, cid);
   });
@@ -3173,9 +3048,18 @@ function regContestAndUpdate(cid, name, callback) {
       console.log(err);
       return callback(err);
     }
-    var rank = new ContestRank({_id: cid+'-'+name});
-    rank.save(function(){
-      return callback();  //if insert multiple no need to callback error.
+    ContestRank.findOne({_id: {cid:cid,name:name}}, function(err, doc){
+      if (err) {
+        console.log(err);
+        return callback(err);
+      }
+      if (doc) {
+        return callback();
+      }
+      var rank = new ContestRank({cid:cid,name:name});
+      rank.save(function(){
+        return callback();
+      });
     });
   });
 }
@@ -3429,6 +3313,7 @@ exports.regContestAdd = function(req, res) {
           req.session.msg = '系统错误！';
           return res.end();
         }
+        req.session.msg = 'Added finished!';
         return res.end();
       });
     });

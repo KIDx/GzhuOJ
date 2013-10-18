@@ -602,7 +602,7 @@ ul.nav-tabs > li > a:hover {
     background: url('img/tab.png') repeat-x scroll 0 -43px white;
 }
 
-.border {
+.img {
     border: 1px solid #ddd;
 }
 
@@ -649,17 +649,17 @@ div.avatar {
     overflow: hidden;
 }
 
-.avatar_b .avatar_img {
+.avatar_b .img {
     width: 150px;
     height: 150px;
 }
 
-.avatar_m .avatar_img {
-    width: 100px;
-    height: 100px;
+.avatar_m .img {
+    width: 75px;
+    height: 75px;
 }
 
-.avatar_s .avatar_img {
+.avatar_s .img {
     width: 50px;
     height: 50px;
 }

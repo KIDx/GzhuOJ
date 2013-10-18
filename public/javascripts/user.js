@@ -1,27 +1,33 @@
 //for user page
-var $usercol = $('span#usercol');
+var $usercol = $('span#usercol')
+,   pvl = parseInt($usercol.attr('pvl'), 10)
+,   name = $usercol.attr('name')
+,   tc = 'user-'+UserCol(pvl)
+,   title = UserTitle(pvl)
+,   str = title.split('-')
+,   $pvl = $('#pvl');
 
 $(document).ready(function(){
-    var pvl = parseInt($usercol.attr('pvl'));
-    var tc = 'user-'+UserCol(pvl);
     $usercol.addClass(tc);
-    var title = UserTitle(pvl);
     $usercol.attr('title', title);
-    var str = title.split('-');
-    var tp = '', tname = $usercol.attr('name');
-    if (pvl) tp = str[0]+' ';
-    tp += '<a class="user '+tc+'" href="/user/'+tname+'" title="'+title+'">'+tname+'</a>';
-    $usercol.html(tp);
-    var $select = $usercol.next();
-    if ($select.length) {
+    var html = '';
+    if (pvl) html = str[0]+' ';
+    html += '<a class="user '+tc+'" href="/user/'+name+'" title="'+title+'">'+name+'</a>';
+    $usercol.html(html);
+    if ($pvl.length) {
         $('#submit').click(function(){
-            $.post('/changePvl', {name:tname,pvl:$select.val(),college:$('#college').val()}, function(){
+            $.post('/changePvl', {
+                name        : name,
+                pvl         : $pvl.val(),
+                realname    : $('#realname').val(),
+                sex         : $('#sex').val(),
+                college     : $('#college').val(),
+                grade         : $('#grade').val()
+            }, function(){
                 window.location.reload(true);
             });
         });
     }
-    
-    
 });
 
 var $ap = $('#addprob');
@@ -33,7 +39,7 @@ $(document).ready(function(){
                 return false;
             }
             $(this).addClass('disabled');
-            $.post('/changeAddprob', {name:tname}, function(){
+            $.post('/changeAddprob', {name:name}, function(){
                 window.location.reload(true);
             });
         });
@@ -53,6 +59,29 @@ $(document).ready(function(){
             $.post('/recal', function(res){
                 console.log(res);
                 window.location.href = '/ranklist';
+            });
+        });
+    }
+});
+
+var $clear = $('#clear');
+
+$(document).ready(function(){
+    if ($clear.length) {
+        $clear.click(function(){
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
+            $(this).addClass('disabled');
+            $.post('/changePvl', {
+                name        : name,
+                pvl         : '',
+                realname    : '',
+                sex         : '',
+                college     : '',
+                grade       : '',
+            }, function(){
+                window.location.reload(true);
             });
         });
     }

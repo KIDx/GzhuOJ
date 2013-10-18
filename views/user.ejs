@@ -1,9 +1,4 @@
 <!--<html>-->
-<% var cnt = 0, X = false, Y = false;   %>
-<% if (user && user.privilege) {        %>
-<%   var ch = user.privilege.charAt(0); %>
-<%   if (ch > '7' && (!u.privilege || ch > u.privilege.charAt(0))) { %>
-<%     Y = true; if (ch == '9') X = true; } }%>
 
 <% var img = '/img/avatar/%3Ddefault%3D/1.jpeg'; %>
 <% if (u.imgType) { img = '/img/avatar/'+u.name+'/1.'+u.imgType; } %>
@@ -22,24 +17,28 @@
       </ul>
     </div>
     <div class="roundbox avatar_box">
-      <div class="border avatar"><img alt="avatar" src="<%= img %>" /></div>
+      <div class="img avatar"><img alt="avatar" src="<%= img %>" /></div>
       <h3>
         <span id="usercol" name="<%= u.name %>" <% if (u.privilege) { %>pvl="<%= u.privilege %>"<% } %>>&nbsp;</span>
-      <% if (X || Y) { %>
-        <select style="margin:0 10px;" class="input-medium">
-        <% if (X) { %>
-          <option value="82">老师</option>
-          <option value="81">队长</option>
-          <option value="73">贵宾</option>
-        <% } %>
-        <% if (Y) { %>
-          <option value="72">资深队员</option>
-          <option value="71">普通队员</option>
-          <option value="70">本校学生</option>
-        <% } %>
-          <option value="" selected>取消认证</option>
+      <% if (u.name != 'admin' && user && user.name == 'admin') { %>
+        <% var rname = '', gde = ''; %>
+        <% if (u.realname) rname = u.realname; %>
+        <% if (u.grade) gde = u.grade; %>
+        <input style="margin:0;" type="text" class="input-mini" id="realname" placeholder="姓名" title="姓名" value="<%= rname %>"/>
+        <input style="margin:0;" type="text" class="input-mini" id="grade" placeholder="班别" title="班别" value="<%= gde %>"/>
+        <select id="sex" style="margin:0;" class="input-mini">
+          <option value="0">男</option>
+          <option value="1" <% if (u.sex == '1') { %>selected<% } %>>女</option>
         </select>
-        <% if (X) { %>
+        <% var pvl = ['70', '71', '72', '73', '81', '82']; %>
+        <% var tmp = ['本校学生', '普通队员', '资深队员', '贵宾', '队长', '老师']; %>
+        <select id="pvl" style="margin:0 5px;width:100px;">
+        <% pvl.forEach(function(p, i){ %>
+          <option value="<%= p %>" <% if (u.privilege == p) { %>selected<% } %>>
+            <%= tmp[i] %>
+          </option>
+        <% }); %>
+        </select>
         <select id="college" style="margin:0;">
           <% C.forEach(function(p, i){ %>
           <option value="<%= i %>" <% if (u.college == i) { %>selected<% } %>>
@@ -47,14 +46,23 @@
           </option>
           <% }); %>
         </select>
-        <% } %>
-        <button class="btn" id="submit">提交</button>
+        <a href="javascript:;" class="btn" id="submit">提交修改</a>
       <% } %>
       </h3>
       <% if (user && user.name == 'admin') { %>
       <div style="margin:10px 0;">
-        <a style="margin:0;" href="javascript:;" class="uibtn" id="addprob"><% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %>加题权限</a>
-        <a style="margin:0 10px;" href="javascript:;" class="uibtn" id="recal">重新统计所有用户提交数和AC数</a>
+        <a style="margin:0;" href="javascript:;" class="uibtn" id="addprob">
+          <% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %>&nbsp;<%= u.name %>&nbsp;加题权限
+        </a>
+        <% if (u.name != 'admin') { %>
+        <a style="margin:0 10px;" href="javascript:;" class="uibtn" id="clear">
+          清空&nbsp;<%= u.name %>&nbsp;的认证信息
+        </a>
+        <% } else { %>
+          <a style="margin:0 10px;" href="javascript:;" class="uibtn" id="recal">
+            重新统计所有用户提交数和AC数
+          </a>
+        <% } %>
       </div>
       <% } %>
       <div><span class="user-gray" title="nick name"><%= u.nick %></span></div>

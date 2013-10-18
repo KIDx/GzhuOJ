@@ -65,7 +65,7 @@ Reg.get = function(Q, page, callback){
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
   });
-}
+};
 
 Reg.findOne = function(Q, callback){
   regs.findOne(Q, function(err, doc){
@@ -74,7 +74,7 @@ Reg.findOne = function(Q, callback){
     }
     return callback(err, doc);
   });
-}
+};
 
 Reg.update = function(Q, H, callback){
   regs.findOneAndUpdate(Q, H, function(err, doc) {

@@ -86,6 +86,15 @@ User.watch = function(username, callback){
   });
 };
 
+User.distinct = function(key, Q, callback) {
+  users.distinct(key, Q, function(err, docs){
+    if (err) {
+      console.log('User.distinct failed!');
+    }
+    return callback(err, docs);
+  });
+};
+
 User.find = function(Q, callback){
   users.find(Q, function(err, docs){
     if (err) {

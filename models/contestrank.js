@@ -44,13 +44,22 @@ Rank.get = function(Q, page, callback){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
-    ranks.find(Q).sort({'value.solved':-1, 'value.penalty':1})
+    ranks.find(Q).sort({'value.solved':-1, 'value.penalty':1, '_id.name':1})
     .skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs) {
       if (err) {
         console.log('Rank.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
+  });
+};
+
+Rank.count = function(Q, callback) {
+  ranks.count(Q, function(err, count){
+    if (err) {
+      console.log('Rank.count failed!');
+    }
+    return callback(err, count);
   });
 };
 

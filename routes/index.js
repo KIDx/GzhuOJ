@@ -183,7 +183,7 @@ exports.updateStatus = function(req, res) {
   Solution.watch({runID:id}, function(err, sol){
     if (err) {
       console.log(err);
-      return res.end();
+      return res.end();   //not refresh!
     }
     if (!sol || sol.result == 0) {
       return res.end();
@@ -205,7 +205,7 @@ exports.updateStatus = function(req, res) {
         Contest.watch(sol.cID, function(err, contest){
           if (err) {
             console.log(err);
-            return res.end();
+            return res.end();   //not refresh!
           }
           if (!contest) {
             return res.end();
@@ -226,7 +226,7 @@ exports.getOverview = function(req, res) {
   res.header('Content-Type', 'text/plain');
   var cid = parseInt(req.body.cid, 10);
   if (!cid) {
-    return res.end();
+    return res.end();   //not allow!
   }
   Solution.mapReduce({
     map: function(){
@@ -249,7 +249,7 @@ exports.getOverview = function(req, res) {
   }, function(err, results){
     if (err) {
       console.log(err);
-      return res.end();
+      return res.end();   //not refresh!
     }
     if (req.session.user) {
       Solution.aggregate([
@@ -258,7 +258,7 @@ exports.getOverview = function(req, res) {
       ], function(err, sols){
         if (err) {
           console.log(err);
-          return res.end();
+          return res.end();   //not refresh!
         }
         return res.json([results, sols]);
       });
@@ -272,12 +272,12 @@ exports.getStatus = function(req, res) {
   res.header('Content-Type', 'text/plain');
   var cid = parseInt(req.body.cid, 10);
   if (!cid) {
-    return res.end();
+    return res.end();     //not allow!
   }
   Contest.watch(cid, function(err, contest){
     if (err) {
       console.log(err);
-      return res.end();
+      return res.end();   //not refresh!
     }
     if (!contest) {
       return res.end();
@@ -288,7 +288,7 @@ exports.getStatus = function(req, res) {
     if (!page) {
       page = 1;
     } else if (page < 0) {
-      return res.end();
+      return res.end();   //not allow!
     }
 
     name = req.body.name;
@@ -309,11 +309,13 @@ exports.getStatus = function(req, res) {
     lang = parseInt(req.body.lang, 10);
     if (lang) Q.language = lang;
 
+    if (!req.session.user || req.session.user.name != 'admin') {
+      Q.$nor = [{userName: 'admin'}];
+    }
     Solution.get(Q, page, function(err, solutions, n) {
       if (err) {
         console.log(err);
-        req.session.msg = '系统错误！';
-        return res.end();
+        return res.end();      //not refresh!
       }
       if (n < 0) {
         return res.end();
@@ -347,7 +349,7 @@ exports.getStatus = function(req, res) {
       User.find({name: {$in: names}}, function(err, users){
         if (err) {
           console.log(err);
-          return res.end();
+          return res.end();      //not refresh!
         }
         var pvl = {};
         if (users) {
@@ -395,32 +397,60 @@ exports.getRanklist = function(req, res) {
         if (n < 0) {
           return res.end();
         }
-        var names = new Array();
-        if (users) {
-          var has = {};
-          users.forEach(function(p, i){
-            p._id = p._id.name;
-            has[p._id] = true;
-            names.push(p._id);
+        if (!users || users.length == 0) {
+          return res.json([null, {}, {}, n, {}, 0]);
+        }
+        var has = {}, names = new Array(), stars = new Array()
+        ,   pvl = {}, I = {}, Users = new Array()
+        ,   V = users[0].value, T = users[0]._id.name;
+        if (con.stars) {
+          con.stars.forEach(function(p){
+            has[p] = true;
           });
         }
-        User.find({name: {$in:names}}, function(err, U){
+        users.forEach(function(p, i){
+          var tmp = {name: p._id.name, value: p.value};
+          if (has[tmp.name]) {
+            tmp.star = true;
+          }
+          Users.push(tmp);
+          names.push(p._id.name);
+        });
+        if (con.contestants) {
+          con.contestants.forEach(function(p){
+            if (has[p]) {
+              stars.push(p);
+            }
+          });
+        }
+        ContestRank.count({
+          '_id.cid': cid,
+          '_id.name': {$nin: stars},
+          $or: [{'value.solved': {$gt: V.solved}},
+                {$and: [{'value.solved': V.solved}, {'value.penalty': {$lt: V.penalty}}]},
+                {$and: [{'value.solved': V.solved}, {'value.penalty': V.penalty}, {'_id.name': {$lt: T}}]}]
+        }, function(err, rank){
           if (err) {
             console.log(err);
             return res.end();
           }
-          var pvl = {}, I = {};
-          if (U) {
-            U.forEach(function(p){
-              pvl[p.name] = p.privilege;
-              if (con.type == 3 || (con.type == 2 && con.password)) {
-                I[p.name] = { gde: p.grade, name: p.realname };
-              } else {
-                I[p.name] = p.nick;
-              }
-            });
-          }
-          return res.json([users, pvl, I, n, con.FB]);
+          User.find({name: {$in:names}}, function(err, U){
+            if (err) {
+              console.log(err);
+              return res.end();
+            }
+            if (U) {
+              U.forEach(function(p){
+                pvl[p.name] = p.privilege;
+                if (con.type == 3 || (con.type == 2 && con.password)) {
+                  I[p.name] = { gde: p.grade, name: p.realname };
+                } else {
+                  I[p.name] = p.nick;
+                }
+              });
+            }
+            return res.json([Users, pvl, I, n, con.FB, rank+1]);
+          });
         });
       });
     };
@@ -436,28 +466,41 @@ exports.getRanklist = function(req, res) {
         return RP(con);
       });
     } else {
+      var indate = {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)};
       var Q = {
         cID: cid,
         $nor: [{userName:'admin'}],
-        inDate: {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)},
+        inDate: indate,
+        runID: {$gt: contest.maxRunID}
       };
-      Solution.mapReduce({
-        query: Q,
-        sort: {runID: 1},
-        map: function(){
-          var val = { solved:0, penalty:0, status:{} };
-          if (this.result == 2) {
-            val.solved = 1;
-            val.penalty = parseInt((new Date(this.inDate)).getTime()/60000, 10);
-            val.status[this.problemID] = {wa: 0, inDate: val.penalty};
-          } else {
-            val.status[this.problemID] = {wa: -1};
-          }
-          return emit({cid: this.cID, name: this.userName}, val);
-        },
-        reduce: function(key, vals){
-          var val = { solved: 0, penalty: 0, status: {} };
-          vals.forEach(function(p){
+      Solution.findMax(Q, function(err, docs){
+        if (err) {
+          console.log(err);
+          return res.end();
+        }
+        if (!docs || docs.length == 0) {
+          return RP(contest);
+        }
+        var maxRunID = docs[0].runID;
+        Q.runID.$lte = maxRunID;
+        Solution.mapReduce({
+          query: Q,
+          sort: {runID: -1},
+          map: function(){
+            var val = { solved:0, penalty:0, status:{} };
+            if (this.result == 2) {
+              val.solved = 1;
+              val.penalty = parseInt((new Date(this.inDate)).getTime()/60000, 10);
+              val.status[this.problemID] = {wa: 0, inDate: val.penalty};
+            } else {
+              val.status[this.problemID] = {wa: -1};
+            }
+            return emit({cid: this.cID, name: this.userName}, val);
+          },
+          reduce: function(key, vals){
+            var val = { solved: 0, penalty: 0, status: {} };
+            for (var j = vals.length-1; j >= 0; j--) {
+              p = vals[j];
               for (var i in p.status) {
                 var o = p.status[i];
                 if (!val.status[i]) {
@@ -477,36 +520,41 @@ exports.getRanklist = function(req, res) {
                   }
                 }
               }
-          });
-          return val;
-        },
-        out: { merge: 'ranks' }
-      }, function(err){
-        if (err) {
-          console.log(err);
-          return res.end();
-        }
-        Q.result = 2;
-        Solution.aggregate([
-        { $match: Q }
-      , { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
-        ], function(err, results){
+            }
+            return val;
+          },
+          out: { reduce: 'ranks' }
+        }, function(err){
           if (err) {
             console.log(err);
             return res.end();
           }
-          var FB = {};
-          if (results) {
-            results.forEach(function(p){
-              FB[p._id] = p.userName;
-            });
-          }
-          Contest.findOneAndUpdate({contestID: cid}, {$set: {FB: FB}}, {new: true}, function(err, con){
+          Solution.aggregate([{
+            $match: {
+              cID: cid,
+              $nor: [{userName:'admin'}],
+              inDate: indate,
+              result: 2
+            }
+          }, { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
+          ], function(err, results){
             if (err) {
               console.log(err);
               return res.end();
             }
-            return RP(con);
+            var FB = {};
+            if (results) {
+              results.forEach(function(p){
+                FB[p._id] = p.userName;
+              });
+            }
+            Contest.findOneAndUpdate({contestID: cid}, {$set: {FB: FB, maxRunID: maxRunID}}, {new: true}, function(err, con){
+              if (err) {
+                console.log(err);
+                return res.end();
+              }
+              return RP(con);
+            });
           });
         });
       });
@@ -524,7 +572,7 @@ exports.getCE = function(req, res) {
       return res.end('Server Error!');
     }
     if (req.session.user.name != 'admin' && req.session.user.name != solution.userName)
-      return res.end('You have no permission to watch the Information!');
+      return res.end('You have no permission to watch that Information!');
     return res.end(solution.CE);
   });
 };
@@ -593,7 +641,7 @@ exports.changeInfo = function(req, res) {
     return res.end('F');
   }
   if (req.session.user.name != req.body.name) {
-    req.session.msg = 'Failed! You aren\'t '+req.body.name;
+    req.session.msg = 'Failed! You have no permission to do that!';
     return res.end('F');
   }
 
@@ -630,7 +678,9 @@ exports.changeInfo = function(req, res) {
       if (err) {
         console.log(err);
         req.session.msg = '系统错误！';
-      } else req.session.msg = 'Your Information has been updated successfully!';
+        return res.end('F');
+      }
+      req.session.msg = 'Your Information has been updated successfully!';
       return res.end('F');
     });
   });
@@ -643,15 +693,24 @@ exports.getProblem = function(req, res) {
     req.session.oneQ[req.body.cid] = req.body.curl;
   }
   var pid = parseInt(req.body.pid, 10);
-  if (!pid) return res.end();
+  if (!pid) {
+    return res.end();   //not allow!
+  }
   Problem.watch(req.body.pid, function(err, problem){
-    if (err || !problem)
+    if (err) {
+      console.log(err);
       return res.end();
-    if (req.body.all)
+    }
+    if (!problem) {
+      return res.end();
+    }
+    if (req.body.all) {
       return res.json(problem);
+    }
     if (problem.hide == true &&
-      (!req.session.user || (req.session.user.name != 'admin' && req.session.user.name != problem.manager)))
+    (!req.session.user || (req.session.user.name != 'admin' && req.session.user.name != problem.manager))) {
       return res.end();
+    }
     return res.end(problem.title);
   });
 };
@@ -876,36 +935,31 @@ exports.upload = function(req, res) {
     fs.readFile(path, 'utf8', function(err, data){
       if (err) {
         console.log(err);
-        req.session.msg = '系统错误！';
         return res.end('3');
       }
       fs.unlink(path, function() {
         if (!req.body.lang) {
-          console.log('lang');
-          return res.end();   //language empty is not allow!!!
+          return res.end();   //not allow!
         }
         var pid = parseInt(req.query.pid, 10);
         if (!pid) {
-          console.log('pid');
-          return res.end();   //pid empty is not allow!!!
+          return res.end();   //not allow!
         }
         Problem.watch(pid, function(err, problem){
           if (err) {
             console.log(err);
-            req.session.msg = '系统错误！';
             return res.end('3');
           }
           if (!problem) {
-            return res.end();    //problem empty is not allow!!!
+            return res.end(); //not allow!
           }
           if (!req.session.user) {
             req.session.msg = 'Failed! Please login first!';
-            return res.redirect('/problem?pid='+pid);
+            return res.end('4');    //refresh!
           }
           IDs.get ('runID', function(err, id){
             if (err) {
               console.log(err);
-              req.session.msg = '系统错误！';
               return res.end('3');
             }
             var newSolution = new Solution({
@@ -921,7 +975,6 @@ exports.upload = function(req, res) {
             newSolution.save(function(err){
               if (err) {
                 console.log(err);
-                req.session.msg = '系统错误！';
                 return res.end('3');
               }
               Problem.update(pid, {$inc: {submit: 1}}, function(err){
@@ -951,7 +1004,7 @@ exports.rejudge = function(req, res) {
     }
     if (req.session.user.name != 'admin' && req.session.user.name != problem.manager) {
       if (!req.body.cid) {
-        req.session.msg = 'Failed! You have no permission to Rejudge.';
+        req.session.msg = 'Failed! You have no permission to do that.';
         return res.end();
       }
       return res.end('0');
@@ -1085,7 +1138,7 @@ exports.user = function(req, res) {
   }
   User.watch(name, function(err, user){
     if (err) {
-      req.session.msg = err;
+      req.session.msg = '系统错误！';
       console.log(err);
       return res.redirect('/');
     }
@@ -1096,7 +1149,7 @@ exports.user = function(req, res) {
     else user.addprob = 1;
     Solution.find({userName:name}, function(err, solutions) {
       if (err) {
-        req.session.msg = err;
+        req.session.msg = '系统错误！';
         console.log(err);
         return res.redirect('/');
       }
@@ -1123,7 +1176,9 @@ exports.user = function(req, res) {
                             A: A.sort(),
                             B: B.sort(),
                             C: College,
-                            H: H
+                            H: H,
+                            UC: UserCol,
+                            UT: UserTitle
         });
       };
       if (user.name != 'admin') {
@@ -1136,7 +1191,7 @@ exports.user = function(req, res) {
           ]
         }, function(err, rank){
           if (err) {
-            req.session.msg = err;
+            req.session.msg = '系统错误！';
             console.log(err);
             return res.redirect('/');
           }
@@ -1146,7 +1201,7 @@ exports.user = function(req, res) {
       } else {
         Problem.find({hide:true}, function(err, problems){
           if (err) {
-            req.session.msg = err;
+            req.session.msg = '系统错误！';
             console.log(err);
             return res.redirect('/');
           }
@@ -1538,10 +1593,10 @@ exports.delData = function(req, res) {
     if (err) {
       console.log(err);
       req.session.msg = '系统错误！';
-      return res.end();
+      return res.end('1');    //refresh!
     }
     if (!user || !user.addprob) {
-      return res.end();
+      return res.end();       //not allow!
     }
     fs.unlink(data_path+pid+'/'+fname, function(){
       return res.end();
@@ -1556,20 +1611,20 @@ exports.delImg = function(req, res) {
   }
   var pid = parseInt(req.body.pid, 10);
   if (!pid) {
-    return res.end();
+    return res.end();   //not allow!
   }
   var fname = req.body.fname;
   if (!fname) {
-    return res.end();
+    return res.end();   //not allow!
   }
   User.watch(req.session.user.name, function(err, user){
     if (err) {
       console.log(err);
       req.session.msg = '系统错误！';
-      return res.end();
+      return res.end('1');    //refresh!
     }
     if (!user || !user.addprob) {
-      return res.end();
+      return res.end(); //not allow!
     }
     fs.unlink(root_path+'public/img/prob/'+pid+'/'+fname, function(){
       return res.end();
@@ -1895,7 +1950,7 @@ exports.doAddcontest = function(req, res) {
 
   if (nil(ctitle) || nil(cdate) || nil(chour) ||
       nil(cmin) || nil(cDay) || nil(cHour) || nil(cMin)) {
-    return res.end();
+    return res.end();   //not allow!
   }
   if (nil(desc)) {
     desc = '';
@@ -1919,7 +1974,6 @@ exports.doAddcontest = function(req, res) {
       ary.push(p);
     });
   }
-
   var newContest = new Contest({
     title: ctitle,
     startTime: cdate+' '+chour+':'+cmin,
@@ -1950,11 +2004,11 @@ exports.doAddcontest = function(req, res) {
         con.startTime = newContest.startTime;
         flg = true;
       }
-      if (con.len != newContest.len) {
-        con.len = newContest.len;
+      if (con.len > newContest.len) {
         flg = true;
       }
-      if (flg) con.updateTime = 0;
+      con.len = newContest.len;
+      if (flg) con.updateTime = con.maxRunID = 0;
       con.description = newContest.description;
       con.msg = newContest.msg;
       con.probs =  ary;
@@ -2117,8 +2171,8 @@ exports.show = function(req, res) {
       console.log(err);
       return res.end('1');
     }
-    if (!contest || !contest.probs) {   //impossible, not allow
-      return res.end();
+    if (!contest || !contest.probs) {
+      return res.end();   //not allow!
     }
     var pids = new Array();
     contest.probs.forEach(function(p){
@@ -2711,18 +2765,18 @@ exports.doSubmit = function(req, res) {
     req.session.msg = 'Please login first!';
     return res.end('1');
   }
-  var cid = parseInt(req.body.cid)
+  var cid = parseInt(req.body.cid, 10)
   ,   name = req.session.user.name
-  ,   pid = parseInt(req.body.pid)
-  ,   Str = req.body.code;
-  if (!pid || !Str) {
-    return res.end('3');
+  ,   pid = parseInt(req.body.pid, 10)
+  ,   Str = String(req.body.code);
+  if (!pid || !Str || Str.length < 50 || Str.length > 65536) {
+    return res.end('4');
   }
   var RP = function(){
     IDs.get('runID', function(err, id){
       if (err) {
         console.log(err);
-        return res.end();
+        return res.end('3');
       }
       var newSolution = new Solution({
         runID: id,
@@ -2758,18 +2812,24 @@ exports.doSubmit = function(req, res) {
       });
     });
   };
-  if (!cid) {
-    cid = -1;
-    return RP();
-  } else {
+  Problem.watch(pid, function(err, problem){
+    if (err) {
+      console.log(err);
+      return res.end('3');
+    }
+    if (!problem) {
+      return res.end('4');
+    }
+    if (!cid) {
+      cid = -1;
+      return RP();
+    }
     Contest.watch(cid, function(err, contest){
       if (err) {
         console.log(err);
-        req.session.msg = '系统错误！';
-        return res.end();
+        return res.end('3');
       }
       if (!contest) {
-        req.session.msg = 'the Contest is not exist!';
         return res.end(); //not allow
       }
       if (contest.type == 2 && name != contest.userName &&
@@ -2779,7 +2839,7 @@ exports.doSubmit = function(req, res) {
       }
       return RP();
     });
-  }
+  });
 };
 
 exports.sourcecode = function(req, res) {
@@ -3045,12 +3105,10 @@ exports.regCon = function(req, res) {
 function regContestAndUpdate(cid, name, callback) {
   Contest.update(cid, {$addToSet: {contestants:name}}, function(err){
     if (err) {
-      console.log(err);
-      return callback(err);
+      return callback(err);   //no need to output err, because of callback
     }
     ContestRank.findOne({_id: {cid:cid,name:name}}, function(err, doc){
       if (err) {
-        console.log(err);
         return callback(err);
       }
       if (doc) {
@@ -3078,6 +3136,7 @@ exports.contestReg = function(req, res) {
   Contest.watch(cid, function(err, contest){
     if (err) {
       console.log(err);
+      req.session.msg = '系统错误！';
       return res.end();
     }
     if (!contest || contest.type != 2 || contest.password) {
@@ -3093,6 +3152,7 @@ exports.contestReg = function(req, res) {
         req.session.msg = '系统错误！';
         return res.end();
       }
+      req.session.msg = '注册成功！';
       return res.end();
     });
   });
@@ -3206,30 +3266,29 @@ exports.regUpdate = function(req, res) {
     req.session.msg = '你的权限不足';
     return res.end();
   }
-
   var rid = parseInt(req.body.rid, 10), s = req.body.status;
   if (!rid || !s) {
-    return res.end();
+    return res.end();   //not allow!
   }
-
   Reg.update({regID: rid}, {$set: {status: s}}, function(err, reg){
     if (err) {
       console.log(err);
+      req.session.msg = '系统错误！';
       return res.end();
     }
     if (!reg) {
-      return res.end();
+      return res.end();   //not allow!
     }
     if (s == '2') {
       User.watch(reg.user, function(err, user) {
         if (err) {
           console.log(err);
+          req.session.msg = '系统错误！';
           return res.end();
         }
         if (!user) {
-          return res.end();
+          return res.end();   //not allow!
         }
-
         var flg = false;
         if (!isSameAsBefore(user, reg)) {
           user.number = reg.number;
@@ -3239,7 +3298,6 @@ exports.regUpdate = function(req, res) {
           user.grade = reg.grade;
           flg = true;
         }
-
         var RP = function(){
           regContestAndUpdate(reg.cid, reg.user, function(err){
             if (err) {
@@ -3277,7 +3335,7 @@ exports.regContestAdd = function(req, res) {
     return res.end();
   }
   if (req.session.user.name != 'admin') {
-    req.session.msg = 'Failed! You aren\'t admin';
+    req.session.msg = 'You have no permission to do that!';
     return res.end();
   }
   var name = req.body.name;
@@ -3313,7 +3371,7 @@ exports.regContestAdd = function(req, res) {
           req.session.msg = '系统错误！';
           return res.end();
         }
-        req.session.msg = 'Added finished!';
+        req.session.msg = '添加完成！';
         return res.end();
       });
     });
@@ -3323,21 +3381,21 @@ exports.regContestAdd = function(req, res) {
 exports.changeGrade = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
-    req.session.msg = 'Please login first!';
+    req.session.msg = '请先登录！';
     return res.end();
   }
   if (req.session.user.name != 'admin') {
-    req.session.msg = 'update Failed! You aren\'t admin';
+    req.session.msg = '对不起，您的权限不足！';
     return res.end();
   }
   Reg.findOne({cid: req.body.cid, user: req.body.name}, function(err, reg){
     if (err) {
-      req.session.msg = err;
       console.log(err);
+      req.session.msg = '系统错误！';
       return res.end();
     }
     if (!reg) {
-      req.session.msg = 'The record is not exist.';
+      req.session.msg = '记录不存在！无法修改！';
       return res.end();
     }
     reg.grade = req.body.grade;
@@ -3347,8 +3405,70 @@ exports.changeGrade = function(req, res) {
         req.session.msg = '系统错误！';
         return res.end();
       }
-      req.session.msg = 'Information change complete.';
+      req.session.msg = '修改成功！';
       return res.end();
+    });
+  });
+};
+
+exports.toggleStar = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = 'Please login first!';
+    return res.end();
+  }
+  var cid = parseInt(req.body.cid, 10)
+  ,   str = String(req.body.str)
+  ,   type = parseInt(req.body.type, 10);
+  if (!cid || !str || !type) {
+    return res.end();       //not allow!
+  }
+  Contest.watch(cid, function(err, con){
+    if (err) {
+      console.log(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (req.session.user.name != con.userName) {
+      req.session.msg = 'You have no permission to do that!';
+      return res.end();
+    }
+    if (!con) {
+      return res.end();     //not allow!
+    }
+    var has = {}, names = new Array();
+    if (con.contestants) {
+      con.contestants.forEach(function(p){
+        has[p] = true;
+      });
+      var tmp = str.split(' ');
+      if (tmp) {
+        tmp.forEach(function(p){
+          if (has[p]) {
+            names.push(p);
+            has[p] = false;
+          }
+        });
+      }
+    }
+    User.distinct('name', {name: {$in: names}}, function(err, users){
+      if (err) {
+        console.log(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      var H;
+      if (type == 1) H = {$addToSet: {stars: {$each: users}}};
+      else H = {$pullAll: {stars: users}};
+      Contest.update(cid, H, function(err){
+        if (err) {
+          console.log(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        req.session.msg = users.length+'个用户切换打星状态成功！';
+        return res.end();
+      });
     });
   });
 };

@@ -1,18 +1,18 @@
 <!--<html>-->
 <fieldset>
-  <form class="form-horizontal" method="post" id="scode">
+  <div class="form-horizontal">
     <div><legend>代码提交</legend></div>
     <div class="control-group">
       <label class="control-label" for="pid">Problem:</label>
       <div class="controls">
-        <input type="search" class="input-mini" id="pid" name="pid" value="<%= id %>" >
+        <input type="search" class="input-mini" id="pid" value="<%= id %>" >
         <span class="help-inline error-text" id="error"></span>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="lang">Language:</label>
       <div class="controls">
-        <select class="input-small" id="lang" name="lang">
+        <select class="input-small" id="lang">
           <option value='1'>C</option>
           <option value='2' selected="selected">C++</option>
           <option value='3'>Java</option>
@@ -22,11 +22,11 @@
     <div class="control-group">
       <label class="control-label" for="code">Source Code:</label>
       <div class="controls">
-        <textarea rows="25" class="span7" id="code" name="code"></textarea>
+        <textarea rows="25" class="span7" id="code"></textarea>
       </div>
     </div>
     <div class="form-actions">
-      <a id="codesubmit" class="uibtn checklogin" href="javascript:;">submit</a>
+      <a id="submit" class="uibtn" href="javascript:;">submit</a>
     </div>
-  </form>
+  </div>
 <fieldset>

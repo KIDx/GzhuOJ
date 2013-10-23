@@ -75,6 +75,15 @@ Solution.find = function(Q, callback){
   });
 };
 
+Solution.findMax = function(Q, callback) {
+  solutions.find(Q).sort({runID:-1}).limit(1).exec(function(err, docs){
+    if (err) {
+      console.log('Solution.findMax failed!');
+    }
+    return callback(err, docs);
+  });
+};
+
 Solution.get = function(Q, page, callback){
   solutions.count(Q, function(err, count) {
     if ((page-1)*pageNum > count) {
@@ -93,7 +102,7 @@ Solution.get = function(Q, page, callback){
 Solution.distinct = function(key, Q, callback){
   solutions.distinct(key, Q, function(err, docs){
     if (err) {
-      console.log('Solution.getdistinct failed!');
+      console.log('Solution.distinct failed!');
     }
     callback(err, docs);
   });

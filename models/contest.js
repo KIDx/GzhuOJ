@@ -26,7 +26,9 @@ var contestObj = new Schema({
   password: String,
   type: Number,
   contestants: Array,
+  stars: Array,
   updateTime: Number,
+  maxRunID: Number,
   FB: Object
 });
 
@@ -42,11 +44,13 @@ Contest.prototype.save = function(callback){
   contest.len = this.len;
   contest.description = this.description;
   contest.msg = this.msg;
-  contest.probs = this.probs.slice(0);
+  contest.probs = this.probs;
   contest.password = this.password;
   contest.type = this.type;
   contest.contestants = new Array();
+  contest.stars = new Array();
   contest.updateTime = 0;
+  contest.maxRunID = 0;
   contest.save(function(err){
     if (err) {
       console.log('the contest is already exited!');

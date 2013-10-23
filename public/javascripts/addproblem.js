@@ -41,7 +41,11 @@ function bindDel () {
 			$.post('/delData', {
 				pid 	: pid,
 				fname 	: $(p).parent().prev().text()
-			}, function(){
+			}, function(res){
+				if (res) {
+					window.location.reload(true);
+					return ;
+				}
 				var $d = $(p).parent().parent();
 				$d.unbind('click');
 				datahas[$d.attr('fname')] = false;
@@ -64,7 +68,11 @@ function bindImgDel () {
 			$.post('/delImg', {
 				pid 	: pid,
 				fname 	: $(p).parent().prev().text()
-			}, function(){
+			}, function(res){
+				if (res) {
+					window.location.reload(true);
+					return ;
+				}
 				var $d = $(p).parent().parent();
 				$d.unbind('click');
 				imghas[$d.attr('fname')] = false;
@@ -143,10 +151,6 @@ $(document).ready(function(){
 		add: function(e, data) {
 			var f = data.files[0];
 			$ui.text(f.name);
-			var pattern = new RegExp('^.*\.(in|out)$');
-			if (!pattern.test(f.name)) {
-				return ;
-			}
 			if (f.size && f.size > 50*1024*1024) {
 				return ;
 			}

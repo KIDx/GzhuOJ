@@ -45,16 +45,16 @@
       </ul>
     </div>
     <div class="w" id="preload_logo">
-      <a href="/" title="Gzhu Online Judge">
-        <img src="/img/logo.png" alt="Gzhu Online Judge" />
-      </a>
     <% if (user) { %>
       <% var img = '/img/avatar/%3Ddefault%3D/3.jpeg'; %>
       <% if (user.imgType) { img = '/img/avatar/'+user.name+'/3.'+user.imgType; } %>
-      <a class="img fr" title="go to change picture" href="/avatar">
-        <img alt="avatar" src="<%= img %>" />
-      </a>
+        <a class="img fr" title="go to change picture" href="/avatar">
+          <img alt="avatar" src="<%= img %>" />
+        </a>
     <% } %>
+      <a href="/" title="Gzhu Online Judge">
+        <img src="/img/logo.png" alt="Gzhu Online Judge" />
+      </a>
     </div>
     <div class="w">
       <ul class="navigation menu">
@@ -135,6 +135,8 @@
   <% } else if (key == 4) { %>
     <script src="/javascripts/updatestatus.js"></script>
     <script src="/javascripts/status.js"></script>
+  <% } else if (key == 10) { %>
+    <script src="/javascripts/submit.js"></script>
   <% } else if (key == 11){ %>
     <script src="/highlighter/scripts/shCore.js"></script>
     <script src="/highlighter/scripts/shBrushCpp.js"></script>

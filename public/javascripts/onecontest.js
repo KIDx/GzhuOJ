@@ -151,24 +151,24 @@ function Response(json) {
 		cnt = 1;
 		html = $.map(sols, buildRow).join('');
 	}
-	if ($plink && $plink.length) {
-		$plink.unbind('click');
-	}
 	if ($list_a && $list_a.length) {
 		$list_a.unbind('click');
 	}
+	if ($plink && $plink.length) {
+		$plink.unbind('click');
+	}
 	$tbody.html( html );
-	$plink = $('a.plink');
-	$plink.click(function(){
-		$tablink.eq(1).attr('href', $(this).attr('href'));
-		$tablink.eq(1).click();
-	});
 	$list_a = $list.find('a');
 	$list_a.click(function(){
 		if ($(this).parent().hasClass('active') || $(this).parent().hasClass('disabled'))
 			return false;
 		statusQ.page = $(this).parent().attr('id');
 		GetStatus();
+	});
+	$plink = $('a.plink');
+	$plink.click(function(){
+		$tablink.eq(1).attr('href', $(this).attr('href'));
+		$tablink.eq(1).click();
 	});
 	BindCE();
 	$status.fadeIn(100, function(){
@@ -220,7 +220,6 @@ var $overview = $div.find('#overviewtab')
 ,	prob_num = $pidtext.length
 ,	overviewTimeout;
 
-
 function OverviewResponse(json) {
 	if (!json) return ;
 	var sols = json.pop(), res = json.pop();
@@ -238,10 +237,10 @@ function OverviewResponse(json) {
 	}
 
 	if (res) {
-		$.each(res, function(i, p){//console.log(charCode(pmap[p._id])-65);
+		$.each(res, function(i, p){
 			var $oi = $o_sol.eq(pmap[p._id].charCodeAt(0)-65), idx = index(p._id)
 			,	_ac = '<a href="javascript:;" res="2" pid="'+idx+'">'+p.value.AC+'</a>'
-			,	_all = '<a href="javascript:;" res="-1" pid="'+idx+'">'+p.value.all+'</a>';
+			,	_all = '<a href="javascript:;" res="nil" pid="'+idx+'">'+p.value.all+'</a>';
 			$oi.html(_ac+'&nbsp/&nbsp'+_all);
 		});
 	}
@@ -376,9 +375,8 @@ var $rank = $div.find('#ranktab')
 ,	$ranklist = $('#ranklist')
 ,	$ranklist_a
 ,	$rplink
-,	$adduser = $('#user-add')
 ,	rankQ = {cid:cid, page:1}
-,	rank = 1, I
+,	rank = 1
 ,	rankTimeout
 ,	FB = {};
 
@@ -387,7 +385,7 @@ function buildRank(U) {
 
 	if (cnt % 2 == 1) html += 'odd';
 	else html += 'even';
-	if (U._id == current_user) html += ' highlight';
+	if (U.name == current_user) html += ' highlight';
 
 	html += '"><td';
 	if (user.solved > 0) {
@@ -401,20 +399,24 @@ function buildRank(U) {
 	}
 
 	html += '>';
-	html += rank++;
+	if (U.star) {
+		html += '*';
+	} else {
+		html += rank++;
+	}
 	html += '</td>';
 
-	var pvl = parseInt(Users[U._id], 10);
-	html += '<td><a href="/user/'+U._id+'" class="user user-'+UserCol(pvl);
+	var pvl = parseInt(Users[U.name], 10);
+	html += '<td><a href="/user/'+U.name+'" class="user user-'+UserCol(pvl);
 	html += '" title="'+UserTitle(pvl)+'">';
-	html += U._id+'</a>';
+	html += U.name+'</a>';
 	html += '</div></td><td>';
 	if (display == '1') {
-		if (I[U._id] && I[U._id].gde && I[U._id].name) {
-			html += '<span class="u-info user-gray ellipsis">'+I[U._id].gde+'<br/>'+I[U._id].name+'</span></td>';
+		if (I[U.name] && I[U.name].gde && I[U.name].name) {
+			html += '<span class="u-info user-gray ellipsis">'+I[U.name].gde+'<br/>'+I[U.name].name+'</span></td>';
 		}
-	} else if (I[U._id]) {
-		html += '<span title="'+I[U._id]+'" class="u-info user-gray ellipsis">'+I[U._id]+'</span>';
+	} else if (I[U.name]) {
+		html += '<span title="'+I[U.name]+'" class="u-info user-gray ellipsis">'+I[U.name]+'</span>';
 	}
 	html += '</td><td>'+user.solved+'</td>';
 	html += '<td>'+(user.penalty-user.solved*startTime)+'</td>';
@@ -425,7 +427,7 @@ function buildRank(U) {
 		if (user.status && user.status[pid]) {
 			var WA = user.status[pid].wa, st, pt;
 			if (WA >= 0) {
-				if (FB[pid] == U._id) {
+				if (FB[pid] == U.name) {
 					style = 'fb-text'; st = 'first_blood'; pt = 'fb-cell-time';
 				} else {
 					style = 'accept-text'; st = 'accept'; pt = 'cell-time';
@@ -453,6 +455,7 @@ function buildRank(U) {
 
 function RankResponse(json) {
 	if (!json) return ;
+	rank = parseInt(json.pop(), 10);
 	FB = json.pop();
 	$ranklist.html( buildPager(rankQ.page, json.pop()) );
 	I = json.pop();
@@ -461,7 +464,6 @@ function RankResponse(json) {
 	if (!users || users.length == 0) {
 		html = '<tr class="odd"><td class="error-text center" colspan="'+(5+prob_num)+'">No Submits till Now.</tr>';
 	} else {
-		rank = (rankQ.page-1)*pageNum+1;
 		cnt = 1;
 		html = $.map(users, buildRank).join('');
 	}
@@ -512,14 +514,14 @@ function clearTimer() {
 }
 
 function run(str, key) {
-	if (!str) str = '#overview'
-	window.location.hash = str;
+	if (!str) str = 'overview'
+	window.location.hash = '#'+str;
 	var sp = str.split('-');
 	var a = sp[0], b = sp[1], c = sp[2], d = sp[3], e = sp[4];
 	ID = 0;
 	clearTimer();
 	switch(a) {
-		case '#problem': {
+		case 'problem': {
 			if (WATCH == 0) break;
 			if (b) ID = b.charCodeAt(0)-65;
 			if (key == 1) {
@@ -532,7 +534,7 @@ function run(str, key) {
 			GetProblem();
 			break;
 		}
-		case '#status': {
+		case 'status': {
 			if (WATCH == 0) break;
 			if (key == 1) {
 				$overview.hide();
@@ -548,7 +550,7 @@ function run(str, key) {
 			PreTab = 0;
 			break;
 		}
-		case '#rank': {
+		case 'rank': {
 			if (WATCH == 0) break;
 			if (key == 1) {
 				$overview.hide();
@@ -621,7 +623,7 @@ function runContest() {
 		}
 		$tablink.eq(1).attr('href', $(this).attr('href'));
 		$tablink.eq(1).click();
-		run($(this).attr('href'), 2);
+		run($(this).attr('href').split('#')[1], 2);
 	});
 
 	$tablink.on('show', function(e){
@@ -629,18 +631,18 @@ function runContest() {
 		//e.relatedTarget	// previous tab
 		var href;
 		if (e.relatedTarget) {
-			href = $(e.relatedTarget).attr('href').split('-')[0];
+			href = $(e.relatedTarget).attr('href').split('#')[1].split('-')[0];
 		}
 		switch(href) {
-			case '#problem': {
+			case 'problem': {
 				$problem.hide();
 				break;
 			}
-			case '#status': {
+			case 'status': {
 				$status.hide();
 				break;
 			}
-			case '#rank': {
+			case 'rank': {
 				$rank.hide();
 				break;
 			}
@@ -649,16 +651,15 @@ function runContest() {
 				break;
 			}
 		}
-		href = $(e.target).attr('href');
-		run(href, 2);
+		run($(e.target).attr('href').split('#')[1], 2);
 	});
 
 	if (status > 0 || $contest.attr('watch')) {
 		WATCH = 1;
 		$hid.removeClass('hidden');
-		run(window.location.hash, 1);
+		run(window.location.hash.split('#')[1], 1);
 	} else {
-		run('#overview', 1);
+		run('overview', 1);
 	}
 }
 
@@ -697,14 +698,6 @@ $(document).ready(function(){
 		}
 	});
 	bindstatusQ();
-	//adduser
-	if ($adduser.length) {
-		$adduser.click(function(){
-			$.post('/regContestAdd', {cid:cid,name:$(this).prev().val()}, function(){
-				window.location.reload(true);
-			});
-		});
-	}
 });
 
 //bind submit
@@ -822,6 +815,46 @@ $(document).ready(function(){
 				} else {
 					ShowMessage('Problems have been Updated successfully!');
 				}
+			});
+		});
+	}
+});
+
+//add user
+var $adduser = $('#user-add')
+,	$userstr = $('#userstr')
+,	$adderr = $('#adderr');
+
+$(document).ready(function(){
+	if ($adduser.length) {
+		$adduser.click(function(){
+			var name = JudgeString($userstr.val());
+			if (!name) {
+				errAnimate($adderr, '用户名不能为空！');
+				return false;
+			}
+			$.post('/regContestAdd', {cid:cid,name:name}, function(){
+				window.location.reload(true);
+			});
+		});
+	}
+});
+
+//toggle star
+var $star = $('#star')
+,	$starstr = $('#starstr')
+,	$starerr = $('#starerr');
+
+$(document).ready(function(){
+	if ($star.length) {
+		$star.click(function(){
+			var str = JudgeString($starstr.val());
+			if (!str) {
+				errAnimate($starerr, '用户名不能为空！');
+				return false;
+			}
+			$.post('/toggleStar', {cid:cid,str:str,type:$('#type').val()}, function(){
+				window.location.reload(true);
 			});
 		});
 	}

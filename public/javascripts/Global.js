@@ -398,32 +398,6 @@ $(document).ready(function(){
                 $logindialog.jqmShow();
                 break;
             }
-            case 'codesubmit': {
-                $sform = $('form#scode');
-                $code_error_text = $sform.find('span#error');
-                var code = $sform.find('textarea#code').attr('value');
-                if (code.length < 50 || code.length > 65536) {
-                    $code_error_text.text('the length of code must be between 50B and 65536B!');
-                    window.location.href = document.URL.split('#')[0]+'#';
-                    return ;
-                }
-                var pid = $sform.find('input#pid').val();
-                $.post('/getProblem', {pid: pid}, function(res){
-                    if (res) {
-                        $.post('/submit', {
-                            pid: pid,
-                            code: code,
-                            lang: $sform.find('select').val()
-                        }, function(){
-                            window.location.href = '/status';
-                        });
-                        return ;
-                    }
-                    $code_error_text.text('the problem is not exist!');
-                    window.location.href = document.URL.split('#')[0]+'#';
-                });
-                break;
-            }
         }
     });
 

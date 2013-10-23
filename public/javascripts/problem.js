@@ -49,6 +49,7 @@ $(document).ready(function() {
 			else if (res == '1') tp = 'too small!(<50)';
 			else if (res == '2') tp = 'too large!(>65535)';
 			else if (res == '3') tp = '异常错误！';
+			else if (res == '4') window.location.reload(true);
 			if (tp) {
 				errAnimate($error, tp);
 			}

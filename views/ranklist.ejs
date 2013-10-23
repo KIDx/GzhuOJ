@@ -59,7 +59,11 @@
                 <%= p.nick %>
               </span>
             </td>
-            <td><% if (p.signature) { %><%= p.signature %><% } %></td>
+            <td class="ellipsis">
+              <% if (p.signature) { %>
+              <span title="<%= p.signature %>"><%= p.signature %></span>
+              <% } %>
+            </td>
             <td>
               <a href="/status?name=<%= p.name %>&result=2">
                 <%= p.solved %>

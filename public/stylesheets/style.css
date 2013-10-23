@@ -195,15 +195,18 @@ a.special-text {
 }
 
 td.gold {
-    background: #ffe000;
+    background: #ffe866;
+    border: 1px solid #ccc;
 }
 
 td.silver {
-    background: #bad8ff;
+    background: #c3e2ff;
+    border: 1px solid #ccc;
 }
 
 td.bronze {
-    background: #f0c598;
+    background: #ffd6a8;
+    border: 1px solid #ccc;
 }
 
 span.user {
@@ -871,6 +874,12 @@ legend{
     padding: 5px 10px;
     font-size: .9em;
     color: gray;
+}
+
+.limitbox {
+    max-height: 150px;
+    overflow: auto;
+    clear: both;
 }
 
 .ibox {

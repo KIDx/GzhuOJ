@@ -4,7 +4,7 @@
 <% if (u.imgType) { img = '/img/avatar/'+u.name+'/1.'+u.imgType; } %>
 
 <fieldset>
-  <div><legend>用户</legend></div>
+  <div><legend id="user" name="<%= u.name %>">用户</legend></div>
   <div style="position:relative;">
     <div class="menu-list">
       <ul>
@@ -19,7 +19,12 @@
     <div class="roundbox avatar_box">
       <div class="img avatar"><img alt="avatar" src="<%= img %>" /></div>
       <h3>
-        <span id="usercol" name="<%= u.name %>" <% if (u.privilege) { %>pvl="<%= u.privilege %>"<% } %>>&nbsp;</span>
+        <span>
+          <% var N = UT(u.privilege); %>
+          <a class="user user-<%= UC(u.privilege) %>" title="<%= N %>" href="/user/<%= u.name %>">
+            <%= N.split('-')[0]+' '+u.name %>
+          </a>
+        </span>
       <% if (u.name != 'admin' && user && user.name == 'admin') { %>
         <% var rname = '', gde = ''; %>
         <% if (u.realname) rname = u.realname; %>
@@ -95,7 +100,7 @@
         <li>学院: <%= C[u.college] %></li>
       <% } %>
       <% if(u.grade) { %>
-        <li>班级: <%= u.grade %>班</li>
+        <li>班别: <%= u.grade %>班</li>
       <% } %>
         <li>AddProblem: <% if(u.addprob == 1) { %>YES<% } else { %>NO<% } %></li>
       </ul>

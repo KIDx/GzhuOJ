@@ -1,19 +1,8 @@
 //for user page
-var $usercol = $('span#usercol')
-,   pvl = parseInt($usercol.attr('pvl'), 10)
-,   name = $usercol.attr('name')
-,   tc = 'user-'+UserCol(pvl)
-,   title = UserTitle(pvl)
-,   str = title.split('-')
+var name = $('#user').attr('name')
 ,   $pvl = $('#pvl');
 
 $(document).ready(function(){
-    $usercol.addClass(tc);
-    $usercol.attr('title', title);
-    var html = '';
-    if (pvl) html = str[0]+' ';
-    html += '<a class="user '+tc+'" href="/user/'+name+'" title="'+title+'">'+name+'</a>';
-    $usercol.html(html);
     if ($pvl.length) {
         $('#submit').click(function(){
             $.post('/changePvl', {

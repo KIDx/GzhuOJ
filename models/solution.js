@@ -3,6 +3,7 @@ var mongoose = require('mongoose')
 ,   settings = require('../settings')
 ,   dburl = settings.dburl
 ,   pageNum = settings.status_pageNum
+,   OE = settings.outputErr
 ,   Schema = mongoose.Schema;
 
 function Solution(solution) {
@@ -60,7 +61,7 @@ Solution.prototype.save = function(callback){
   solution.code = this.code;
   solution.save(function(err){
     if (err) {
-      console.log('runID is already exited');
+      OE('Solution.save failed!');
     }
     return callback(err);
   });
@@ -69,7 +70,7 @@ Solution.prototype.save = function(callback){
 Solution.find = function(Q, callback){
   solutions.find(Q, function(err, docs){
     if (err) {
-      console.log('Solution.find failed!');
+      OE('Solution.find failed!');
     }
     return callback(err, docs);
   });
@@ -78,7 +79,7 @@ Solution.find = function(Q, callback){
 Solution.findMax = function(Q, callback) {
   solutions.find(Q).sort({runID:-1}).limit(1).exec(function(err, docs){
     if (err) {
-      console.log('Solution.findMax failed!');
+      OE('Solution.findMax failed!');
     }
     return callback(err, docs);
   });
@@ -92,7 +93,7 @@ Solution.get = function(Q, page, callback){
     solutions.find(Q).sort({runID:-1}).skip((page-1)*pageNum).limit(pageNum)
     .exec(function(err, docs){
       if (err) {
-        console.log('Solution.get failed!');
+        OE('Solution.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
@@ -102,7 +103,7 @@ Solution.get = function(Q, page, callback){
 Solution.distinct = function(key, Q, callback){
   solutions.distinct(key, Q, function(err, docs){
     if (err) {
-      console.log('Solution.distinct failed!');
+      OE('Solution.distinct failed!');
     }
     callback(err, docs);
   });
@@ -111,7 +112,7 @@ Solution.distinct = function(key, Q, callback){
 Solution.update = function(Q, H, callback){
   solutions.update(Q, H, { multi:true }, function(err){
     if (err) {
-      console.log('Solution.update failed!');
+      OE('Solution.update failed!');
     }
     return callback(err);
   });
@@ -120,7 +121,7 @@ Solution.update = function(Q, H, callback){
 Solution.stats = function(Q, sq, page, callback){
   solutions.find(Q).sort(sq).exec(function(err, docs){
     if (err) {
-      console.log('Solution.statis failed!');
+      OE('Solution.statis failed!');
     }
     var sols = new Array(), has = {};
     if (docs) {
@@ -132,7 +133,7 @@ Solution.stats = function(Q, sq, page, callback){
 Solution.watch = function(Q, callback){
   solutions.findOne(Q, function(err, doc){
     if (err) {
-      console.log('Solution.watch failed!');
+      OE('Solution.watch failed!');
     }
     return callback(err, doc);
   });
@@ -141,7 +142,7 @@ Solution.watch = function(Q, callback){
 Solution.mapReduce = function(o, callback){
   solutions.mapReduce(o, function(err, docs){
     if (err) {
-      console.log('Solution.mapReduce failed!');
+      OE('Solution.mapReduce failed!');
     }
     return callback(err, docs);
   });
@@ -150,7 +151,7 @@ Solution.mapReduce = function(o, callback){
 Solution.aggregate = function(o, callback){
   solutions.aggregate(o, function(err, docs){
     if (err) {
-      console.log('Solution.aggregate failed!');
+      OE('Solution.aggregate failed!');
     }
     return callback(err, docs);
   });
@@ -159,17 +160,8 @@ Solution.aggregate = function(o, callback){
 Solution.count = function(Q, callback){
   solutions.count(Q, function(err, count){
     if (err) {
-      console.log('Solution.count failed!');
+      OE('Solution.count failed!');
     }
     return callback(err, count);
-  });
-};
-
-Solution.del = function(){
-  solutions.find({}, function(err, docs){
-    docs.forEach(function(doc) {
-        doc.remove();
-        console.log('solution');
-    });
   });
 };

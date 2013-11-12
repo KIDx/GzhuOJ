@@ -1,7 +1,9 @@
 
 var mongoose = require('mongoose')
 ,   Schema = mongoose.Schema
-,   pageNum = require('../settings').course_pageNum;
+,   settings = require('../settings')
+,   pageNum = settings.course_pageNum
+,   OE = settings.outputErr;
 
 function Course(course) {
   this.courseID = course.courseID;
@@ -27,7 +29,7 @@ Course.prototype.save = function(callback){
   course.probs = this.probs;
   course.save(function(err){
     if (err) {
-      console.log('the course is already exited!');
+      OE('Course.save failed!');
     }
     return callback(err);
   });
@@ -40,7 +42,7 @@ Course.get = function(Q, page, callback){
     }
     courses.find(Q).sort({courseID:-1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
       if (err) {
-        console.log('Courses.get failed');
+        OE('Courses.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10), count);
     });
@@ -50,7 +52,7 @@ Course.get = function(Q, page, callback){
 Course.watch = function(cid, callback){
   courses.findOne({courseID:cid}, function(err, doc){
     if (err) {
-      console.log('Course.watch failed!');
+      OE('Course.watch failed!');
     }
     return callback(err, doc);
   });
@@ -59,7 +61,7 @@ Course.watch = function(cid, callback){
 Course.findOneAndUpdate = function(Q, H, O, callback){
   courses.findOneAndUpdate(Q, H, O, function(err, doc){
     if (err) {
-      console.log('Course.findOneAndUpdate failed!');
+      OE('Course.findOneAndUpdate failed!');
     }
     return callback(err, doc);
   });
@@ -68,7 +70,7 @@ Course.findOneAndUpdate = function(Q, H, O, callback){
 Course.update = function(cid, H, callback){
   courses.update({courseID:cid}, H, function(err){
     if (err) {
-      console.log('Course.update failed!');
+      OE('Course.update failed!');
     }
     return callback(err);
   });
@@ -77,17 +79,8 @@ Course.update = function(cid, H, callback){
 Course.dele = function(Q, callback){
   courses.findOneAndRemove(Q, function(err){
     if (err) {
-      console.log('Course.dele failed');
+      OE('Course.dele failed');
     }
     return callback(err);
-  });
-};
-
-Course.del = function() {
-  courses.find({}, function(err, docs){
-    docs.forEach(function(doc) {
-        doc.remove();
-        console.log('course');
-    });
   });
 };

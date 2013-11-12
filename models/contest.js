@@ -1,7 +1,9 @@
 
 var mongoose = require('mongoose')
 ,   Schema = mongoose.Schema
-,   pageNum = require('../settings').contest_pageNum;
+,   settings = require('../settings')
+,   pageNum = settings.contest_pageNum
+,   OE = settings.outputErr;
 
 function Contest(contest) {
   this.title = contest.title;
@@ -53,7 +55,7 @@ Contest.prototype.save = function(callback){
   contest.maxRunID = 0;
   contest.save(function(err){
     if (err) {
-      console.log('the contest is already exited!');
+      OE('Contest.save failed!');
     }
     return callback(err);
   });
@@ -66,7 +68,7 @@ Contest.get = function(Q, page, callback){
     }
     contests.find(Q).sort({startTime:-1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
       if (err) {
-        console.log('Contests.get failed');
+        OE('Contest.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
@@ -76,7 +78,7 @@ Contest.get = function(Q, page, callback){
 Contest.watch = function(cid, callback){
   contests.findOne({contestID:cid}, function(err, doc){
     if (err) {
-      console.log('Contest.watch failed!');
+      OE('Contest.watch failed!');
     }
     return callback(err, doc);
   });
@@ -85,7 +87,7 @@ Contest.watch = function(cid, callback){
 Contest.findOneAndUpdate = function(Q, H, O, callback){
   contests.findOneAndUpdate(Q, H, O, function(err, doc){
     if (err) {
-      console.log('Contest.findOneAndUpdate failed!');
+      OE('Contest.findOneAndUpdate failed!');
     }
     return callback(err, doc);
   });
@@ -94,7 +96,7 @@ Contest.findOneAndUpdate = function(Q, H, O, callback){
 Contest.update = function(cid, H, callback){
   contests.update({contestID:cid}, H, function(err){
     if (err) {
-      console.log('Contest.update failed!');
+      OE('Contest.update failed!');
     }
     return callback(err);
   });
@@ -103,17 +105,8 @@ Contest.update = function(cid, H, callback){
 Contest.dele = function(Q, callback){
   contests.findOneAndRemove(Q, function(err){
     if (err) {
-      console.log('Contest.dele failed');
+      OE('Contest.dele failed');
     }
     return callback(err);
-  });
-};
-
-Contest.del = function() {
-  contests.find({}, function(err, docs){
-    docs.forEach(function(doc) {
-        doc.remove();
-        console.log('contest');
-    });
   });
 };

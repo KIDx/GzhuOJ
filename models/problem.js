@@ -1,7 +1,9 @@
 
 var mongoose = require('mongoose')
 ,   Schema = mongoose.Schema
-,   pageNum = require('../settings').problemset_pageNum;
+,   settings = require('../settings')
+,   pageNum = settings.problemset_pageNum
+,   OE = settings.outputErr;
 
 function Problem(problem) {
   this.problemID = problem.problemID;
@@ -58,7 +60,7 @@ Problem.prototype.save = function(callback){
 
   problem.save(function(err){
     if (err) {
-      console.log('the problem is already exited!');
+      OE('Problem.save failed!');
     }
     return callback(err);
   });
@@ -67,7 +69,7 @@ Problem.prototype.save = function(callback){
 Problem.find = function(Q, callback) {
   problems.find(Q, function(err, docs){
     if (err) {
-      console.log('Problem.find Error!');
+      OE('Problem.find failed!');
     }
     return callback(err, docs);
   });
@@ -80,26 +82,26 @@ Problem.get = function(Q, page, callback){
     }
     problems.find(Q).sort({problemID:1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
       if (err) {
-        console.log('Problem.get failed!');
+        OE('Problem.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10), count);
     });
   });
 };
 
-Problem.watch = function(pID, callback){
-  problems.findOne({problemID: pID}, function(err, doc) {
+Problem.watch = function(pid, callback){
+  problems.findOne({problemID: pid}, function(err, doc) {
     if (err) {
-      console.log('Problem.watch failed!');
+      OE('Problem.watch failed!');
     }
     return callback(err, doc);
   });
 };
 
-Problem.update = function(pID, Q, callback){
-  problems.update({problemID: pID}, Q, function(err){
+Problem.update = function(pid, H, callback){
+  problems.update({problemID: pid}, H, function(err){
     if (err) {
-      console.log('Problem.update failed!');
+      OE('Problem.update failed!');
     }
     return callback(err);
   });
@@ -108,17 +110,8 @@ Problem.update = function(pID, Q, callback){
 Problem.multiUpdate = function(Q, H, callback){
   problems.update(Q, H, {multi:true}, function(err){
     if (err) {
-      console.log('Problem.multiUpdate failed!');
+      OE('Problem.multiUpdate failed!');
     }
     return callback(err);
-  });
-};
-
-Problem.del = function(){
-  problems.find({}, function(err, docs){
-    docs.forEach(function(doc, i) {
-      doc.remove();
-      console.log('problem delete succeed!');
-    });
   });
 };

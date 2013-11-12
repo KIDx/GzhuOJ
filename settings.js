@@ -1,4 +1,19 @@
 
+var getDate = function(date) {
+  var Y = date.getFullYear();
+  var M = date.getMonth()+1;
+  if (M < 10) M = '0' + M;
+  var D = date.getDate();
+  if (D < 10) D = '0' + D;
+  var h = date.getHours();
+  if (h < 10) h = '0' + h;
+  var m = date.getMinutes();
+  if (m < 10) m = '0' + m;
+  var s = date.getSeconds();
+  if (s < 10) s = '0' + s;
+  return (Y+'-'+M+'-'+D+' '+h+':'+m+':'+s);
+};
+
 var Tag = ['','beginner','brute force','binary search','ternary search','constructive',
 'dp','games','geometry','graphs','greedy','hashing','implementation',
 'math','matrices','number theory','probabilities','dfs', 'bfs',
@@ -15,7 +30,15 @@ var ProTil = ['','简单题，入门题','暴力枚举法','二分检索','三�
 
 var College = ['其他学院', '计算机科学与教育软件学院', '数学与信息科学学院', '土木工程学院', '物理与电子工程学院', '机械与电气工程学院'];
 
+var fs = require('fs')
+,   errlog = fs.createWriteStream(__dirname+'/error.log', {flags: 'a'});
+
 module.exports = {
+  outputErr: function(err) {
+    console.log(err);
+    errlog.write('[ '+getDate(new Date())+' ] : '+err+'\n');
+  },
+  getDate: getDate,
   cookie_secret: 'gzhu',
   db: 'gzhu_db',
   dburl: 'mongodb://127.0.0.1:27017/gzhu_db',

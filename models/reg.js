@@ -1,7 +1,9 @@
 
 var mongoose = require('mongoose')
 ,   Schema = mongoose.Schema
-,   pageNum = require('../settings').regform_pageNum;
+,   settings = require('../settings')
+,   pageNum = settings.regform_pageNum
+,   OE = settings.outputErr;
 
 function Reg(reg) {
   this.regID = reg.regID;
@@ -47,7 +49,7 @@ Reg.prototype.save = function(callback){
   reg.status = '0';
   reg.save(function(err){
     if (err) {
-      console.log('the registration is already exited!');
+      OE('Reg.save failed!');
     }
     return callback(err);
   });
@@ -60,7 +62,7 @@ Reg.get = function(Q, page, callback){
     }
     regs.find(Q).sort({regTime: -1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
-        console.log('Reg.get failed!');
+        OE('Reg.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
@@ -70,7 +72,7 @@ Reg.get = function(Q, page, callback){
 Reg.findOne = function(Q, callback){
   regs.findOne(Q, function(err, doc){
     if (err) {
-      return callback('Reg Find Error!', null);
+      OE('Reg.findOne failed!');
     }
     return callback(err, doc);
   });
@@ -79,17 +81,8 @@ Reg.findOne = function(Q, callback){
 Reg.update = function(Q, H, callback){
   regs.findOneAndUpdate(Q, H, function(err, doc) {
     if (err) {
-      console.log('Reg.update failed!');
+      OE('Reg.update failed!');
     }
     return callback(err, doc);
-  });
-};
-
-Reg.del = function(){
-  regs.find({}, function(err, docs){
-    docs.forEach(function(doc) {
-        doc.remove();
-        console.log('reg');
-    });
   });
 };

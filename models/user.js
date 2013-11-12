@@ -1,7 +1,9 @@
 
 var mongoose = require('mongoose')
 ,   Schema = mongoose.Schema
-,   pageNum = require('../settings').ranklist_pageNum;
+,   settings = require('../settings')
+,   pageNum = settings.ranklist_pageNum
+,   OE = settings.outputErr;
 
 function User(user) {
   this.name = user.name;
@@ -71,7 +73,7 @@ User.prototype.save = function(callback){
   }
   user.save(function(err){
     if (err) {
-      console.log('user insert Error: this user is already exited!');
+      OE('User.save failed!');
     }
     return callback(err, user);
   });
@@ -80,7 +82,7 @@ User.prototype.save = function(callback){
 User.watch = function(username, callback){
   users.findOne({name:username}, function(err, doc){
     if (err) {
-      console.log('User.watch failed!');
+      OE('User.watch failed!');
     }
     return callback(err, doc);
   });
@@ -89,7 +91,7 @@ User.watch = function(username, callback){
 User.distinct = function(key, Q, callback) {
   users.distinct(key, Q, function(err, docs){
     if (err) {
-      console.log('User.distinct failed!');
+      OE('User.distinct failed!');
     }
     return callback(err, docs);
   });
@@ -98,7 +100,7 @@ User.distinct = function(key, Q, callback) {
 User.find = function(Q, callback){
   users.find(Q, function(err, docs){
     if (err) {
-      console.log('User.find failed!');
+      OE('User.find failed!');
     }
     return callback(err, docs);
   });
@@ -111,7 +113,7 @@ User.get = function(Q, page, callback){
     }
     users.find(Q).sort({solved:-1,submit:1,name:1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
-        console.log('User.get failed!');
+        OE('User.get failed!');
       }
       return callback(err, docs, parseInt((count+pageNum-1)/pageNum, 10));
     });
@@ -121,26 +123,26 @@ User.get = function(Q, page, callback){
 User.count = function(Q, callback){
   users.count(Q, function(err, count){
     if (err) {
-      console.log('User.count failed!');
+      OE('User.count failed!');
     }
     return callback(err, count);
   });
 };
 
-User.update = function(Q, H, flg, callback){
-  users.update(Q, H, { multi:flg }, function(err){
+User.update = function(Q, H, callback){
+  users.update(Q, H, function(err){
     if (err) {
-      console.log('user.update failed');
+      OE('User.update failed!');
     }
     return callback(err);
   });
 };
 
-User.del = function(){
-  users.find({}, function(err, docs){
-    docs.forEach(function(doc) {
-        doc.remove();
-        console.log('user');
-    });
+User.multiUpdate = function(Q, H, callback){
+  users.update(Q, H, { multi: true }, function(err){
+    if (err) {
+      OE('User.multiUpdate failed!');
+    }
+    return callback(err);
   });
 };

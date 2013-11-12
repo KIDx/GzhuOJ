@@ -46,7 +46,6 @@ $(document).ready(function(){
             $(this).text('处理中...');
             $(this).addClass('disabled');
             $.post('/recal', function(res){
-                console.log(res);
                 window.location.href = '/ranklist';
             });
         });

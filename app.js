@@ -13,8 +13,7 @@ var express = require('express')
 var fs = require('fs');
 
 //访问日志和错误日志
-//var accessLogfile = fs.createWriteStream('access.log', {flags: 'a'});
-var errorLogfile = fs.createWriteStream('error.log', {flags: 'a'});
+//var accessLogfile = fs.createWriteStream('access.log', {flags: 'a'});acdpst
 
 //服务器配置
 app.configure(function(){
@@ -50,12 +49,6 @@ app.configure('development', function(){
   app.use(express.static(path.join(__dirname, 'public')));
   //app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-  //若有错误，写入错误日志
-  app.use(function(err, req, res, next){
-    var meta = '[' + new Date() + '] ' + req.url + '\n';
-    errorLogfile.write(meta + err.stack + '\n');
-    next();
-  });
 });
 
 //#####server response
@@ -183,6 +176,7 @@ app.post('/msgClear', function(req, res){
   req.session.msg = null;
   res.end();
 });
+//课程排名查询会话（存储当前询问，刷新不变）
 app.post('/courseRankSession', function(req, res){
   if (!req.session.user || !req.session.user.privilege || req.session.user.privilege != '82') {
     return res.end();

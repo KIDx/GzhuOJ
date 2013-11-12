@@ -1,6 +1,7 @@
 
 var mongoose = require('mongoose')
-,   Schema = mongoose.Schema;
+,   Schema = mongoose.Schema
+,   OE = require('../settings').outputErr;
 
 function IDs (ids){
   this.name = ids.name;
@@ -33,21 +34,13 @@ IDs.Init = function(){
 IDs.get = function(idname, callback){
   idss.findOneAndUpdate({name: idname}, {$inc:{'id':1}}, function(err, doc) {
     if (err) {
-      return callback ('id update Error!', null);
+      OE('IDs.get failed!');
+      return callback (err, null);
     }
     if (!doc) {
       err = 'You should init the ids first!';
       throw err;
     }
     return callback(err, doc.id);
-  });
-};
-
-IDs.del = function(){
-  idss.find({}, function(err, docs){
-    docs.forEach(function(doc) {
-        doc.remove();
-        console.log('ids');
-    });
   });
 };

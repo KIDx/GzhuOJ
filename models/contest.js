@@ -66,7 +66,7 @@ Contest.get = function(Q, page, callback){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
-    contests.find(Q).sort({startTime:-1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
+    contests.find(Q).sort({startTime:-1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
         OE('Contest.get failed!');
       }

@@ -80,7 +80,7 @@ Problem.get = function(Q, page, callback){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
-    problems.find(Q).sort({problemID:1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
+    problems.find(Q).sort({problemID:1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
         OE('Problem.get failed!');
       }

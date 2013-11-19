@@ -18,7 +18,11 @@
       <%- partial('pager', {page:page, n:n}) %>
       <div class="fr" id="filter">
         <div>
+          <% if (user) { %>
+          <a href="/addcontest?type=<%= type %>" class="uibtn uibtn-mini">Add <%= cname%></a>
+          <% } else { %>
           <a href="javascript:;" class="uibtn uibtn-mini checklogin" id="addcontest">Add <%= cname%></a>
+          <% } %>
         </div>
         <div class="input-prepend">
           <span class="add-on"><i class="icon-search"></i></span>
@@ -126,7 +130,9 @@
               <span class="user-blue">Public</span>
               <% } %>
             </td>
-            <td><%= p.userName %></td>
+            <td>
+              <a class="user user-gray" href="/user/<%= p.userName %>"><%= p.userName %></a>
+            </td>
           </tr>
           <% }); %>
           <% } %>

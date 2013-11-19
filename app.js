@@ -69,6 +69,9 @@ app.post('/addcontest', routes.doAddcontest);
 //addcourse页面
 app.get('/addcourse', routes.addcourse);
 app.post('/addcourse', routes.doAddcourse);
+//addtopic页面
+app.get('/addtopic', routes.addtopic);
+app.post('/addtopic', routes.doAddtopic);
 //登出
 app.post('/logout', routes.logout);
 //problemset面
@@ -91,8 +94,10 @@ app.get('/ranklist/:id', routes.courseRank);
 app.get('/contest/:type', routes.contest);
 //course页面
 app.get('/course', routes.course);
-//FAQ页面
-app.get('/faq', routes.faq);
+//topic页面
+app.get('/topic', routes.topic);
+//onetopic页面
+app.get('/topic/:id', routes.onetopic);
 //submit页面及submit动作
 app.get('/submit', routes.submit);
 app.post('/submit', routes.doSubmit);
@@ -171,6 +176,10 @@ app.post('/getCE', routes.getCE);
 app.post('/recal', routes.recal);
 //切换指定用户打星状态
 app.post('/toggleStar', routes.toggleStar);
+//切换话题置顶状态
+app.post('/toggleTop', routes.toggleTop);
+//添加回复
+app.post('/review', routes.review);
 //清除服务器消息
 app.post('/msgClear', function(req, res){
   req.session.msg = null;

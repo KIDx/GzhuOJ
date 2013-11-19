@@ -23,22 +23,51 @@
   --><!--To add question & answer,you just need to copy the code between the two marked lines and change the content in tag <p>:end-->
       <div class="Q">
         <img class="QA_img" src="/img/Q.png"\>
-        <p>GzhuOJ支持那些语言？</p>
+        <p>GzhuOJ支持那些语言？它们的版本及使用的编译器的版本是如何的？</p>
       </div>
       <div class="A">
         <img class="QA_img" src="/img/A.png"\>
-       <p>GzhuOJ目前支持C(99)、C++(03)、Java(7)三种语言，更多语言将在未来支持。</p>
+       <p>GzhuOJ目前支持的语言及他们的编译器:</p>
+        <table class="MsoTableGrid" border="1" cellspacing="0" cellpadding="0"
+            style='border-collapse: collapse; border: solid windowtext 1.0pt' align="center">
+          <tr>
+            <td width="40" align="center">语言</td>
+            <td width="80" align="center">语言版本</td>
+            <td width="80" align="center">编译器</td>
+            <td width="100" align="center">编译器版本</td>
+          </tr>
+          <tr>
+            <td align="center">C</td>
+            <td align="center">C99</td>
+            <td align="center">gcc</td>
+            <td align="center">4.6.3</td>
+          </tr>
+          <tr>
+            <td align="center">C++</td>
+            <td align="center">C++03</td>
+            <td align="center">g++</td>
+            <td align="center">4.6.3</td>
+          </tr>
+          <tr>
+            <td align="center">Java</td>
+            <td align="center">Java7</td>
+            <td align="center">OpenJDK</td>
+            <td align="center">7u21</td>
+          </tr>
+        </table>
       </div>
     </br>
-     <div class="Q">
-        <p><img class="QA_img" src="/img/Q.png"\>
-        GzhuOJ使用的编译器及其版本是？</p>
+    <div class="Q">
+        <img class="QA_img" src="/img/Q.png"\>
+        <p>作为本校计算机科学与教育软件学院的新生，该如何开始使用系统呢？</p>
       </div>
       <div class="A">
-        <p>
         <img class="QA_img" src="/img/A.png"\>
-       GzhuOJ目前以gcc和g++作为C/C++编译器，版本为4.6.3；而Java则使用OpenJDK7来编译，版本为7u21。
-        </p>
+       <p>每年新生入学后，我们将为大家每人创建一个默认的账户，所有使用本系统辅助教学的科目都将以这个账户的成绩作为考核标准。<br/>登录的方法为：<br/>1、点击右上角的Enter
+          <br />
+          2、"User Name"输入学号
+          <br />
+          3、"password"输入密码，默认"123456"</p>
       </div>
     </br>
      <div class="Q">
@@ -47,7 +76,7 @@
       </div>
       <div class="A">
         <img class="QA_img" src="/img/A.png"\>
-       <p>与其他大部分OJ一样，GzhuOJ采用黑盒测试的方法，除了您所看到的测试样例外，系统还准备了一系列案例来测试您提交的程序。您的程序给出的所有输出都将被保存起来，并与预先准备好的标准答案进行对照，如有不一致，系统将会认为您的程序未能解决问题。因此，请您严格按照题目要求的格式输出答案。下面针对所支持的每种语言给出了1000号题目的“标准解法”：</p>
+       <p>除了您所看到的测试样例外，系统还准备了一系列案例来测试您提交的程序。测试过程中,您的程序给出的所有输出都将被保存起来，并与预先准备好的标准答案进行对照，如检查到任何不一致，系统将会认为您的程序未能解决问题。因此，请您严格按照题目要求的格式输出答案。下面针对所支持的每种语言给出了1000号题目的“标准解法”：</p>
         <table class="MsoTableGrid" border="1" cellspacing="0" cellpadding="0"
             style='border-collapse: collapse; border: none'>
             <tr>
@@ -354,8 +383,7 @@
       <div class="A">
         <img class="QA_img" src="/img/A.png"\>
        <p>
-        C99和C++11规定使用long long来表示64位整数，而long long是此前除VC6外几乎所有C/C++编译器用来
-        表示64位整数的方法。因为新版本的VC也已经兼容了long long类型，我们认为已经没有必要再去兼容这个非标准类型了。由于诞生的比第一个C++标准还要早，VC6与标准的兼容性极差，因此我们建议您弃用它VC6，尽快升级到VC的更高版本或改用其他编译器。</p>
+        C99和C++11规定使用long long来表示64位整数，而目前主流编译器的新版本都已经兼容了long long类型，我们认为已经没有必要再去兼容这个非标准类型了。<br/>由于诞生的比较早，VC6与标准的兼容性极差，因此建议您弃用VC6，尽快升级到VC的更高版本或改用其他编译器。</p>
       </div>
     </br>
     <div class="Q">
@@ -391,12 +419,17 @@
         </p>
 
         <p class="MsoNormal" style='text-indent: 21.3pt'>
-            <b><span lang="EN-US">Runtime Error：</span></b>您的程序发生了运行时错误，请检查您的程序是否存在以下<span lang="EN-US">Bugs</span>：
-            <span lang="EN-US">1.</span>访问数组时下标越界；
-            <span lang="EN-US">2.</span>使用指针读取了不可读的内存或写了不可写的内存；
-            <span lang="EN-US">3.</span>整数除法除数为<span lang="EN-US">0</span>；
-            <span lang="EN-US">4.</span>函数调用栈的层次过多导致栈溢出，请检查是否存在无穷递归的可能；
-            <span lang="EN-US">5.</span>错误使用<span lang="EN-US">STL</span>对象导致了未有效处理的异常抛出，或者触发了自己定义的异常而未能处理……等。
+            <b><span lang="EN-US">Runtime Error：</span></b>您的程序发生了运行时错误，可能的原因有：</p>
+        <p class="MsoNormal" style='text-indent: 21.3pt'>
+            <span lang="EN-US">1.</span>访问数组时下标越界；</p>
+        <p class="MsoNormal" style='text-indent: 21.3pt'>
+            <span lang="EN-US">2.</span>使用指针读取了不可读的内存或写了不可写的内存；</p>
+        <p class="MsoNormal" style='text-indent: 21.3pt'>
+            <span lang="EN-US">3.</span>整数除法除数为<span lang="EN-US">0</span>；</p>
+        <p class="MsoNormal" style='text-indent: 21.3pt'>
+            <span lang="EN-US">4.</span>函数调用栈的层次过多导致栈溢出，请检查是否存在无穷递归的可能；</p>
+        <p class="MsoNormal" style='text-indent: 21.3pt'>
+            <span lang="EN-US">5.</span>捕捉到违背处理的<span lang="EN-US">STL</span>异常或自定义的异常……等。
         </p>
 
         <p class="MsoNormal" style='text-indent: 21.3pt'>
@@ -416,7 +449,7 @@
 
         <p class="MsoNormal" style='text-indent: 21.3pt'>
             <b><span lang="EN-US">Compilation Error：</span></b>
-            程序存在语法错误，无法编译。也许您的程序在某些平台上可以正常编译，但可能由于使用了只能在特定平台使用的不规范语法，它无法在<span lang="EN-US">GzhuOJ</span>的平台上编译成功。为了保持对各平台的兼容性，请编写严格符合标准的代码。
+            程序存在语法错误，无法编译。也许您的程序在某些平台上可以正常编译，但可能由于使用了不规范语法，它无法在<span lang="EN-US">GzhuOJ</span>的平台上编译成功。请编写严格符合标准的代码。
         </p>
 
         <p class="MsoNormal" style='text-indent: 21.3pt'>
@@ -427,11 +460,11 @@
     </br>
     <div class="Q">
         <img class="QA_img" src="/img/Q.png"\>
-        <p>当我提交Java源码的时候应当注意什么？</p>
+        <p>Java源码的入口类与入口方法？</p>
       </div>
       <div class="A">
         <img class="QA_img" src="/img/A.png"\>
-       <p>正如上面的示例一样，入口类必须被声明为“public class Main”，不可换用其它类名；而入口方法则必须为“public static void main(String[] args)”,其中参数名可以不为“args”。</p>
+       <p>入口类必须被声明为“public class Main”，不可换用其它类名；而入口方法的原型必须为“public static void main(String[])”。</p>
       </div>
     </br>
     <div class="Q">
@@ -639,7 +672,7 @@ nextDouble</span><b><span lang="EN-US" style='font-size: 10.0pt; font-family: "C
         </p>
       </div>
     </br>
-    <!--F.A.Q.s 本次修订完成时间：2013-06-05 0：22-->
+    <!--F.A.Q.s 本次修订完成时间：2013-11-16 0：22-->
     </div>
     <div class="set_picture_right">
     </div>

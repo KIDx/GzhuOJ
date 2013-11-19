@@ -50,6 +50,8 @@ module.exports = {
   regform_pageNum     : 20,
   stats_pageNum       : 20,
   contestRank_pageNum	: 50,
+  topic_pageNum       : 20,
+  comment_pageNum     : 20,
   root_path           : __dirname+'/',
   data_path           : '/home/kidx/OJ/judge/data/',
   College             : College,

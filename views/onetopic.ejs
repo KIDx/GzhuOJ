@@ -1,0 +1,104 @@
+<!--<html>-->
+<fieldset>
+	<div>
+		<legend id="onetopic" tid="<%= topic.id %>">论坛</legend>
+	</div>
+	<div class="content">
+		<div class="topic_box">
+			<div class="header">
+				<a href="/topic">论坛主页</a>
+				>>
+				话题详情
+				<% if (user && (user.name == 'admin' || user.name == topic.user)) { %>
+				<a class="fr uibtn uibtn-mini" href="/addtopic?tid=<%= topic.id %>">&nbsp;编辑&nbsp;</a>
+				<% } %>
+			</div>
+			<div class="inner_topic">
+				<h3>
+					<a title="<%= topic.user %>" href="/user/<%= topic.user %>"><img class="img_m topic_img" alt="<%= topic.user %>" src="/img/avatar/<%= topic.user %>/3.<%= IT[topic.user] %>" /></a>
+					<% if (topic.top) { %><span class="put_top">置顶</span><% } %>
+					<%= topic.title %>
+				</h3>
+				<hr />
+				<%- topic.content %>
+				<hr />
+				于
+				<span class="user-gray"><%= getDate(topic.inDate) %></span>
+				编辑
+				<span class="fr user user-gray">by <a href="/user/<%= topic.user %>" title="<%= UT[topic.user] %>" class="user user-<%= UC[topic.user] %>"><%= topic.user %>.</a></span>
+			</div>
+		</div>
+	<% if (comments && comments.length) { %>
+		<div class="topic_box">
+			<div class="header">
+				<span class="user-green"><%= N %></span> 条回复
+			</div>
+		<% comments.forEach(function(p, i){ %>
+			<div class="reply_area">
+				<div class="reply_avatar">
+					<a title="<%= p.user %>" href="/user/<%= p.user %>">
+						<img class="img_s topic_img" alt="avatar" src="/img/avatar/<%= p.user %>/4.<%= IT[p.user] %>" />
+					</a>
+				</div>
+				<div class="reply_right">
+					<div>
+						<a href="/user/<%= p.user %>" title="<%= UT[p.user] %>" class="user user-<%= UC[p.user] %>"><%= p.user %></a>
+						<span class="user user-gray fr"><%= i+1 %>F</span>
+					</div>
+					<div class="reply_content">
+						<%- p.content %>
+					</div>
+					<div class="reply_foot">
+						<span class="user-gray"><%= getDate(p.inDate) %></span>
+					<% if (user && user.name != p.user) { %>
+						<a class="fr uibtn reply" fa="<%= p.id %>" at="<%= p.user %>" href="javascript:;">回复</a>
+					<% } %>
+					</div>
+				</div>
+		<% var fa = p.id; %>
+		<% if (sub[p.id] && sub[p.id].length) { %>
+			<% sub[p.id].forEach(function(p){ %>
+				<div class="reply_sub">
+					<div style="margin-top:5px;">
+						<div class="reply_avatar">
+							<a title="<%= p.user %>" href="/user/<%= p.user %>">
+								<img class="img_s topic_img" alt="avatar" src="/img/avatar/<%= p.user %>/4.<%= IT[p.user] %>" />
+							</a>
+						</div>
+						<div class="reply_right">
+							<div>
+								<a href="/user/<%= p.user %>" title="<%= UT[p.user] %>" class="user user-<%= UC[p.user] %>"><%= p.user %></a>
+								<span class="user user-gray">@<%= p.at %></span>
+							</div>
+							<div class="reply_content">
+								<%- p.content %>
+							</div>
+							<div class="reply_foot">
+								<span class="user-gray"><%= getDate(p.inDate) %></span>
+							<% if (user && user.name != p.user) { %>
+								<a class="fr uibtn reply" fa="<%= fa %>" at="<%= p.user %>" href="javascript:;">回复</a>
+							<% } %>
+							</div>
+						</div>
+					</div>
+				</div>
+			<% }); %>
+		<% } %>
+			</div>
+		<% }); %>
+		</div>
+	<% } %>
+	<% if (user) { %>
+		<div class="topic_box form-horizontal">
+			<div class="header">添加回复</div>
+			<div class="inner_topic">
+				<textarea id="content"></textarea>
+				<div>
+					<a class="uibtn" style="margin:10px 0;" href="javascript:;" id="reply">回复</a>
+					<span class="error-text" id="err"></span>
+				</div>
+			</div>
+		</div>
+	<% } %>
+	</div>
+</fieldset>

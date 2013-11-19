@@ -23,3 +23,9 @@ ol,ul,dl
 	/* preserved spaces for list items with text direction other than the list. (#6249,#8049)*/
     padding:0 40px;
 }
+
+pre {
+	border: 1px solid #ccc;
+	padding: 5px;
+	background: #f2f2f2;
+}

@@ -19,7 +19,7 @@ mongoose.model('idss', idsObj);
 var idss = mongoose.model('idss');
 
 IDs.Init = function(){
-  var tnames = ['problemID', 'runID', 'contestID', 'regID'];
+  var tnames = ['problemID', 'runID', 'contestID', 'regID', 'topicID'];
   for (var i = 0; i < 4; i++) {
     ids = new idss();
     ids.name = tnames[i];

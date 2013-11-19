@@ -5,7 +5,7 @@
     <link rel="shortcut icon" href="/favicon.ico" mce_href="/favicon.ico" type="image/x-icon">
     <link href="/stylesheets/bootstrap.css" rel="stylesheet" type="text/css"/>
     <link href="/stylesheets/style.css" rel="stylesheet" type="text/css"/>
-  <% if (key == 11) { %>
+  <% if (key == 8 || key == 11 || key == 18) { %>
     <link rel="stylesheet" type="text/css" href="/highlighter/styles/shCoreEclipse.css"/>
     <link rel="stylesheet" type="text/css" href="/highlighter/styles/shThemeEclipse.css"/>
   <% } else if (key == 1002) { %>
@@ -48,8 +48,8 @@
     <% if (user) { %>
       <% var img = '/img/avatar/%3Ddefault%3D/3.jpeg'; %>
       <% if (user.imgType) { img = '/img/avatar/'+user.name+'/3.'+user.imgType; } %>
-        <a class="img fr" title="go to change picture" href="/avatar">
-          <img alt="avatar" src="<%= img %>" />
+        <a class="fr" title="change picture" href="/avatar">
+          <img class="img_m topic_img" alt="avatar" src="<%= img %>" />
         </a>
     <% } %>
       <a href="/" title="Gzhu Online Judge">
@@ -66,7 +66,8 @@
         <li><a href="/contest/2">VIP Contest</a></li>
         <li><a href="/contest/3">Exam</a></li>
         <li><a href="/course">Course</a></li>
-        <li><a href="/faq">FAQ</a></li>
+        <li><a href="/topic/1014" class="user user-red">Help</a></li>
+        <li><a href="/topic" class="user user-red">Forum</a></li>
       </ul>
       <div class="fr">
         <input type="text" style="padding:2px;margin:0;font-size:12px;" class="input-small" placeholder=" Problem ID" title="Problem ID">
@@ -113,6 +114,7 @@
     <script src="/jqModal/jqDnR.js"></script>
     <script src="/jqModal/jqModal.js"></script>
     <script src="/javascripts/Global.js"></script>
+  <% var highlight = '<script src="/highlighter/scripts/shCore.js"></script><script src="/highlighter/scripts/shBrushCpp.js"></script><script src="/highlighter/scripts/shBrushJava.js"></script><script type="text/javascript">SyntaxHighlighter.defaults[\'toolbar\'] = false;SyntaxHighlighter.all();</script>'; %>
   <% if (key == 0) { %>
     <script src="/javascripts/user.js"></script>
   <% } else if (key == 1) { %>
@@ -126,6 +128,7 @@
   <% } else if (key == 6) { %>
     <script src="/javascripts/contest.js"></script>
   <% } else if (key == 8) { %>
+    <%- highlight %>
     <script src="/javascripts/fileUpload.js"></script>
     <script src="/javascripts/problem.js"></script>
   <% } else if (key == 9) { %>
@@ -138,10 +141,7 @@
   <% } else if (key == 10) { %>
     <script src="/javascripts/submit.js"></script>
   <% } else if (key == 11){ %>
-    <script src="/highlighter/scripts/shCore.js"></script>
-    <script src="/highlighter/scripts/shBrushCpp.js"></script>
-    <script src="/highlighter/scripts/shBrushJava.js"></script>
-    <script type="text/javascript">SyntaxHighlighter.all();</script>
+    <%- highlight %>
   <% } else if (key == 12) { %>
     <script src="/javascripts/fileUpload.js"></script>
     <script src="/javascripts/avatar.js"></script>
@@ -154,6 +154,14 @@
     <script src="/javascripts/onecourse.js"></script>
   <% } else if (key == 16) { %>
     <script src="/javascripts/courserank.js"></script>
+  <% } else if (key == 17) { %>
+    <script src="/javascripts/topic.js"></script>
+  <% } else if (key == 18) { %>
+    <%- highlight %>
+    <% if (user) { %>
+    <script src="/ckeditor/ckeditor.js"></script>
+    <% } %>
+    <script src="/javascripts/onetopic.js"></script>
   <% } else if (key == 1002) { %>
     <script src="/javascripts/addcontest.js"></script>
     <script src="/zd/javascript/zebra_datepicker.js"></script>
@@ -163,6 +171,9 @@
     <script src="/javascripts/addproblem.js"></script>
   <% } else if (key == 1003) { %>
     <script src="/javascripts/addcourse.js"></script>
+  <% } else if (key == 1004) { %>
+    <script src="/ckeditor/ckeditor.js"></script>
+    <script src="/javascripts/addtopic.js"></script>
   <% } %>
   </body>
 </html>

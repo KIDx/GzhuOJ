@@ -176,7 +176,11 @@
         <div id="prob-contain" class="istyle">
           <div align="center">
             <h3 class="problem-header" id="problem_title"><span class="user-green"></span>&nbsp;-&nbsp;<span></span></h3>
-            <div style="padding-bottom:8px;"><b>Time Limit: </b><font class="limit"></font> MS (Java/Others)&nbsp;&nbsp;&nbsp;&nbsp; <b>Memory Limit: </b><font class="limit"></font> KB (Java/Others)<font class="limit" color="#D14758" style="font-weight:bold;"></font></div>
+            <div style="padding-bottom:8px;">
+              <b>Time Limit: </b><span class="limit"></span> MS (Java/Others) &nbsp;&nbsp;&nbsp;&nbsp;
+              <b>Memory Limit: </b><span class="limit"></span> KB (Java/Others)
+              <span class="user user-red limit"></span>
+            </div>
             <div id="pids">
               <a id="probsubmit" class="uibtn consubmit" href="javascript:;">Submit</a>
               <a class="uibtn" href="javascript:;" res="-1">Status</a>
@@ -291,7 +295,7 @@
                   <th class="name">Name</th>
                   <th class="nick">Nick</th>
                   <th class="solved" title="solved"><span class="user-green">S</span></th>
-                  <th class="penalty" title="penalty"><span class="user-green">P</span></th>
+                  <th class="penalty" title="penalty(罚时)"><span class="user-red">P</span></th>
                   <% for(var i = 0; i < probNum; i++) { %>
                   <th class="standing_status">
                     <a class="rplink" href="#problem-<%= F[i] %>"><%= F[i] %></a>

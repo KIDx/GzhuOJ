@@ -382,19 +382,17 @@ $(document).ready(function(){
                 break;
             }
             case 'addcontest': {
-                if ($logindialog.length > 0) {
-                    nextURL = '/addcontest?type='+contest_type;
-                    $logindialog.jqmShow();
-                    break;
-                } else if (contest_type == 2 && current_user != 'admin') {
-                    ShowMessage('You have no privilege to add VIP Contest!');
-                    break;
-                }
-                window.location.href = '/addcontest?type='+contest_type;
+                nextURL = '/addcontest?type='+contest_type;
+                $logindialog.jqmShow();
                 break;
             }
             case 'addcourse': {
                 nextURL = '/addcourse';
+                $logindialog.jqmShow();
+                break;
+            }
+            case 'addtopic': {
+                nextURL = '/addtopic';
                 $logindialog.jqmShow();
                 break;
             }
@@ -469,7 +467,7 @@ $(document).ready(function(){
                 errAnimate($regerr, 'the length of nickname should be no more than 20!');
                 return false;
             }
-            var email = $reginput.eq(5).val();
+            var email = JudgeString($reginput.eq(5).val());
             if (email) {
                 pattern = new RegExp("^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,4}$");
                 if (!pattern.test(email)) {
@@ -486,9 +484,9 @@ $(document).ready(function(){
                 username: username,
                 password: password,
                 nick: nick,
-                school: $reginput.eq(4).val(),
+                school: JudgeString($reginput.eq(4).val()),
                 email: email,
-                signature: $regdialog.find('textarea').attr('value'),
+                signature: JudgeString($regdialog.find('textarea').attr('value')),
                 vcode: $('#reg_vcode').val()
             }, function(res){
                 if (!res) {
@@ -599,8 +597,8 @@ $(document).ready(function(){
 });
 
 //the Go button, go to a problem at once
-var $Go = $('a#Go');
-var $Goinput = $Go.prev();
+var $Go = $('a#Go')
+,   $Goinput = $Go.prev();
 
 $(document).ready(function(){
     $Go.click(function(){
@@ -616,18 +614,22 @@ $(document).ready(function(){
 
 //button animate
 
+function btnAnimate($btn) {
+    $btn.bind('mouseenter', function(){
+        $(this).stop().animate({
+            'backgroundColor': '#C5FFFD'
+        });
+    });
+    $btn.bind('mouseleave', function(){
+        $(this).stop().animate({
+            'backgroundColor': '#fff'
+        });
+    });
+}
+
 $(document).ready(function(){
     var $btn = $('.uibtn');
     $.each($btn, function(i, p){
-        $(p).bind('mouseenter', function(){
-            $(this).stop().animate({
-                'backgroundColor': '#C5FFFD'
-            });
-        });
-        $(p).bind('mouseleave', function(){
-            $(this).stop().animate({
-                'backgroundColor': '#fff'
-            });
-        });
+        btnAnimate($(p));
     });
 });

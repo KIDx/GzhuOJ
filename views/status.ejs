@@ -1,5 +1,5 @@
 <!--<html>-->
-<% var _id = [0, 2, 6, 3, 4, 5, 7, 8, 9, 13, 14]; %>
+<% var _id = [0, 1, 2, 6, 3, 4, 5, 7, 8, 9, 13, 14]; %>
 <% var lan = ['', 'C', 'C++', 'Java']; %>
 <fieldset>
   <div><legend>状态</legend></div>
@@ -79,7 +79,7 @@
             <% vc = 'unknow'; %>
             <% } %>
             <% if (p.cID != -1 && (!user || (p.userName != user.name && user.name != 'admin'))) { %>
-            <% time = memory = len = '---'; %>
+            <% time = memory = len = '<span class="user user-gray">---</span>'; %>
             <% } else { %>
             <% time = p.time+' MS'; memory = p.memory+' KB'; len = p.code.length+' B'; %>
             <% } %>
@@ -107,11 +107,11 @@
               <%- v %>
             </td>
             <td><%- time %></td>
-            <td><%= memory %></td>
+            <td><%- memory %></td>
             <td>
               <a href="/sourcecode/<%= p.runID %>"><%= lan[p.language] %></a>
             </td>
-            <td><%= len %></td>
+            <td><%- len %></td>
             <td><%= p.inDate %></td>
           </tr>
           <% }); %>

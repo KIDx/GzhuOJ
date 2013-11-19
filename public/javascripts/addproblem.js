@@ -144,7 +144,6 @@ $(document).ready(function(){
 			}
 		}
 	});
-	
 
 	$data.fileupload({
 		dataType: 'text',

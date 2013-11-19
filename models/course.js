@@ -40,7 +40,7 @@ Course.get = function(Q, page, callback){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
-    courses.find(Q).sort({courseID:-1}).skip((page-1)*pageNum).limit(pageNum).find(function(err, docs){
+    courses.find(Q).sort({courseID:-1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
         OE('Courses.get failed!');
       }

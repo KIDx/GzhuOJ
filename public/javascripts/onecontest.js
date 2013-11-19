@@ -103,7 +103,7 @@ function buildRow(sol) {
 	}
 	html += '</td>';
 
-	var tpstr;
+	var tpstr, tmp = '<span class="user user-gray">---</span>';
 	if (sol.result == 0) {
 		tpstr = '<img src="/img/pending.gif" width="16px" height="16px"/>';
 	} else if (sol.result == 1) {
@@ -111,14 +111,14 @@ function buildRow(sol) {
 	} else if (parseInt(sol.time, 10) >= 0) {
 		tpstr = sol.time+' MS';
 	} else {
-		tpstr = '---';
+		tpstr = tmp;
 	}
 	html += '<td>'+tpstr+'</td>';
 
 	if (parseInt(sol.memory, 10) >= 0) {
 		tpstr = sol.memory+' KB';
 	} else {
-		tpstr = '---';
+		tpstr = tmp;
 	}
 	html += '<td>'+tpstr+'</td>';
 
@@ -131,7 +131,7 @@ function buildRow(sol) {
 	if (parseInt(sol.length, 10) >= 0) {
 		tpstr = sol.length+' B';
 	} else {
-		tpstr = '---';
+		tpstr = tmp;
 	}
 	html += '<td>'+tpstr+'</td>';
 	html += '<td>'+sol.inDate+'</td>';
@@ -281,7 +281,7 @@ var $problem = $div.find('#problemtab')
 ,	$probcontain = $problem.children('#prob-contain')
 ,	$problemlink = $problem.find("li.problemlink")
 ,	$title = $problem.find('h3#problem_title > span')
-,	$limit = $problem.find('font.limit')
+,	$limit = $problem.find('span.limit')
 ,	$link = $('a.splink')
 ,	F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ,	ID, problemTimeout

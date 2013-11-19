@@ -1,12 +1,7 @@
 <!--<html>-->
 <fieldset>
 	<div><legend>源码</legend></div>
-<% if (!solution) { %>
-	<div class="alert alert-error" style="padding:100px;display:none;">
-		<h1 align="center">The Solution is not Available!!</h1>
-	</div>
-<% } else { %>
-	<% if (flg) { %>
+<% if (flg) { %>
 	<% var lang = 'c'; %>
 	<% if (solution.language == 2) lang = 'cpp'; else if (solution.language == 3) lang = 'java'; %>
 	<pre class="brush: <%= lang %>;">/*
@@ -18,11 +13,10 @@
 * Memory: <%= solution.memory %> KB
 */
 <%= solution.code %></pre>
-	<% } else { %>
+<% } else { %>
 	<div class="alert alert-error" style="padding:100px;display:none;">
 		<h1 align="center">Sorry, You have no permission to see this code.</h1>
 	</div>
-	<% } %>
 <% } %>
 </fieldset>
 

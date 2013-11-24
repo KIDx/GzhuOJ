@@ -6,7 +6,8 @@ For licensing, see LICENSE.html or http://ckeditor.com/license
 body
 {
 	/* Font */
-	font-family: Arial, Verdana, sans-serif;
+	/*font-family: Arial, Verdana, sans-serif;*/
+	font-family: "微软雅黑","Helvetica Neue",Helvetica,Arial,sans-serif;
 	font-size: 14px;
 
 	/* Text color */

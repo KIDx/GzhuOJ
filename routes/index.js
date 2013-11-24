@@ -151,7 +151,7 @@ function escapeHtml(s) {
 }
 
 function IsRegCon(s, name) {
-  if (!s) return false;
+  if (!s || !s.length) return false;
   for (var i = 0; i < s.length; i++) {
     if (s[i] == name)
       return true;
@@ -224,17 +224,17 @@ exports.disconnectMongodb = function() {
 
 exports.updateStatus = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  var id = req.body.runid;
+  var id = parseInt(req.body.runid, 10);
   if (!id) {
-    return res.end();
+    return res.end();   //not allow
   }
   Solution.watch({runID:id}, function(err, sol){
     if (err) {
       OE(err);
-      return res.end();   //not refresh!
+      return res.end(); //not refresh!
     }
     if (!sol || sol.result == 0) {
-      return res.end();
+      return res.end(); //not allow
     }
     var RP = function(X){
       if (X > 0) {
@@ -256,7 +256,7 @@ exports.updateStatus = function(req, res) {
             return res.end();   //not refresh!
           }
           if (!contest) {
-            return res.end();
+            return res.end();   //not allow
           }
           if (me == contest.userName) {
             return RP(0);
@@ -328,10 +328,9 @@ exports.getStatus = function(req, res) {
       return res.end();   //not refresh!
     }
     if (!contest) {
-      return res.end();
+      return res.end();   //not allow
     }
     var Q = {cID: cid}, page, name, pid, result, lang;
-
     page = parseInt(req.body.page, 10);
     if (!page) {
       page = 1;
@@ -340,10 +339,14 @@ exports.getStatus = function(req, res) {
     }
 
     name = req.body.name;
-    if (name) Q.userName = new RegExp("^.*"+toEscape(name)+".*$", 'i');
+    if (name) {
+      Q.userName = new RegExp("^.*"+toEscape(name)+".*$", 'i');
+    }
 
     pid = parseInt(req.body.pid, 10);
-    if (pid) Q.problemID = pid;
+    if (pid) {
+      Q.problemID = pid;
+    }
 
     result = parseInt(req.body.result, 10);
     if (result >= 0) {
@@ -355,7 +358,9 @@ exports.getStatus = function(req, res) {
     }
 
     lang = parseInt(req.body.lang, 10);
-    if (lang) Q.language = lang;
+    if (lang) {
+      Q.language = lang;
+    }
 
     if (!req.session.user || req.session.user.name != 'admin') {
       Q.$nor = [{userName: 'admin'}];
@@ -363,10 +368,10 @@ exports.getStatus = function(req, res) {
     Solution.get(Q, page, function(err, solutions, n) {
       if (err) {
         OE(err);
-        return res.end();      //not refresh!
+        return res.end();     //not refresh!
       }
       if (n < 0) {
-        return res.end();
+        return res.end();     //not allow
       }
       var sols = new Array(), names = new Array(), has = {};
       if (solutions) {
@@ -397,7 +402,7 @@ exports.getStatus = function(req, res) {
       User.find({name: {$in: names}}, function(err, users){
         if (err) {
           OE(err);
-          return res.end();      //not refresh!
+          return res.end();      //not refresh
         }
         var pvl = {};
         if (users) {
@@ -610,17 +615,122 @@ exports.getRanklist = function(req, res) {
   });
 };
 
+exports.getTopic = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  var cid = parseInt(req.body.cid, 10);
+  if (!cid) {
+    return res.end();     //not allow
+  }
+  Contest.watch(cid, function(err, contest){
+    if (err) {
+      OE(err);
+      return res.end();   //not refresh
+    }
+    if (!contest) {
+      return res.end();   //not allow
+    }
+    var page;
+    page = parseInt(req.body.page, 10);
+    if (!page) {
+      page = 1;
+    } else if (page < 0) {
+      return res.end();   //not allow
+    }
+    Topic.get({cid: cid}, page, function(err, topics, n){
+      if (err) {
+        OE(err);
+        return res.end(); //not refresh
+      }
+      if (n < 0) {
+        return res.end(); //not allow
+      }
+      var names = new Array(), I = {};
+      if (topics) {
+        topics.forEach(function(p){
+          names.push(p.user);
+        });
+      }
+      User.find({name: {$in: names}}, function(err, users){
+        if (err) {
+          OE(err);
+          return res.end();   //not refresh
+        }
+        if (users) {
+          users.forEach(function(p){
+            I[p.name] = p.imgType;
+          });
+        }
+        res.json([topics, n, I]);
+      });
+    });
+  });
+};
+
+exports.addDiscuss = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end('2');    //refresh
+  }
+  var title = clearSpace(req.body.title)
+  ,   content = clearSpace(req.body.content)
+  ,   name = req.session.user.name
+  ,   cid = parseInt(req.body.cid, 10);
+  if (!title || !content || !name || ! cid) {
+    return res.end();       //not allow
+  }
+  Contest.watch(cid, function(err, con){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    if (con.type == 2 && !IsRegCon(con.contestants, name)) {
+      req.session.msg = '发表失败！你还没注册此比赛！';
+      return res.end('2');  //refresh
+    }
+    IDs.get('topicID', function(err, id){
+      if (err) {
+        OE(err);
+        return res.end('1');
+      }
+      (new Topic({
+        id      : id,
+        title   : title,
+        content : content,
+        cid     : cid,
+        user    : req.session.user.name,
+        inDate  : (new Date()).getTime()
+      })).save(function(err){
+        if (err) {
+          OE(err);
+          return res.end('1');
+        }
+        return res.end();
+      });
+    });
+  });
+};
+
 exports.getCE = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user)
     return res.end('Please login first!');
-  Solution.watch({runID:req.body.rid}, function(err, solution){
+  var rid = parseInt(req.body.rid, 10)
+  ,   name = req.session.user.name;
+  if (!rid) {
+    return res.end();   //not allow
+  }
+  Solution.watch({runID: rid}, function(err, solution){
     if (err) {
       OE(err);
-      return res.end('Server Error!');
+      return res.end('系统错误！');
     }
-    if (req.session.user.name != 'admin' && req.session.user.name != solution.userName)
+    if (!solution) {
+      return res.end(); //not allow
+    }
+    if (name != 'admin' && name != solution.userName) {
       return res.end('You have no permission to watch that Information!');
+    }
     return res.end(solution.CE);
   });
 };
@@ -635,12 +745,21 @@ exports.changePvl = function(req, res) {
     req.session.msg = 'Failed! You have no permission to do that!';
     return res.end();
   }
-  User.update({name:req.body.name}, {$set: {
-    privilege   : req.body.pvl,
-    college     : req.body.college,
-    realname    : req.body.realname,
-    sex         : req.body.sex,
-    grade       : req.body.grade
+  var name = clearSpace(req.body.name)
+  ,   pvl = clearSpace(req.body.pvl)
+  ,   college = clearSpace(req.body.college)
+  ,   realname = clearSpace(req.body.realname)
+  ,   sex = clearSpace(req.body.sex)
+  ,   gde = clearSpace(req.body.grade);
+  if (!name || !pvl || !college || !sex) {
+    return res.end();   //not allow
+  }
+  User.update({name: name}, {$set: {
+    privilege   : pvl,
+    college     : college,
+    realname    : realname,
+    sex         : sex,
+    grade       : gde
   }}, function(err){
     if (err) {
       OE(err);
@@ -659,17 +778,20 @@ exports.changeAddprob = function(req, res) {
     return res.end();
   }
   if (req.session.user.name != 'admin') {
-    req.session.msg = 'Failed! You have no permission to do that!';
+    req.session.msg = 'You have no permission to do that!';
     return res.end();
   }
-  User.watch(req.body.name, function(err, user){
+  var name = clearSpace(req.body.name);
+  if (!name) {
+    return res.end();   //not allow
+  }
+  User.watch(name, function(err, user){
     if (err) {
       OE(err);
       req.session.msg = '系统错误！';
       return res.end();
     }
-    if (!user.addprob) user.addprob = true;
-    else user.addprob = false;
+    user.addprob = !user.addprob;
     user.save(function(err){
       if (err) {
         OE(err);
@@ -686,50 +808,58 @@ exports.changeInfo = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
-    return res.end('F');
+    return res.end();
   }
   if (req.session.user.name != req.body.name) {
     req.session.msg = 'Failed! You have no permission to do that!';
-    return res.end('F');
+    return res.end();
   }
 
-  var md5 = crypto.createHash('md5');
-  var oldpassword = md5.update(req.body.oldpassword).digest('base64');
+  var name = clearSpace(req.body.name)
+  ,   nick = clearSpace(req.body.nick)
+  ,   oldpsw = req.body.oldpassword
+  ,   psw = req.body.password
+  ,   school = clearSpace(req.body.school)
+  ,   email = clearSpace(req.body.email)
+  ,   sig = clearSpace(req.body.signature);
+  if (!name || !nick || !oldpsw ||
+      school.length > 50 || email.length > 50 || sig.length > 200) {
+    return res.end();   //not allow
+  }
 
-  User.watch(req.body.name, function(err, user){
+  var md5 = crypto.createHash('md5')
+  ,   oldpassword = md5.update(oldpsw).digest('base64');
+
+  User.watch(name, function(err, user){
     if (err) {
       OE(err);
       req.session.msg = '系统错误！';
-      return res.end('F');
+      return res.end();
     }
     if (!user) {
-      return res.end('F');
+      return res.end();   //not allow
     }
-    if (oldpassword != user.password)
-      return res.end('T');
-
-    if (req.body.password) {
-      var tmd = crypto.createHash('md5');
-      user.password = tmd.update(req.body.password).digest('base64');
+    if (oldpassword != user.password) {
+      return res.end('1');
     }
     var H = {
-      nick    : req.body.nick,
-      school  : req.body.school,
-      email   : req.body.email,
-      signature : req.body.signature
+      nick    : nick,
+      school  : school,
+      email   : email,
+      signature : sig
     };
-    if (req.body.password) {
+    if (psw) {
       var Md5 = crypto.createHash('md5');
-      H.password = Md5.update(req.body.password).digest('base64');
+      H.password = Md5.update(psw).digest('base64');
     }
-    User.update({name: req.body.name}, H, function(err){
+    User.update({name: name}, H, function(err){
       if (err) {
         OE(err);
         req.session.msg = '系统错误！';
-        return res.end('F');
+        return res.end();
       }
       req.session.msg = 'Your Information has been updated successfully!';
-      return res.end('F');
+      return res.end();
     });
   });
 };
@@ -744,13 +874,13 @@ exports.getProblem = function(req, res) {
   if (!pid) {
     return res.end();   //not allow!
   }
-  Problem.watch(req.body.pid, function(err, problem){
+  Problem.watch(pid, function(err, problem){
     if (err) {
       OE(err);
       return res.end();
     }
     if (!problem) {
-      return res.end();
+      return res.end(); //not allow
     }
     if (req.body.all) {
       return res.json(problem);
@@ -765,24 +895,34 @@ exports.getProblem = function(req, res) {
 
 exports.editTag = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  if (!req.session.user)
+  if (!req.session.user) {
+    req.session.msg = 'Please login first!';
     return res.end();
-  var pid = parseInt(req.body.pid)
-  ,   tag = parseInt(req.body.tag);
-  if (!pid || !tag)
-    return res.end();
+  }
+  var pid = parseInt(req.body.pid, 10)
+  ,   tag = parseInt(req.body.tag, 10);
+  if (!pid || !tag) {
+    return res.end();   //not allow
+  }
   var name = req.session.user.name
   ,   RP = function(){
     var Q;
-    if (req.body.add) Q = {$addToSet: {tags:tag}};
-    else Q = {$pull: {tags:tag}};
-    Problem.update(req.body.pid, Q, function(err, problem){
+    if (req.body.add) {
+      Q = {$addToSet: {tags:tag}};
+    } else {
+      Q = {$pull: {tags:tag}};
+    }
+    Problem.update(pid, Q, function(err, problem){
       if (err) {
         OE(err);
+        req.session.msg = '系统错误！';
         return res.end();
       }
-      if (req.body.add) req.session.msg = 'Tag has been added to the problem successfully!';
-      else req.session.msg = 'Tag has been removed from the problem successfully!';
+      if (req.body.add) {
+        req.session.msg = 'Tag has been added to the problem successfully!';
+      } else {
+        req.session.msg = 'Tag has been removed from the problem successfully!';
+      }
       return res.end();
     });
   };
@@ -795,7 +935,7 @@ exports.editTag = function(req, res) {
       return res.end();
     }
     if (!problem) {
-      return res.end();
+      return res.end();   //not allow
     }
     if (name == problem.manager) {
       return RP();
@@ -806,7 +946,7 @@ exports.editTag = function(req, res) {
         return res.end();
       }
       if (!solution) {
-        return res.end();
+        return res.end(); //not allow
       }
       return RP();
     });
@@ -818,11 +958,11 @@ exports.reg = function(req, res) {
   if (!req.session.user || req.session.user.name != 'admin') {
     return res.end('4');
   }
-  var name = req.body.name
-  ,   realname = req.body.realname
-  ,   sex = req.body.sex
-  ,   gde = req.body.gde
-  ,   college = req.body.college;
+  var name = clearSpace(req.body.name)
+  ,   realname = clearSpace(req.body.realname)
+  ,   sex = clearSpace(req.body.sex)
+  ,   gde = clearSpace(req.body.gde)
+  ,   college = clearSpace(req.body.college);
   if (!name || !realname || !sex || !gde || !college) {
     return res.end('4');
   }
@@ -878,7 +1018,8 @@ exports.doReg = function(req, res) {
   ,   school = clearSpace(req.body.school)
   ,   email = clearSpace(req.body.email)
   ,   sig = clearSpace(req.body.signature);
-  if (!name || !nick || !password || !vcode) {
+  if (!name || !nick || !password || !vcode ||
+      school.length > 50 || email.length > 50 || sig.length > 200) {
     return res.end();   //not allow
   }
 
@@ -886,7 +1027,6 @@ exports.doReg = function(req, res) {
   if (!pattern.test(name)) {
     return res.end();   //not allow
   }
-
   if (vcode != req.session.verifycode) {
     return res.end('1');
   }
@@ -1445,6 +1585,12 @@ exports.addproblem = function(req, res) {
   }
   var tk = 1000, pid = parseInt(req.query.pID)
   ,   RP = function(P, F, I) {
+    if (P) {
+      P.description = escapeHtml(P.description);
+      P.input = escapeHtml(P.input);
+      P.output = escapeHtml(P.output);
+      P.hint = escapeHtml(P.hint);
+    }
     res.render('addproblem', { title: 'addproblem',
                                user: req.session.user,
                                message: req.session.msg,
@@ -1736,7 +1882,9 @@ exports.problem = function(req, res) {
     });
   } else {
     var name = '', cid = parseInt(req.query.cid, 10);
-    if (req.session.user) name = req.session.user.name;
+    if (req.session.user) {
+      name = req.session.user.name;
+    }
     Solution.watch({problemID:pid, userName:name, result:2}, function(err, solution) {
       if (err) {
         OE(err);
@@ -1744,33 +1892,58 @@ exports.problem = function(req, res) {
         return res.redirect('/');
       }
       var pvl = 0;
-      if (solution) pvl = 1;
+      if (solution) {
+        pvl = 1;
+      }
       Problem.watch(pid, function(err, problem) {
         if (err) {
           OE(err);
           req.session.msg = '系统错误！';
           return res.redirect('/');
         }
+        var RP = function(U){
+          var UT, UC;
+          if (U) {
+            UT = UserTitle(U.privilege);
+            UC = UserCol(U.privilege);
+          }
+          res.render('problem', { title: 'Problem '+pid,
+                                  user: req.session.user,
+                                  message: req.session.msg,
+                                  time: (new Date()).getTime(),
+                                  key: 8,
+                                  problem: problem,
+                                  pvl: pvl,
+                                  Tag: Tag,
+                                  PT: ProTil,
+                                  cid: cid,
+                                  UT: UT,
+                                  UC: UC
+          });
+        };
         if (problem) {
           if (pvl == 0 && (name == 'admin' || problem.manager == name)) {
             pvl = 1;
           }
           if (problem.hide == true && (!req.session.user ||
             (req.session.user.name != 'admin' && req.session.user.name != problem.manager))) {
-              problem = null;
+            problem = null;
+            return RP(null);
           }
+          if (!problem.manager) {
+            problem.manager = 'admin';
+          }
+          User.watch(problem.manager, function(err, user){
+            if (err) {
+              OE(err);
+              req.session.msg = '系统错误！';
+              return res.redirect('/');
+            }
+            return RP(user);
+          });
+        } else {
+          return RP(null);
         }
-        res.render('problem', { title: 'Problem '+pid,
-                                user: req.session.user,
-                                message: req.session.msg,
-                                time: (new Date()).getTime(),
-                                key: 8,
-                                problem: problem,
-                                pvl: pvl,
-                                Tag: Tag,
-                                PT: ProTil,
-                                cid: cid
-        });
       });
     });
   }
@@ -2936,7 +3109,8 @@ exports.sourcecode = function(req, res) {
                                 time: (new Date()).getTime(),
                                 key: 11,
                                 solution: solution,
-                                flg: flg
+                                flg: flg,
+                                Res: Res
       });
     };
     if (!req.session.user) {
@@ -3574,7 +3748,7 @@ exports.topic = function(req, res) {
   if (!page || page < 0) {
     return res.redirect('/topic');
   }
-  var search = req.query.search, q1 = {}, q2 = {};
+  var search = req.query.search, q1 = {cid: -1}, q2 = {cid: -1};
 
   if (search) {
     q1.title = q2.user = new RegExp("^.*"+toEscape(search)+".*$", 'i');

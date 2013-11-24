@@ -21,6 +21,10 @@ $(document).ready(function(){
 			errAnimate($err, '内容不能为空！');
 			return false;
 		}
+		if ($submit.hasClass('disabled')) {
+			return false;
+		}
+		$submit.addClass('disabled');
 		var data = {title:title, content:content.getData()};
 		if (tid) {
 			data.tid = tid;

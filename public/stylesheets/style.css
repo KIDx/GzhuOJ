@@ -7,8 +7,12 @@ body {
     color: #555;
 }
 
-pre, input, button, select, textarea {
+input, button, select, textarea {
     font-family: "微软雅黑","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+
+pre {
+    font-size: 14px;
 }
 
 a.disabled {
@@ -54,7 +58,7 @@ td.first_blood {
     padding: 5px 10px;
     border: 1px solid #ddd;
     box-shadow: 0 1px 5px #ccc;
-    margin: 5px auto;
+    margin: 5px;
     background: #fff;
 }
 
@@ -247,6 +251,7 @@ a.user {
     border: 1px solid #ccc;
     border-radius: 3px;
     margin-bottom: 10px;
+    background: #fff;
 }
 
 .inner_topic {
@@ -990,6 +995,7 @@ h3.problem-header {
 
 #wrapper {
     min-height: 105%;
+    margin: 5px auto;
 }
 
 #problemsview {
@@ -1373,100 +1379,3 @@ div.jqfoot .btn {
     right: 3%;
     cursor: pointer;
 }
-
-/*Made by Lrelia,a little girl forever:start*/
-.container{
-    width:100%;
-    height: 3010px; /*important:The height of FAQ web page depends on it.
-    When it changes,the height of its son divs will change,too*/
-    position: relative;
-    /*border: 1px solid red; if you are unsatisfied with the layout,I suggest you to use this code.*/
-}
-.set_picture_left{
-    width: 18%; /*important:this div's width is 20% of its father div*/
-    height: 95%;
-    min-height:2670px;
-    min-width:167px;
-    position:relative; /*important:this code makes your div fit the scanner size*/
-    float: left; 
-    /*border: 1px solid red;*/
-    background-image: url(/img/picture_left.png);
-    background-size: 100%;
-    z-index: 2;
-}
-.set_picture_right{
-    width: 18%;
-    height: 95%;
-    min-height:2670px;
-    min-width:167px;
-    position:relative;
-    float: right; 
-    /*border: 1px solid red;*/
-    background-image: url(/img/picture_right.png);
-    background-size: 100%;
-    z-index: 2;
-}
-.QA{
-    width:63%;
-    height: 95%;
-    min-height:2670px;
-    min-width:550px;
-    position:relative;
-    float: left;
-   /*border: 1px solid red;*/
-    border-left:1px solid yellow;
-    border-right:1px solid yellow;
-    font-family: Trebuchet MS,Arial; 
-    color: rgb(22,163,230); /*font color*/
-    font-size: 1em;
-    z-index:3px;
-    overflow: hidden;
-}
-.left_border{
-   width:20px;
-   height:100%;
-   position:relative;
-   float: left;
-   background-image: url(/img/border.jpg);
-}
-.right_border{
-    width:20px;
-    height:100%;
-    position:relative;
-    float: right;
-    background-image: url(/img/border.jpg);
-}
-.Q{
-    width: 550px;
-    margin: 0 auto; /*this code makes your div stay in the horizontal center*/
-    padding-top:5px;
-    padding-left: 3px;
-}
-.A{
-    width:550px;
-    margin: 0 auto;
-    padding-top:5px;
-    padding-left: 3px;
-}
-.QA_img{
-    float: left;
-    height: 22px;
-    width:34px;
-}
-/*Made by Lrelia,a little girl forever:end*/
-p.MsoNormal, li.MsoNormal, div.MsoNormal {
-    margin: 0cm;
-    margin-bottom: .0001pt;
-    text-align: justify;
-    text-justify: inter-ideograph;
-    font-size: 10.5pt;
-    font-family: "微软雅黑","sans-serif";
-}
-.MsoChpDefault {
-    font-family: "微软雅黑","sans-serif";
-}
-div.WordSection1 {
-    page: WordSection1;
-}
-/*上面的样式由Microsoft Word 2013自动生成*/
-

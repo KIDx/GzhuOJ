@@ -32,9 +32,23 @@ CKEDITOR.editorConfig = function( config )
 	}, {
 		name: 'links',
 		items : [ 'Link','Unlink' ]
-	}, {
+	}, '/', {
 		name: 'insertcode',
 		items: [ 'insertcode' ]
+	}, {
+		names: 'smiley',
+		items: [ 'Smiley' ]
 	}];
 	config.extraPlugins += (config.extraPlugins ? ',insertcode' : 'insertcode');
+	//去掉左下角的body和p标签  
+	config.removePlugins = 'elementspath';
+	//表情显示每行个数
+	config.smiley_columns =10;
+	//表情自定义
+	config.smiley_descriptions = [];
+	var imgs = new Array();
+	for (var i = 1; i <= 67; i++) {
+		imgs.push(i+'.gif');
+	}
+	config.smiley_images = imgs;
 };

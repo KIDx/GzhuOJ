@@ -7,7 +7,6 @@
     <link href="/stylesheets/style.css" rel="stylesheet" type="text/css"/>
   <% if (key == 8 || key == 11 || key == 18) { %>
     <link rel="stylesheet" type="text/css" href="/highlighter/styles/shCoreEclipse.css"/>
-    <link rel="stylesheet" type="text/css" href="/highlighter/styles/shThemeEclipse.css"/>
   <% } else if (key == 1002) { %>
     <link rel="stylesheet" href="/zd/css/zebra_datepicker.css" type="text/css"/>
   <% } %>
@@ -33,8 +32,6 @@
       <% if (user.addprob == 1) { %>
         <% if (key == 1000) { %>
         <li class="active">Add Problem</li>
-        <% } else if (key == 1001) { %>
-        <li class="active">Edit Problem</li>
         <% } else { %>
         <li><a href="/addproblem">Add Problem</a></li>
         <% } %>

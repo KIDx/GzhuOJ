@@ -142,7 +142,11 @@ app.post('/updateStatus', routes.updateStatus);
 app.post('/getStatus', routes.getStatus);
 //get a page of contest ranklist
 app.post('/getRanklist', routes.getRanklist);
-//user页面的修改用户称号功能(队长以上)
+//get a page of contest discuss
+app.post('/getTopic', routes.getTopic);
+//add a discuss to contest Discuss
+app.post('/addDiscuss', routes.addDiscuss);
+//user页面，修改用户称号等重要信息(admin)
 app.post('/changePvl', routes.changePvl);
 //user页面的修改用户加题权限功能(admin)
 app.post('/changeAddprob', routes.changeAddprob);

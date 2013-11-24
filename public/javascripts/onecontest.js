@@ -513,6 +513,78 @@ function clearTimer() {
 	clearTimeout(rankTimeout);
 }
 
+var $discuss = $div.find('#discusstab')
+,	$distbody = $discuss.find('table tbody')
+,	$dislist = $('#dislist')
+,	$dislist_a
+,	discussQ = {cid:cid, page:1}
+,	discussTimeout
+,	Imgtype;
+
+function buildDiscuss(p) {
+	var html = '<tr', img;
+	if (p.user == current_user) {
+		html += ' class="highlight"';
+	}
+	html += '><td>';
+	html += '<a target="_blank" title="'+p.user+'" href="/user/'+p.user+'">';
+	if (Imgtype[p.user]) {
+		img = '/img/avatar/'+p.user+'/4.'+Imgtype[p.user];
+	} else {
+		img = '/img/avatar/%3Ddefault%3D/4.jpeg';
+	}
+	html += '<img class="img_s topic_img" alt="avatar" src="'+img+'" />'
+	html += '</a></td><td>';
+	html += '<span class="user-green">'+p.reviewsQty+'</span><span class="user-gray">/'+p.browseQty+'</span>';
+	html += '</td><td style="text-align:left;" class="ellipsis">';
+	html += '<a href="/topic/'+p.id+'">'+p.title+'</a></td>';
+	html += '<td></td></tr>';
+	return html;
+}
+
+function DiscussResponse(json) {
+	if (!json) return ;
+	Imgtype = json.pop();
+	var n = json.pop(), tps = json.pop();
+	$dislist.html(buildPager(discussQ.page, n));
+	var html;
+	if (!tps || tps.length == 0) {
+		html = '<tr><td class="error-text" colspan="6">No Records are matched.</td></tr>';
+	} else {
+		cnt = 1;
+		html = $.map(tps, buildDiscuss).join('');
+	}
+	if ($dislist_a && $dislist_a.length) {
+		$dislist_a.unbind('click');
+	}
+	$distbody.html( html );
+	$dislist_a = $dislist.find('a');
+	$dislist_a.click(function(){
+		if ($(this).parent().hasClass('active') || $(this).parent().hasClass('disabled'))
+			return false;
+		discussQ.page = $(this).parent().attr('id');
+		GetDiscuss();
+	});
+	$discuss.fadeIn(100);
+}
+
+function GetDiscuss() {
+	clearTimeout(discussTimeout);
+	discussTimeout = setTimeout(function(){
+		if (discussQ.page) {
+			window.location.hash = '#discuss-'+discussQ.page;
+		}
+		$.ajax({
+			type: 'POST',
+			url: '/getTopic',
+			dataType: 'json',
+			data: discussQ,
+			timeout: 5000
+		})
+		.done(DiscussResponse);
+	}, interceptorTime);
+}
+
 function run(str, key) {
 	if (!str) str = 'overview'
 	window.location.hash = '#'+str;
@@ -560,6 +632,18 @@ function run(str, key) {
 			$rank.hide();
 			if (b) rankQ.page = parseInt(b, 10);
 			GetRanklist();
+			PreTab = 0;
+			break;
+		}
+		case 'discuss': {
+			if (WATCH == 0) break;
+			if (key == 1) {
+				$overview.hide();
+				$tablink.eq(4).parent().addClass('active');
+				$discuss.addClass('active');
+			}
+			$discuss.hide();
+			GetDiscuss();
 			PreTab = 0;
 			break;
 		}
@@ -646,6 +730,10 @@ function runContest() {
 				$rank.hide();
 				break;
 			}
+			case 'discuss': {
+				$discuss.hide();
+				break;
+			}
 			default: {
 				$overview.hide();
 				break;
@@ -707,12 +795,12 @@ var $SubmitDialog = $('#submitdialog')
 $(document).ready(function(){
 	$.each($sublink, function(i, p) {
 		$(p).click(function(){
-			if ($logindialog.length > 0) {
+			if ($logindialog.length) {
 				nextURL = '';
 				$logindialog.jqmShow();
 				return false;
 			}
-			if ($SubmitDialog.length == 0) {
+			if (!$SubmitDialog.length) {
 				ShowMessage('You can not submit because you have not registered the contest yet!');
 				return false;
 			}
@@ -725,8 +813,7 @@ $(document).ready(function(){
 		});
 	});
 
-	if ($SubmitDialog.length > 0) {
-
+	if ($SubmitDialog.length) {
 		$SubmitDialog.jqm({
 			overlay: 30,
 			trigger: false,
@@ -741,11 +828,12 @@ $(document).ready(function(){
 				h.o.fadeOut(200);
 			}
 		}).jqDrag('.jqDrag').jqResize('.jqResize');
-
+		var $submit_code = $SubmitDialog.find('textarea')
+		,	$submit_err = $SubmitDialog.find('span#error');
 		$SubmitDialog.find('a#jqcodesubmit').click(function(){
-			var code = $SubmitDialog.find('textarea').val();
+			var code = $submit_code.val();
 			if (code.length < 50 || code.length > 65536) {
-				$SubmitDialog.find('span#error').text('the length of code must be between 50B to 65535B');
+				errAnimate($submit_err, 'the length of code must be between 50B to 65535B');
 				return false;
 			}
 			$.post('/submit', {
@@ -858,4 +946,40 @@ $(document).ready(function(){
 			});
 		});
 	}
+});
+
+//add discuss
+var $publish = $('#publish')
+,	$publish_pid = $('#publish_pid')
+,	$publish_err = $('#publish_err')
+,	$publish_title = $('#publish_title')
+,	$publish_content = $('#publish_content');
+
+$(document).ready(function(){
+	$publish.click(function(){
+		var title = JudgeString($publish_title.val());
+		if (!title) {
+			errAnimate($publish_err, '标题不能为空！');
+			return false;
+		}
+		var content = JudgeString($publish_content.attr('value'));
+		if (!content) {
+			errAnimate($publish_err, '内容不能为空！');
+			return false;
+		}
+		if ($publish.hasClass('disabled')) {
+			return false;
+		}
+		$publish.addClass('disabled');
+		$.post('/addDiscuss', {cid: cid, title:$publish_pid.val()+'题：'+title, content:content}, function(res){
+			if (!res) {
+				GetDiscuss();
+				ShowMessage('发表成功！');
+			} else if (res == '1') {
+				ShowMessage('系统错误！');
+			} else if (res == '2') {
+				window.location.href = '/';
+			}
+		});
+	});
 });

@@ -142,23 +142,22 @@ var $footTime = $('span#timer')
 
 var current_user = $footTime.attr('user');
 
-var current_time;
-var contest_type = $footTime.attr('type');
-var curren_second = parseInt($footTime.attr('time'));
+var current_time
+,   contest_type = $footTime.attr('type')
+,   curren_second = parseInt($footTime.attr('time'));
 
 var $finput = $('input[type="text"], textarea').eq(1);
 
 var Msg = $footTime.attr('msg');
 
-var $logindialog = $('div#logindialog');
-var $logininput = $logindialog.find('input');
-var $loginerr = $logindialog.find('small#login_error');
-var $loginsubmit = $logindialog.find('a#login_submit');
+var $logindialog = $('div#logindialog')
+,   $logininput = $logindialog.find('input')
+,   $loginerr = $logindialog.find('small#login_error')
+,   $loginsubmit = $logindialog.find('a#login_submit');
 
 var $checklogin = $('a.checklogin, button.checklogin');
 
 var $regdialog = $('div#regdialog');
-var $setdialog = $('div#setdialog')
 
 var $logout = $('a#logout');
 
@@ -347,13 +346,7 @@ $(document).ready(function(){
             });
         });
 
-        $.each($logininput, function(){
-            $(this).keyup(function(e){
-                if (e.keyCode == 13) {
-                    $loginsubmit.click();
-                }
-            });
-        });
+        simulateClick($logininput, $loginsubmit);
     }
 
     //logout
@@ -467,6 +460,11 @@ $(document).ready(function(){
                 errAnimate($regerr, 'the length of nickname should be no more than 20!');
                 return false;
             }
+            var school = JudgeString($reginput.eq(4).val());
+            if (school.length > 50) {
+                errAnimate($regerr, 'the length of school should be no more than 50!');
+                return false;
+            }
             var email = JudgeString($reginput.eq(5).val());
             if (email) {
                 pattern = new RegExp("^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,4}$");
@@ -475,19 +473,28 @@ $(document).ready(function(){
                     return false;
                 }
             }
-            if (!$reginput.eq(6).val()) {
+            if (email.length > 50) {
+                errAnimate($regerr, 'the length of email should be no more than 50!');
+                return false;
+            }
+            var signature = JudgeString($regdialog.find('textarea').attr('value'));
+            if (signature.length > 200) {
+                errAnimate($regerr, 'the length of signature should be no more than 200!');
+                return false;
+            }
+            var vcode = JudgeString($('#reg_vcode').val());
+            if (!vcode) {
                 errAnimate($regerr, '验证码不能为空!');
                 return false;
             }
-
             $.post('/doReg', {
                 username: username,
                 password: password,
                 nick: nick,
-                school: JudgeString($reginput.eq(4).val()),
+                school: school,
                 email: email,
-                signature: JudgeString($regdialog.find('textarea').attr('value')),
-                vcode: $('#reg_vcode').val()
+                signature: signature,
+                vcode: vcode
             }, function(res){
                 if (!res) {
                      window.location.reload(true);
@@ -502,97 +509,7 @@ $(document).ready(function(){
                 }
             });
         });
-
-        $reginput.keyup(function(e){
-            if (e.keyCode == 13) {
-                $regsubmit.click();
-            }
-            return false;
-        });
-    }
-    //settings
-    if ($setdialog.length > 0) {
-        var $setinput = $setdialog.find('input');
-        var $seterr = $setdialog.find('small#set_error');
-        var $setsubmit = $setdialog.find('#set_submit');
-
-        $setdialog.jqm({
-            overlay: 30,
-            trigger: $('a#set'),
-            modal: true,
-            closeClass: 'setclose',
-            onShow: function(h) {
-                h.o.fadeIn(200);
-                h.w.fadeIn(200);
-            },
-            onHide: function(h) {
-                h.w.fadeOut(200);
-                h.o.fadeOut(200);
-            }
-        }).jqDrag('.jqDrag').jqResize('.jqResize');
-
-        $setsubmit.click(function(){
-            var oldpassword = $setinput.eq(0).val();
-            if (!oldpassword) {
-                errAnimate($seterr, 'Old Password can not be empty!');
-                return false;
-            }
-            var password = $setinput.eq(1).val();
-            var repeat = $setinput.eq(2).val();
-            if (repeat != password) {
-                errAnimate($seterr, 'Two New Passwords are not the same!');
-                return false;
-            }
-            if (password == oldpassword) {
-                errAnimate($seterr, 'New Password should not be the same as the old one!');
-                return false;
-            }
-            var nick = JudgeString($setinput.eq(3).val());
-            if (!nick) {
-                errAnimate($seterr, 'Nick Name can not be empty!');
-                return false;
-            }
-            if (nick.length > 20) {
-                errAnimate($seterr, 'The length of Nick Name should be no more than 20!');
-                return false;
-            }
-            var email = $setinput.eq(5).val();
-            if (email) {
-                pattern = new RegExp("^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,4}$");
-                if (!pattern.test(email)) {
-                    errAnimate($seterr, 'The format of Email is not True!');
-                    return false;
-                }
-            }
-            $.post('/changeInfo', {
-                name: $setdialog.attr('name'),
-                oldpassword: oldpassword,
-                password: password,
-                nick: nick,
-                school: $setinput.eq(4).val(),
-                email: email,
-                signature: $setdialog.find('textarea').attr('value')
-            }, function(res){
-                if (res == 'F') {
-                    window.location.reload(true);
-                    return ;
-                }
-                errAnimate($seterr, 'The Old Password is not True!');
-            });
-        });
-
-        $setinput.keyup(function(e){
-            if (e.keyCode == 13) {
-                $setsubmit.click();
-            }
-            return false;
-        });
-    }
-
-    //sourcecode
-    if ($sverdict.length > 0) {
-        $sverdict.after(Res(parseInt($sverdict.attr('res'))));
-        $sverdict.remove();
+        simulateClick($reginput, $regsubmit);
     }
 });
 

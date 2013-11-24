@@ -69,6 +69,11 @@
           <span>Rank</span>
         </a>
       </li>
+      <li class="hidden">
+        <a href="#discuss" data-target="#discusstab" data-toggle="tab">
+          <span>Discuss</span>
+        </a>
+      </li>
     </ul>
     <div class="tab-content">
 <!--overviewtab-->
@@ -307,6 +312,71 @@
             </table>
           </div>
         </div>
+      </div>
+<!-- discusstab -->
+      <div class="tab-pane" id="discusstab" style="margin:0px 10px;">
+        <div class="tablebg">
+          <div class="fr" style="margin:5px;">
+            <span class="user user-gray">Clarifications</span>
+          </div>
+          <div id="dislist" class="pagination pagination-small">
+          </div>
+          <div id="tablediv">
+            <table class="table" style="table-layout:fixed;" id="contest">
+              <thead>
+                <tr>
+                  <th style="width:60px;"></th>
+                  <th style="width:10%;">回复/浏览</th>
+                  <th style="text-align:left;">标题</th>
+                  <th style="width:15%;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="odd">
+                  <td class="error-text" colspan="6">No Topics are matched.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% if (user && isContestant) { %>
+        <div class="topic_box form-horizontal">
+          <div class="header">
+            <span class="user user-gray">发表疑问</span>
+            <span class="user user-green">（只能提问关于题目描述不清的问题，如："n的范围是多少？"，"x是整数吗？"等等，严禁讨论题目答案）</span>
+          </div>
+          <div class="inner_topic">
+            <div class="control-group">
+              <label class="control-label" for="publish_pid"><span class="user user-gray">题号：</span></label>
+              <div class="controls">
+                <select class="input-mini" id="publish_pid">
+                <% for (var i = 0; i < contest.probs.length; i++) { %>
+                  <option value="<%= F[i] %>"><%= F[i] %></option>
+                <% } %>
+                </select>
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="publish_title"><span class="user user-gray">标题：</span></label>
+              <div class="controls">
+                <input type="text" id="publish_title" class="input-xlarge" />
+              </div>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="publish_content"><span class="user user-gray">内容：</span></label>
+              <div class="controls">
+                <textarea id="publish_content" rows="5" style="width:400px;"></textarea>
+              </div>
+            </div>
+            <div class="control-group">
+              <div class="controls">
+                <a style="margin:0;" class="uibtn" href="javascript:;" id="publish">发表</a>
+                <span class="error-text" id="publish_err"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
       </div>
     </div>
 <!---->

@@ -32,7 +32,7 @@
           <tr>
             <th style="width:60px;"></th>
             <th style="width:10%;">回复/浏览</th>
-            <th>标题</th>
+            <th style="text-align:left;">标题</th>
             <th style="width:15%;"></th>
           </tr>
         </thead>
@@ -43,10 +43,16 @@
           </tr>
           <% } else { %>
           <% topics.forEach(function(p, i){ %>
-          <tr>
+          <% var img; %>
+          <% if (I[p.user]) { %>
+          <% img = '/img/avatar/'+p.user+'/4.'+I[p.user]; %>
+          <% } else { %>
+          <% img = '/img/avatar/%3Ddefault%3D/4.jpeg'; %>
+          <% } %>
+          <tr <% if (user && user.name == p.user) { %>class="highlight"<% } %>>
             <td>
               <a title="<%= p.user %>" href="/user/<%= p.user %>">
-                <img class="img_s topic_img" alt="avatar" src="/img/avatar/<%= p.user %>/4.<%= I[p.user] %>" />
+                <img class="img_s topic_img" alt="avatar" src="<%= img %>" />
               </a>
             </td>
             <td>

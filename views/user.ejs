@@ -73,7 +73,7 @@
       <div><span class="user-gray" title="nick name"><%= u.nick %></span></div>
       <ul class="user-info">
       <% if(u.signature) { %>
-        <li>Signature: <%= u.signature %></li>
+        <li style="word-break:break-all;">Signature: <%= u.signature %></li>
       <% } %>
       <% if (u.name != 'admin') { %>
         <li>Rank: <%= u.rank %></li>

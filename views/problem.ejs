@@ -112,8 +112,11 @@
           <% if (user.name == 'admin'|| user.name == problem.manager) { %><a class="uibtn" href="javascript:;" id="rejudge">Rejudge</a><% } %>
         <% } %>
       </div>
-  <% var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Output', 'Hint', 'Source', 'Manager']; %>
-  <% var q = [problem.description, problem.input, problem.output, problem.sampleInput, problem.sampleOutput, problem.hint, problem.source, problem.manager]; %>
+  <% var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Output', 'Hint', 'Source', 'Manager'], tmp; %>
+  <% if (UC) { %>
+  <% tmp = '<a href="/user/'+problem.manager+'" title="'+UT+'" class="user user-'+UC+'">'+problem.manager+'</a>'; %>
+  <% } %>
+  <% var q = [problem.description, problem.input, problem.output, problem.sampleInput, problem.sampleOutput, problem.hint, problem.source, tmp]; %>
   <% for (var i in S) if (q[i]) { %>
       <h4><%= S[i] %></h4>
       <div class="accordion-inner ">

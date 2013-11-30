@@ -16,21 +16,14 @@
     <a style="margin-left:10px;" href="javascript:;" id="submit" class="uibtn">提交审核</a>
   <% } %>
   </div>
-<% if (pvl) { %>
-  <div id="change-grade">
-    <input type="text" class="input-medium" placeholder="用户名">
-    <input type="text" class="input-small" placeholder="班别">
-    <a id="change" class="uibtn" href="javascript:;">修改该用户班别</a>
-  </div>
-<% } %>
   <div class="tablebg">
     <div id="pager">
       <%- partial('pager', {page:page, n:n}) %>
       <div class="fr" id="filter">
         <div>
         <% if (left > 0 && (!user || user.name != 'admin')) { %>
-          <button id="signup" class="error-text">我要报名</button>
-          <span class="user-gray">（注：重复报名可修改信息并重新审核）</span>
+          <a href="javascript:;" class="uibtn uibtn-mini user-green" id="signup">我要报名</a>
+          <span class="user user-green">（注：重复报名可修改信息并重新审核）</span>
         <% } %>
         </div>
         <div class="input-prepend">
@@ -38,10 +31,10 @@
           <input type="text" id="search" <% if (search) { %>value="<%= search %>"<% } %> placeholder=" 用户名 or 姓名" title="用户名或姓名">
         </div>
         <div>
-          <button id="fil">Filter</button>
+          <a href="javascript:;" class="uibtn uibtn-mini" id="fil">Filter</a>
         </div>
         <div>
-          <button id="reset">Reset</button>
+          <a href="javascript:;" class="uibtn uibtn-mini" id="reset">Reset</a>
         </div>
       </div>
     </div>
@@ -78,7 +71,7 @@
           </tr>
         <% } else { %>
           <% regs.forEach(function(p, i){ %>
-          <% var c, sex = '男', status = 'Accepted', sc = 'success-text'; %>
+          <% var c, sex = '男', status = 'Accepted', sc = 'accept-text'; %>
           <% if (p.sex == '1') { %>
           <% sex = '女'; c = 'girllight'; %>
           <% } else if (i % 2 == 1) { %>
@@ -87,9 +80,9 @@
           <% c = 'odd'; %>
           <% } %>
           <% if (p.status == '0') { %>
-          <% status = 'Pending...'; sc = 'info-text'; %>
+          <% status = '等待审核...'; sc = 'info-text'; %>
           <% } else if (p.status == '1') { %>
-          <% status = 'Rejected'; sc = 'error-text'; %>
+          <% status = 'Rejected'; sc = 'wrong-text'; %>
           <% } %>
           <tr class="<%= c %>">
             <td><%= p.regID %></td>
@@ -106,13 +99,13 @@
             <td><%= p.regTime %></td>
             <% if (pvl) { %>
               <% if (p.status != '0') { %>
-              <td colspan="2"><span class=<%= sc %>><%= status %></span></td>
+              <td colspan="2" class="bold <%= sc %>"><%= status %></td>
               <% } else { %>
               <td><input type="checkbox" rid="<%= p.regID %>"/></td>
               <td><input type="checkbox" rid="<%= p.regID %>"/></td>
               <% } %>
             <% } else { %>
-              <td><span class=<%= sc %>><%= status %></span></td>
+              <td class="bold <%= sc %>"><%= status %></td>
             <% } %>
           </tr>
           <% }); %>

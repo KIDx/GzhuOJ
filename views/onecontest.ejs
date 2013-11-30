@@ -50,27 +50,27 @@
   <div id="thumbnail" class="tabbable thumbnail" style="width:960px;">
     <ul class="nav nav-tabs">
       <li style="padding-left:10px;">
-        <a href="#overview" data-target="#overviewtab" data-toggle="tab">
+        <a href="#overview" class="tablink">
           <span>Overview</span>
         </a>
       </li>
       <li class="hidden">
-        <a href="#problem-A" data-target="#problemtab" data-toggle="tab">
+        <a href="#problem-A" class="tablink">
           <span>Problem</span>
         </a>
       </li>
       <li class="hidden">
-        <a href="#status" data-target="#statustab" data-toggle="tab">
+        <a href="#status" class="tablink">
           <span>Status</span>
         </a>
       </li>
       <li class="hidden">
-        <a href="#rank" data-target="#ranktab" data-toggle="tab">
+        <a href="#rank" class="tablink">
           <span>Rank</span>
         </a>
       </li>
       <li class="hidden">
-        <a href="#discuss" data-target="#discusstab" data-toggle="tab">
+        <a href="#discuss" class="tablink">
           <span>Discuss</span>
         </a>
       </li>
@@ -82,28 +82,28 @@
           <table class="table table-head thright" id="overviewtable">
             <tr>
               <th width="20%">Current Time:</th>
-              <td id="contest_current"></td>
+              <td class="bold user-gray" id="contest_current"></td>
               <th width="21%">Contest Type:</th>
               <td>
               <% if (contest.password) { %>
-                <span class="user-green">Private</span>
+                <span class="user user-green">Private</span>
               <% } else { %>
-                <span class="user-blue">Public</span>
+                <span class="user user-blue">Public</span>
               <% } %>
               </td>
             </tr>
             <tr>
               <th>Start Time:</th>
-              <td><%= contest.startTime %>:00</td>
+              <td class="bold user-gray"><%= contest.startTime %>:00</td>
               <th>Contest Status:</th>
-              <td class="<%= c %>-text"><%= s %></td>
+              <td class="bold <%= c %>-text"><%= s %></td>
             </tr>
             <tr>
               <th>End Time:</th>
-              <td><%= getDate(new Date(startTime+contest.len*60000)) %></td>
+              <td class="bold user-gray"><%= getDate(new Date(startTime+contest.len*60000)) %></td>
               <th>Manager:</th>
               <td>
-                <a class="user user-gray" title="check his/her infomation" href="/user/<%= contest.userName %>">
+                <a class="user user-<%= MC %>" title="<%= MT %>" href="/user/<%= contest.userName %>">
                   <%= contest.userName %>
                 </a>
               </td>

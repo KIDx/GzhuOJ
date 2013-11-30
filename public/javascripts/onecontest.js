@@ -67,7 +67,8 @@ var $status = $div.find('#statustab')
 ,	$plink
 ,	statusQ = { cid:cid, page:1 }
 ,	searchTimeout
-,	Users;
+,	Users
+,	statusAjax;
 
 function bindstatusQ() {
 	var $af = $('a[res]');
@@ -140,7 +141,7 @@ function buildRow(sol) {
 }
 
 function Response(json) {
-	if (!json) return ;
+	if (!statusAjax || !json || !isActive(2)) return ;
 	Users = json.pop();
 	var n = json.pop(), sols = json.pop();
 	$list.html(buildPager(statusQ.page, n));
@@ -180,16 +181,17 @@ function Response(json) {
 function GetStatus() {
 	clearTimeout(searchTimeout);
 	searchTimeout = setTimeout(function(){
-		var ts = JudgeString($search.val()), tp = $pid.val(), tr = $result.val();
-		window.location.hash = '#status-' + ts + '-' + tp + '-' + tr;
-		if (statusQ.page) window.location.hash += '-' + statusQ.page;
+		var ts = JudgeString($search.val()), tp = $pid.val(), tr = $result.val()
+		,	hash = '#status-' + ts + '-' + tp + '-' + tr;
+		if (statusQ.page) hash += '-' + statusQ.page;
+		window.location.hash = hash;
 		if (tp == 'nil') tp = '';
 		else tp = fmap[tp];
 		if (tr == 'nil') tr = '';
 		statusQ.name = ts;
 		statusQ.pid = tp;
 		statusQ.result = tr;
-		$.ajax({
+		statusAjax = $.ajax({
 			type: 'POST',
 			url: '/getStatus',
 			dataType: 'json',
@@ -208,8 +210,20 @@ function index(pid) {
 }
 
 var $hid = $('div.hidden, li.hidden')
-,	$tablink = $div.find('a[data-toggle="tab"]')
+,	$tablink = $div.find('a.tablink')
 ,	WATCH = 0;
+
+function isActive(i) {
+	return $tablink.eq(i).parent().hasClass('active');
+}
+
+function doActive(i) {
+	$tablink.eq(i).parent().addClass('active');
+}
+
+function noActive(i) {
+	$tablink.eq(i).parent().removeClass('active');
+}
 
 //overview
 var $overview = $div.find('#overviewtab')
@@ -218,10 +232,11 @@ var $overview = $div.find('#overviewtab')
 ,	$pidtext = $('span.cpid')
 ,	$clone = $('#clone')
 ,	prob_num = $pidtext.length
-,	overviewTimeout;
+,	overviewTimeout
+,	overviewAjax;
 
 function OverviewResponse(json) {
-	if (!json) return ;
+	if (!overviewAjax || !json || !isActive(0)) return ;
 	var sols = json.pop(), res = json.pop();
 	if (sols) {
 		$.each(sols, function(i, p){
@@ -261,7 +276,7 @@ function OverviewResponse(json) {
 function GetOverview() {
 	clearTimeout(overviewTimeout);
 	overviewTimeout = setTimeout(function(){
-		$.ajax({
+		overviewAjax = $.ajax({
 			type 		: 'POST',
 			url 		: '/getOverview',
 			dataType 	: 'json',
@@ -285,7 +300,8 @@ var $problem = $div.find('#problemtab')
 ,	$link = $('a.splink')
 ,	F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ,	ID, problemTimeout
-,	ProblemAPI = {};
+,	ProblemAPI = {}
+,	problemAjax;
 
 var $content = $('#content');
 
@@ -295,6 +311,7 @@ var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Outpu
 ,	$rejudge = $('#rejudge');
 
 function ProblemsResponse(prob) {
+	if (!problemAjax || !prob || !isActive(1)) return ;
 	if (!ProblemAPI[ID]) ProblemAPI[ID] = prob;
 	$title.eq(0).text( F.charAt(ID) );
 	$title.eq(1).text( $pidtext.eq(ID).text() );
@@ -339,8 +356,11 @@ function ProblemsResponse(prob) {
 			});
 		});
 	}
-	if (PreTab == 1) $probcontain.fadeIn(200);
-	else $problem.fadeIn(200);
+	if (PreTab == 1) {
+		$probcontain.fadeIn(200);
+	} else {
+		$problem.fadeIn(200);
+	}
 	PreTab = 1;
 }
 
@@ -353,7 +373,7 @@ function GetProblem() {
 		if (ProblemAPI[ID]) {
 			ProblemsResponse(ProblemAPI[ID]);
 		} else {
-			$.ajax({
+			problemAjax = $.ajax({
 				type: 'POST',
 				url: '/getProblem',
 				dataType: 'json',
@@ -378,7 +398,8 @@ var $rank = $div.find('#ranktab')
 ,	rankQ = {cid:cid, page:1}
 ,	rank = 1
 ,	rankTimeout
-,	FB = {};
+,	FB = {}
+,	rankAjax;
 
 function buildRank(U) {
 	var user = U.value, html = '<tr class="';
@@ -454,7 +475,7 @@ function buildRank(U) {
 }
 
 function RankResponse(json) {
-	if (!json) return ;
+	if (!rankAjax || !json || !isActive(3)) return ;
 	rank = parseInt(json.pop(), 10);
 	FB = json.pop();
 	$ranklist.html( buildPager(rankQ.page, json.pop()) );
@@ -462,7 +483,7 @@ function RankResponse(json) {
 	Users = json.pop();
 	var users = json.pop();
 	if (!users || users.length == 0) {
-		html = '<tr class="odd"><td class="error-text center" colspan="'+(5+prob_num)+'">No Submits till Now.</tr>';
+		html = '<tr class="odd"><td class="error-text center" colspan="'+(5+prob_num)+'">No Records till Now.</tr>';
 	} else {
 		cnt = 1;
 		html = $.map(users, buildRank).join('');
@@ -495,7 +516,7 @@ function GetRanklist() {
 		if (rankQ.page) {
 			window.location.hash = '#rank-'+rankQ.page;
 		}
-		$.ajax({
+		rankAjax = $.ajax({
 			type: 'POST',
 			url: '/getRanklist',
 			dataType: 'json',
@@ -519,7 +540,8 @@ var $discuss = $div.find('#discusstab')
 ,	$dislist_a
 ,	discussQ = {cid:cid, page:1}
 ,	discussTimeout
-,	Imgtype;
+,	Imgtype
+,	discussAjax;
 
 function buildDiscuss(p) {
 	var html = '<tr', img;
@@ -543,7 +565,7 @@ function buildDiscuss(p) {
 }
 
 function DiscussResponse(json) {
-	if (!json) return ;
+	if (!discussAjax || !json || !isActive(4)) return ;
 	Imgtype = json.pop();
 	var n = json.pop(), tps = json.pop();
 	$dislist.html(buildPager(discussQ.page, n));
@@ -574,7 +596,7 @@ function GetDiscuss() {
 		if (discussQ.page) {
 			window.location.hash = '#discuss-'+discussQ.page;
 		}
-		$.ajax({
+		discussAjax = $.ajax({
 			type: 'POST',
 			url: '/getTopic',
 			dataType: 'json',
@@ -586,23 +608,28 @@ function GetDiscuss() {
 }
 
 function run(str, key) {
+	clearAjax();
 	if (!str) str = 'overview'
 	window.location.hash = '#'+str;
 	var sp = str.split('-');
 	var a = sp[0], b = sp[1], c = sp[2], d = sp[3], e = sp[4];
 	ID = 0;
 	clearTimer();
+	if (a != 'problem' || !PreTab) {
+		hideAll();
+	}
+	for (var i = 0; i < 5; i++) {
+		noActive(i);
+	}
 	switch(a) {
 		case 'problem': {
 			if (WATCH == 0) break;
 			if (b) ID = b.charCodeAt(0)-65;
 			if (key == 1) {
 				$overview.hide();
-				$tablink.eq(1).parent().addClass('active');
-				$problem.addClass('active');
 			}
+			doActive(1);
 			if (PreTab == 1) $probcontain.hide();
-			else $problem.hide();
 			GetProblem();
 			break;
 		}
@@ -610,10 +637,8 @@ function run(str, key) {
 			if (WATCH == 0) break;
 			if (key == 1) {
 				$overview.hide();
-				$tablink.eq(2).parent().addClass('active');
-				$status.addClass('active');
 			}
-			$status.hide();
+			doActive(2);
 			if (b) $search.val(b);
 			if (c) $pid.val(c);
 			if (d) $result.val(d);
@@ -626,10 +651,8 @@ function run(str, key) {
 			if (WATCH == 0) break;
 			if (key == 1) {
 				$overview.hide();
-				$tablink.eq(3).parent().addClass('active');
-				$rank.addClass('active');
 			}
-			$rank.hide();
+			doActive(3);
 			if (b) rankQ.page = parseInt(b, 10);
 			GetRanklist();
 			PreTab = 0;
@@ -639,19 +662,14 @@ function run(str, key) {
 			if (WATCH == 0) break;
 			if (key == 1) {
 				$overview.hide();
-				$tablink.eq(4).parent().addClass('active');
-				$discuss.addClass('active');
 			}
-			$discuss.hide();
+			doActive(4);
 			GetDiscuss();
 			PreTab = 0;
 			break;
 		}
 		default: {
-			if (key == 1) {
-				$tablink.eq(0).parent().addClass('active');
-				$overview.addClass('active');
-			}
+			doActive(0);
 			$overview.hide();
 			if (key == 1 && WATCH == 0) {
 				$overview.fadeIn(100);
@@ -710,36 +728,15 @@ function runContest() {
 		run($(this).attr('href').split('#')[1], 2);
 	});
 
-	$tablink.on('show', function(e){
-		//e.target;			// activated tab
-		//e.relatedTarget	// previous tab
-		var href;
-		if (e.relatedTarget) {
-			href = $(e.relatedTarget).attr('href').split('#')[1].split('-')[0];
-		}
-		switch(href) {
-			case 'problem': {
-				$problem.hide();
-				break;
+	$.each($tablink, function(i, p){
+		$(p).click(function(){
+			if ($(this).parent().hasClass('active')) {
+				return false;
 			}
-			case 'status': {
-				$status.hide();
-				break;
-			}
-			case 'rank': {
-				$rank.hide();
-				break;
-			}
-			case 'discuss': {
-				$discuss.hide();
-				break;
-			}
-			default: {
-				$overview.hide();
-				break;
-			}
-		}
-		run($(e.target).attr('href').split('#')[1], 2);
+			var tmp = $(this).attr('href').split('#')[1]
+			,	href = tmp.split('-')[0];
+			run(tmp, 2);
+		});
 	});
 
 	if (status > 0 || $contest.attr('watch')) {
@@ -853,10 +850,6 @@ $(document).ready(function(){
 					ShowMessage('You can not submit because you have not registered the contest yet!');
 				} else if (err == '3') {
 					ShowMessage('系统错误！');
-				}
-				statusInit();
-				if (ctype == 2 && current_user) {
-					$search.val(current_user);
 				}
 				$tablink.eq(2).click();
 			});
@@ -983,3 +976,19 @@ $(document).ready(function(){
 		});
 	});
 });
+
+function hideAll() {
+	$problem.hide();
+	$status.hide();
+	$rank.hide();
+	$discuss.hide();
+	$overview.hide();
+}
+
+function clearAjax() {
+	if (overviewAjax) overviewAjax.abort();
+	if (problemAjax) problemAjax.abort();
+	if (statusAjax) statusAjax.abort();
+	if (rankAjax) rankAjax.abort();
+	if (discussAjax) discussAjax.abort();
+}

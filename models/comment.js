@@ -77,12 +77,3 @@ Comment.update = function(tid, H, callback){
     return callback(err);
   });
 };
-
-Comment.dele = function(Q, callback){
-  comments.findOneAndRemove(Q, function(err){
-    if (err) {
-      OE('Comment.dele failed');
-    }
-    return callback(err);
-  });
-};

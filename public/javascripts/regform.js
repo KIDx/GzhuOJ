@@ -107,7 +107,7 @@ $(document).ready(function(){
 	});
 	simulateClick($search, $fil);
 	$('#reset').click(function(){
-		window.location.href = '/contest/'+type;
+		window.location.href = '/regform/'+type;
 	});
 
 	//bind checkbox
@@ -131,42 +131,42 @@ $(document).ready(function(){
 				h.o.fadeOut(200);
 			}
 		}).jqDrag('.jqDrag').jqResize('.jqResize');
-
-		$('#signup').click(function(){
-			if ($logindialog.length > 0) {
-				nextURL = '';
-				$logindialog.jqmShow();
-				return false;
-			}
-			$reglog.jqmShow();
-			$number.val($number.val());
-			$regc_submit.unbind('click');
-			$regc_submit.click(function(){
-				var num = $number.val();
-				if (!num) {
-					errAnimate($regerr, '学号不能为空!');
-					return false;
-				}
-				var name = $realname.val();
-				if (!name) {
-					errAnimate($regerr, '姓名不能为空!');
-					return false;
-				}
-				$.post('/doRegCon', {
-					cid: type,
-				    number: num,
-				    realname: name,
-				    sex: $reglog.find('#sex').val(),
-				    college: $reglog.find('#college').val(),
-				    grade: $('#grade').val()+$('#class').val()
-				}, function(){
-					window.location.reload(true);
-				});
-			});
-		});
 		simulateClick($number, $regc_submit);
 		simulateClick($realname, $regc_submit);
 	}
+
+	$('#signup').click(function(){
+		if ($logindialog.length > 0) {
+			nextURL = '';
+			$logindialog.jqmShow();
+			return false;
+		}
+		$reglog.jqmShow();
+		$number.val($number.val());
+		$regc_submit.unbind('click');
+		$regc_submit.click(function(){
+			var num = $number.val();
+			if (!num) {
+				errAnimate($regerr, '学号不能为空!');
+				return false;
+			}
+			var name = $realname.val();
+			if (!name) {
+				errAnimate($regerr, '姓名不能为空!');
+				return false;
+			}
+			$.post('/doRegCon', {
+				cid: type,
+			    number: num,
+			    realname: name,
+			    sex: $reglog.find('#sex').val(),
+			    college: $reglog.find('#college').val(),
+			    grade: $('#grade').val()+$('#class').val()
+			}, function(){
+				window.location.reload(true);
+			});
+		});
+	});
 });
 
 //change grade

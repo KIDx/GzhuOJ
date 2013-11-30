@@ -158,8 +158,6 @@ app.post('/editTag', routes.editTag);
 app.post('/rejudge', routes.rejudge);
 //VIPContest增加指定用户
 app.post('/regContestAdd', routes.regContestAdd);
-//修改某用户报名信息
-app.post('/changeGrade', routes.changeGrade);
 //上传图片
 app.post('/imgUpload', routes.imgUpload);
 //上传头像

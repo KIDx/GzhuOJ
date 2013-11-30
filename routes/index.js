@@ -185,13 +185,18 @@ function getTime(n) {
     if (m < 10) m = '0' + m;
     return (Y+'-'+M+'-'+D+' '+h+':'+m);
   }
-  var m = now.getMonth() - date.getMonth();
-  if (m > 0) {
-    return (m+'个月前');
-  }
-  var d = now.getDate() - date.getDate();
-  if (d > 0) {
-    return (d+'天前');
+  var m = now.getMonth() - date.getMonth()
+  ,   d = now.getDate() - date.getDate();
+  if (m > 0 || d > 0) {
+    var M = date.getMonth()+1;
+    if (M < 10) M = '0' + M;
+    var D = date.getDate();
+    if (D < 10) D = '0' + D;
+    var h = date.getHours();
+    if (h < 10) h = '0' + h;
+    var m = date.getMinutes();
+    if (m < 10) m = '0' + m;
+    return (M+'-'+D+' '+h+':'+m);
   }
   var h = now.getHours() - date.getHours();
   if (h > 0) {
@@ -554,22 +559,24 @@ exports.getRanklist = function(req, res) {
             var val = { solved: 0, penalty: 0, status: {} };
             for (var j = vals.length-1; j >= 0; j--) {
               p = vals[j];
-              for (var i in p.status) {
-                var o = p.status[i];
-                if (!val.status[i]) {
-                  if (o.wa >= 0) {
-                    val.solved++;
-                    val.penalty += o.wa*20 + o.inDate;
-                  }
-                  val.status[i] = o;
-                } else if (val.status[i].wa < 0) {
-                  if (o.wa >= 0) {
-                    val.solved++;
-                    val.status[i].wa = o.wa - val.status[i].wa;
-                    val.status[i].inDate = o.inDate;
-                    val.penalty += val.status[i].wa*20 + o.inDate;
-                  } else {
-                    val.status[i].wa += o.wa;
+              if (p.status) {
+                for (var i in p.status) {
+                  var o = p.status[i];
+                  if (!val.status[i]) {
+                    if (o.wa >= 0) {
+                      val.solved++;
+                      val.penalty += o.wa*20 + o.inDate;
+                    }
+                    val.status[i] = o;
+                  } else if (val.status[i].wa < 0) {
+                    if (o.wa >= 0) {
+                      val.solved++;
+                      val.status[i].wa = o.wa - val.status[i].wa;
+                      val.status[i].inDate = o.inDate;
+                      val.penalty += val.status[i].wa*20 + o.inDate;
+                    } else {
+                      val.status[i].wa += o.wa;
+                    }
                   }
                 }
               }
@@ -2325,7 +2332,7 @@ exports.doAddcontest = function(req, res) {
 exports.onecontest = function(req, res) {
   var cid = parseInt(req.params.cid, 10);
   if (!cid) {
-    return res.redirect('/contest');
+    return res.end('404');
   }
   Contest.watch(cid, function(err, contest) {
     if (err) {
@@ -2333,44 +2340,57 @@ exports.onecontest = function(req, res) {
       req.session.msg = '系统错误！';
       return res.redirect('/');
     }
-    if (contest) {
-      if (contest.type == 3) {
-        if (!req.session.user) {
-          req.session.msg = 'Please login first!';
-          return res.redirect('/contest/3');
-        }
-        if (!req.session.user.privilege) {
-          req.session.msg = '你的权限不足，无法进入！';
-          return res.redirect('/contest/3');
-        }
+    if (!contest) {
+      return res.end('404');
+    }
+    if (contest.type == 3) {
+      if (!req.session.user) {
+        req.session.msg = 'Please login first!';
+        return res.redirect('/contest/3');
       }
-      if (contest.type != 2) {
-        if (contest.password) {
-          if (!req.session.user || req.session.user.name != contest.userName) {
-            if (!req.session.cid || !req.session.cid[cid]) {
-              req.session.msg = 'you should login the contest '+cid+' first!';
-              return res.redirect('/contest/'+contest.type);
-            }
+      if (!req.session.user.privilege) {
+        req.session.msg = '抱歉，普通用户无法进入！';
+        return res.redirect('/contest/3');
+      }
+    }
+    if (contest.type != 2) {
+      if (contest.password) {
+        if (!req.session.user || req.session.user.name != contest.userName) {
+          if (!req.session.cid || !req.session.cid[cid]) {
+            req.session.msg = 'you should login the contest '+cid+' first!';
+            return res.redirect('/contest/'+contest.type);
           }
         }
       }
-      var isContestant = false;
-      if (contest.type != 2 ||
-        (req.session.user &&
-          (req.session.user.name == contest.userName ||
-          IsRegCon(contest.contestants, req.session.user.name)))) {
-        isContestant = true;
-      }
     }
-    res.render('onecontest', {title: 'OneContest',
-                              user: req.session.user,
-                              message: req.session.msg,
-                              time: (new Date()).getTime(),
-                              key: 9,
-                              contest: contest,
-                              getDate: getDate,
-                              isContestant: isContestant,
-                              pageNum: contestRank_pageNum
+    var isContestant = false;
+    if (contest.type != 2 ||
+      (req.session.user &&
+        (req.session.user.name == contest.userName ||
+        IsRegCon(contest.contestants, req.session.user.name)))) {
+      isContestant = true;
+    }
+    User.watch(contest.userName, function(err, user){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
+      }
+      if (!user) {
+        return res.end();   //not allow
+      }
+      res.render('onecontest', {title: 'OneContest',
+                                user: req.session.user,
+                                message: req.session.msg,
+                                time: (new Date()).getTime(),
+                                key: 9,
+                                contest: contest,
+                                getDate: getDate,
+                                isContestant: isContestant,
+                                pageNum: contestRank_pageNum,
+                                MC: UserCol(user.privilege),
+                                MT: UserTitle(user.privilege)
+      });
     });
   });
 };
@@ -2466,30 +2486,48 @@ exports.contest = function(req, res) {
     if (n < 0) {
       return res.redirect('/contest/'+type);
     }
-    var T = new Array(), R = {}, now = (new Date()).getTime(), CS = {};
+    var T = new Array(), R = {}, now = (new Date()).getTime(),
+        CS = {}, names = new Array();
     if (contests) {
+      if (req.session.cid) {
+        CS = req.session.cid;
+      }
       contests.forEach(function(p, i){
+        names.push(p.userName);
         T.push((new Date(p.startTime)).getTime()-now);
         if (req.session.user && IsRegCon(p.contestants, req.session.user.name))
           R[i] = true;
       });
     }
-    if (req.session.cid) {
-      CS = req.session.cid;
-    }
-    res.render ('contest', {title: 'Contest',
-                            user: req.session.user,
-                            message: req.session.msg,
-                            time: now,
-                            key: 6,
-                            type: type,
-                            contests: contests,
-                            n: n,
-                            search: search,
-                            page: page,
-                            T: T,
-                            R: R,
-                            CS: CS
+    User.find({name: {$in: names}}, function(err, users){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
+      }
+      var UC = {}, UT = {};
+      if (users) {
+        users.forEach(function(p){
+          UC[p.name] = UserCol(p.privilege);
+          UT[p.name] = UserTitle(p.privilege);
+        });
+      }
+      res.render ('contest', {title: 'Contest',
+                              user: req.session.user,
+                              message: req.session.msg,
+                              time: now,
+                              key: 6,
+                              type: type,
+                              contests: contests,
+                              n: n,
+                              search: search,
+                              page: page,
+                              T: T,
+                              R: R,
+                              CS: CS,
+                              UC: UC,
+                              UT: UT
+      });
     });
   });
 };
@@ -3271,15 +3309,11 @@ exports.regCon = function(req, res) {
   if (!cid || cid < 0) {
     return res.end('404');
   }
-  var type = parseInt(req.query.type, 10);
-  if (!type) {
-    return res.end();   //not allow
-  }
   var page = parseInt(req.query.page, 10);
   if (!page) {
     page = 1;
   } else if (page < 0) {
-    return res.redirect('/regform/'+type);
+    return res.redirect('/regform/'+cid);
   }
 
   var search = req.query.search;
@@ -3291,7 +3325,7 @@ exports.regCon = function(req, res) {
         return res.redirect('/');
       }
       if (n < 0) {
-        return res.redirect('/regform/'+type);
+        return res.redirect('/regform/'+cid);
       }
       var flg = false, has = {}, names = new Array();
       if (regs) {
@@ -3359,14 +3393,14 @@ function regContestAndUpdate(cid, name, callback) {
     if (err) {
       return callback(err);   //no need to output err, because of callback
     }
-    ContestRank.findOne({_id: {cid:cid,name:name}}, function(err, doc){
+    ContestRank.findOne({_id: {cid:cid, name:name}}, function(err, doc){
       if (err) {
         return callback(err);
       }
       if (doc) {
         return callback();
       }
-      var rank = new ContestRank({cid:cid,name:name});
+      var rank = new ContestRank(cid, name);
       rank.save(function(){
         return callback();
       });
@@ -3634,45 +3668,6 @@ exports.regContestAdd = function(req, res) {
         req.session.msg = '添加完成！';
         return res.end();
       });
-    });
-  });
-};
-
-exports.changeGrade = function(req, res) {
-  res.header('Content-Type', 'text/plain');
-  if (!req.session.user) {
-    req.session.msg = '请先登录！';
-    return res.end();
-  }
-  if (req.session.user.name != 'admin') {
-    req.session.msg = '对不起，您的权限不足！';
-    return res.end();
-  }
-  var cid = parseInt(req.body.cid, 10)
-  ,   grade = clearSpace(req.body.grade)
-  ,   user = clearSpace(req.body.name);
-  if (!cid || !grade || !user) {
-    return res.end();   //not allow
-  }
-  Reg.findOne({cid: cid, user: user}, function(err, reg){
-    if (err) {
-      OE(err);
-      req.session.msg = '系统错误！';
-      return res.end();
-    }
-    if (!reg) {
-      req.session.msg = '记录不存在！无法修改！';
-      return res.end();
-    }
-    reg.grade = grade;
-    reg.save(function(err){
-      if (err) {
-        OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
-      }
-      req.session.msg = '修改成功！';
-      return res.end();
     });
   });
 };

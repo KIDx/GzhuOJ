@@ -131,7 +131,7 @@
               <% } %>
             </td>
             <td>
-              <a class="user user-gray" href="/user/<%= p.userName %>"><%= p.userName %></a>
+              <a class="user user-<%= UC[p.userName] %>" title="<%= UT[p.userName] %>" href="/user/<%= p.userName %>"><%= p.userName %></a>
             </td>
           </tr>
           <% }); %>

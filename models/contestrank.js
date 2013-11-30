@@ -5,8 +5,9 @@ var mongoose = require('mongoose')
 ,   pageNum = settings.contestRank_pageNum
 ,   OE = settings.outputErr;
 
-function Rank(id) {
-  this._id = id;
+function Rank(cid, name) {
+  this.cid = cid;
+  this.name = name;
 };
 
 module.exports = Rank;
@@ -22,8 +23,8 @@ var ranks = mongoose.model('ranks');
 Rank.prototype.save = function(callback){
   //存入 Mongodb 的文档
   rank = new ranks();
-  rank._id = this._id;
-  rank.value = {solved:0, penalty:0};
+  rank.value = {penalty:0, solved:0};
+  rank._id = new Object({name: this.name, cid: this.cid});
   rank.save(function(err){
     if (err) {
       OE('Rank.save failed!');

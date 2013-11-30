@@ -170,24 +170,32 @@ function calTime(startTime, endTime) {
     endTime = endTime.replace(/-/g, '/');
     var st = new Date(startTime), et = new Date(endTime);
     var res = (et.getTime()-st.getTime())/1000;
-    return parseInt(res);
+    return parseInt(res, 10);
 }
 
 function deal(times) {
-    var h = parseInt(times/3600);
+    var h = parseInt(times/3600, 10);
     if (h < 10) h = '0' + h;
-    var m = parseInt(times%3600/60);
+    var m = parseInt(times%3600/60, 10);
     if (m < 10) m = '0' + m;
     var key = arguments[1] ? arguments[1] : 0;
     if (key == 1) return (h+':'+m);     //onecontest.js-standings
-    var s = parseInt(times%3600%60);
+    var s = parseInt(times%3600%60, 10);
     if (s < 10) s = '0' + s;
     var res;
-    if (h >= 48) {
-        var day = parseInt(h/24+0.5);
-        if (day >= 14) res = parseInt(day/7+0.5)+' weeks';
-        else res = day+' days';
-    } else res = h+':'+m+':'+s;
+    if (h >= 24) {
+        var day = parseInt(h/24, 10);
+        if (day >= 7) {
+            var week = parseInt(day/7, 10);
+            res = week+' week';
+            if (week > 1) res += 's';
+        } else {
+            res = day+' day';
+            if (day > 1) res += 's';
+        }
+    } else {
+        res = h+':'+m+':'+s;
+    }
     return res;
 }
 

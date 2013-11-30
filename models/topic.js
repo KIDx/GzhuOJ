@@ -80,12 +80,3 @@ Topic.update = function(tid, H, callback){
     return callback(err);
   });
 };
-
-Topic.dele = function(Q, callback){
-  topics.findOneAndRemove(Q, function(err){
-    if (err) {
-      OE('Topic.dele failed');
-    }
-    return callback(err);
-  });
-};

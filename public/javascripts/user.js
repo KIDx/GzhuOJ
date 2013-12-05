@@ -67,7 +67,7 @@ $(document).ready(function(){
                 realname    : '',
                 sex         : '',
                 college     : '',
-                grade       : '',
+                grade       : ''
             }, function(){
                 window.location.reload(true);
             });

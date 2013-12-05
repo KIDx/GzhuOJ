@@ -66,12 +66,14 @@
       <div id="activebox" class="sidebox">
         <div class="side-header">→ Problem tags</div>
         <div id="#" style="padding:.5em;">
-          <% problem.tags.forEach(function(p){ %>
+        <% if (problem.tags && problem.tags.length) { %>
+          <% problem.tags.sort().forEach(function(p){ %>
           <div class="tag-box" title="<%= PT[p] %>">
             <%= Tag[p] %>
             <% if(pvl == 1) { %><span class="del" tag="<%= p %>">×</span><% } %>
           </div>
           <% }); %>
+        <% } %>
           <div style="text-align:right;clear:both;">
           <% if(pvl == 1) { %>
             <div class="hidden">Add tag:

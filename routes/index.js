@@ -64,6 +64,7 @@ var crypto = require('crypto')
 ,   Problem = require('../models/problem.js')
 ,   Contest = require('../models/contest.js')
 ,   Course = require('../models/course.js')
+,   Group = require('../models/group.js')
 ,   Topic = require('../models/topic.js')
 ,   Comment = require('../models/comment.js')
 ,   Reg = require('../models/reg.js')
@@ -335,7 +336,7 @@ exports.getStatus = function(req, res) {
     if (!contest) {
       return res.end();   //not allow
     }
-    var Q = {cID: cid}, page, name, pid, result, lang;
+    var Q = {cID: cid}, page, pid, result, lang;
     page = parseInt(req.body.page, 10);
     if (!page) {
       page = 1;
@@ -343,9 +344,8 @@ exports.getStatus = function(req, res) {
       return res.end();   //not allow!
     }
 
-    name = req.body.name;
-    if (name) {
-      Q.userName = new RegExp("^.*"+toEscape(name)+".*$", 'i');
+    if (req.body.name) {
+      Q.userName = toEscape(req.body.name);
     }
 
     pid = parseInt(req.body.pid, 10);
@@ -933,9 +933,6 @@ exports.editTag = function(req, res) {
       return res.end();
     });
   };
-  if (name == 'admin') {
-    return RP();
-  }
   Problem.watch(pid, function(err, problem){
     if (err) {
       OE(err);
@@ -944,7 +941,11 @@ exports.editTag = function(req, res) {
     if (!problem) {
       return res.end();   //not allow
     }
-    if (name == problem.manager) {
+    if (req.body.add && problem.tags.length >= 5) {
+      req.session.msg = 'The number of tags should not larger than 5!';
+      return res.end();
+    }
+    if (name == 'admin' || name == problem.manager) {
       return RP();
     }
     Solution.watch({problemID:pid, userName:name, result:2}, function(err, solution) {
@@ -1091,7 +1092,7 @@ exports.doLogin = function(req, res) {
 
 exports.loginContest = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  if (!req.body.password) {
+  if (!req.body.psw) {
     return res.end();   //not allow
   }
   var cid = parseInt(req.body.cid, 10);
@@ -2050,7 +2051,9 @@ exports.status = function(req, res) {
   }
 
   name = req.query.name;
-  if (name) Q.userName = new RegExp("^.*"+toEscape(name)+".*$", 'i');
+  if (name) {
+    Q.userName = toEscape(name);
+  }
 
   pid = parseInt(req.query.pid, 10);
   if (pid) Q.problemID = pid;
@@ -2345,7 +2348,7 @@ exports.onecontest = function(req, res) {
     }
     if (contest.type == 3) {
       if (!req.session.user) {
-        req.session.msg = 'Please login first!';
+        req.session.msg = '请先登录！';
         return res.redirect('/contest/3');
       }
       if (!req.session.user.privilege) {
@@ -3356,7 +3359,7 @@ exports.regCon = function(req, res) {
                                 message: req.session.msg,
                                 time: now,
                                 key: 2,
-                                CT: C.title,
+                                contest: C,
                                 n: n,
                                 page: page,
                                 search: search,

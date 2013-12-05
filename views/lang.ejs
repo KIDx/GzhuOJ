@@ -1,0 +1,7 @@
+<!-- <html> -->
+<% var lang = partial('language').split(','); %>
+<select class="input-small" id="lang">
+<% for (var i = 1; i < lang.length; i++) { %>
+	<option value='<%= i %>' <% if (i == 2) { %>selected="selected"<% } %>><%= lang[i] %></option>
+<% } %>
+</select>

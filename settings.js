@@ -33,10 +33,18 @@ var College = ['其他学院', '计算机科学与教育软件学院', '数学�
 var fs = require('fs')
 ,   errlog = fs.createWriteStream(__dirname+'/error.log', {flags: 'a'});
 
+function getpos() {
+  try {
+    throw new Error();
+  } catch(e) {
+    return e.stack.split('\n')[3].split(process.cwd()+'/')[1].replace(')', '');
+  }
+}
+
 module.exports = {
   outputErr: function(err) {
     console.log(err);
-    errlog.write('[ '+getDate(new Date())+' ] : '+err+'\n');
+    errlog.write(getDate(new Date())+' ['+getpos()+']\n'+err+'\n');
   },
   getDate: getDate,
   cookie_secret: 'gzhu',

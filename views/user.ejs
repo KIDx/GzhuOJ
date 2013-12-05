@@ -10,7 +10,7 @@
       <ul>
         <li><a href="/user/<%= u.name %>"><%= u.name %></a></li>
         <% if (user && user.name == u.name) { %>
-        <li><a href="javascript:;" id="set">settings</a></li>
+        <li><a href="javascript:;" id="set">修改信息</a></li>
         <li><a href="/avatar">设置头像</a></li>
         <% } %>
         <li><a href="/status?name=<%= u.name %>">submissions</a></li>

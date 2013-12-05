@@ -33,7 +33,7 @@
             <th style="width:60px;"></th>
             <th style="width:10%;">回复/浏览</th>
             <th style="text-align:left;">标题</th>
-            <th style="width:15%;"></th>
+            <th style="text-align:right;width:15%;">最后更新</th>
           </tr>
         </thead>
         <tbody>
@@ -51,8 +51,8 @@
           <% } %>
           <tr <% if (user && user.name == p.user) { %>class="highlight"<% } %>>
             <td>
-              <a title="<%= p.user %>" href="/user/<%= p.user %>">
-                <img class="img_s topic_img" alt="avatar" src="<%= img %>" />
+              <a href="/user/<%= p.user %>">
+                <img class="img_s topic_img" title="<%= p.user %>" alt="<%= p.user %>" src="<%= img %>" />
               </a>
             </td>
             <td>

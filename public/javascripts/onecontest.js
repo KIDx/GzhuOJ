@@ -80,6 +80,13 @@ function bindstatusQ() {
 	});
 }
 
+function lang(s) {
+	if (s == 1) return 'C';
+	if (s == 2) return 'C++';
+	if (s == 3) return 'Java';
+	return 'C++11';
+}
+
 function buildRow(sol) {
 	var html = '<tr class="';
 	if (cnt % 2 == 1) html += 'odd';
@@ -122,14 +129,9 @@ function buildRow(sol) {
 		tpstr = tmp;
 	}
 	html += '<td>'+tpstr+'</td>';
+	html += '<td><a target="_blank" href="/sourcecode/'+sol.runID+'">'+lang(sol.language)+'</a></td>'
 
-	var lang = sol.language, str = 'C';
-	if (lang == 2) str = 'C++';
-	else if (lang == 3) str = 'Java';
-	
-	html += '<td><a target="_blank" href="/sourcecode/'+sol.runID+'">'+str+'</a></td>'
-
-	if (parseInt(sol.length, 10) >= 0) {
+	if (parseInt(sol.length, 10)) {
 		tpstr = sol.length+' B';
 	} else {
 		tpstr = tmp;
@@ -317,8 +319,10 @@ function ProblemsResponse(prob) {
 	$title.eq(1).text( $pidtext.eq(ID).text() );
 	$limit.eq(0).text( 2*prob.timeLimit+'/'+prob.timeLimit );
 	$limit.eq(1).text( 2*prob.memoryLimit+'/'+prob.memoryLimit );
-	if (prob.spj === 1) {
+	if (prob.spj == 1) {
 		$limit.eq(2).html('&nbsp;&nbsp;&nbsp;&nbsp; Special Judge');
+	} else if (prob.TC == 1) {
+		$limit.eq(2).html('&nbsp;&nbsp;&nbsp;&nbsp; TC 模式');
 	} else {
 		$limit.eq(2).html('');
 	}
@@ -559,7 +563,7 @@ function buildDiscuss(p) {
 	html += '</a></td><td>';
 	html += '<span class="user-green">'+p.reviewsQty+'</span><span class="user-gray">/'+p.browseQty+'</span>';
 	html += '</td><td style="text-align:left;" class="ellipsis">';
-	html += '<a href="/topic/'+p.id+'">'+p.title+'</a></td>';
+	html += '<a target="_blank" href="/topic/'+p.id+'">'+p.title+'</a></td>';
 	html += '<td></td></tr>';
 	return html;
 }

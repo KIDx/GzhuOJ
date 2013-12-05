@@ -1,7 +1,6 @@
-# Gzhu Online Judge v5.2
+# Gzhu Online Judge v5.3
 
-* 为所有ajax增加abort，增强了健壮性(onecontest.js)
-* 修复在一个标签页内可以显示两个标签内容的bug(运行ajax异步回调函数时检查所属标签页是否为当前用户看到的标签页)
-
-* 修复regform页面的部分bug
-* 删除regform页面无用的功能：修改班级（因为user页面可以修改_for admin）
+* 完善了错误日志（定位错误行号）
+* 限制了problem的标签最多只能有5个
+* 修复非VIP的private的contest输入正确密码进入不了contest的bug
+* 修复user页面在低版本浏览器下点击"修改信息"无反应的bug

@@ -1,12 +1,14 @@
 <!--<html>-->
+<% var type = 'Add'; %>
+<% if (course) { type = 'Edit'; } %>
 <fieldset>
 	<div>
 		<legend id="addcourse" <% if (course) { %>cid="<%= course.courseID %>"<% } %>>
-			Edit Course
+			<%= type %> Course
 		</legend>
 	</div>
 	<div class="alert alert-info" style="padding:30px;display:none;">
-		<h1 align="center">Edit Course</h1>
+		<h1 align="center"><%= type %> Course</h1>
 	</div>
 	<div class="form-horizontal" id="form">
 		<div style="width:800px;margin:0 auto;min-height:400px;">
@@ -18,7 +20,7 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label" for="addproblem">添加题目：</label>
+				<label class="control-label" for="a">添加题目：</label>
 				<div class="controls">
 					<input id="a" type="text" class="input-small" placeholder="题目编号" /> ~ 
 					<input style="margin-right:20px;" id="b" type="text" class="input-small" placeholder="题目编号" />
@@ -27,7 +29,7 @@
 			</div>
 			<% if (course) { %>
 			<div class="control-group">
-				<label class="control-label" for="tags">已有<%= course.probs.length %>道题：</label>
+				<label class="control-label">已有<%= course.probs.length %>道题：</label>
 				<div class="controls">
 					<% course.probs.forEach(function(p, i){ %>
 					<div class="tag-box">

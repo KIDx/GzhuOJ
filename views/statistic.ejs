@@ -1,10 +1,8 @@
 <!--<html>-->
 <% var _id = [0, 2, 6, 3, 4, 5, 7, 8, 9, 13, 14]; %>
-<% var lan = ['', 'C', 'C++', 'Java']; %>
+<% var lan = partial('language').split(','); %>
 <% var tc = ['', '', '']; %>
-<legend id="statistic" pid="<%= pid %>" <% if (sort_key >= 0) { %>sort="<%= sort_key %>"<% } %>>
-  统计
-</legend>
+<legend id="statistic" pid="<%= pid %>" <% if (sort_key >= 0) { %>sort="<%= sort_key %>"<% } %>>统计</legend>
 <fieldset>
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
@@ -58,7 +56,7 @@
             <%- partial('pager', {page:page, n:n}) %>
             <div class="fr input-prepend" id="filter">
               <span class="add-on">Lang.</span>
-              <select class="input-mini" id="lang">
+              <select class="input-small" id="lang">
                 <option value="" <% if (!lang) { %>selected<% } %>>All</option>
                 <% for (var i = 1; i < lan.length; i++) { %>
                 <option value="<%= i %>" <% if (lang == i) { %>selected<% } %>>
@@ -100,16 +98,11 @@
                 </tr>
               <% } else { %>
                 <% sols.forEach(function(p, i){ %>
-                <% var c, lang = 'C++'; %>
+                <% var c; %>
                 <% if (i % 2 == 1) { %>
                 <% c = 'even'; %>
                 <% } else { %>
                 <% c = 'odd'; %>
-                <% } %>
-                <% if (p.language == 1) { %>
-                <% lang = 'C'; %>
-                <% } else if (p.language == 3) { %>
-                <% lang = 'Java'; %>
                 <% } %>
                 <tr class="<%= c %>">
                   <td><%= (page-1)*pageNum + i + 1 %></td>
@@ -121,7 +114,7 @@
                   <td><%= p.time %> MS</td>
                   <td><%= p.memory %> KB</td>
                   <td><%= p.length %> B</td>
-                  <td><a href="/sourcecode/<%= p.runID %>"><%= lang %></a></td>
+                  <td><a href="/sourcecode/<%= p.runID %>"><%= lan[p.language] %></a></td>
                   <td><%= p.inDate %></td>
                 </tr>
                 <% }); %>

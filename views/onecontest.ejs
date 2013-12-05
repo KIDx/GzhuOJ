@@ -35,7 +35,7 @@
   <% }); %>
   <div class="marquee">
     <marquee id="marquee" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="alternate">
-      <%= contest.msg %>
+      <%- contest.msg %>
     </marquee>
   </div>
   <div>
@@ -287,7 +287,7 @@
       <% } %>
         <div class="tablebg" style="width:<%= mw %>px">
           <div class="fr" style="margin:5px;">
-            <span class="user user-cyan">蓝：最快通过(FB)</span>，<span class="user user-green">绿：通过</span>，<span class="user user-red">红：错误</span>
+            <span class="user user-green">深绿：最快通过(FB)</span>，<span class="user accept-text">浅绿：通过</span>，<span class="user user-red">红：错误</span>
             <span class="user user-gray">(每10秒更新一次排名)</span>
           </div>
           <div id="ranklist" class="pagination pagination-small">

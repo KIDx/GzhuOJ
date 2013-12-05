@@ -12,26 +12,29 @@
 	<div class="content">
 		<div class="topic_box">
 			<div class="header">
+				<% if (user && (user.name == 'admin' || user.name == topic.user)) { %>
+				<a style="margin-left:10px;" class="fr uibtn uibtn-mini" href="/addtopic?tid=<%= topic.id %>">&nbsp;编辑&nbsp;</a>
+				<% } %>
+				<span class="fr user user-black">浏览次数：<%= topic.browseQty %></span>
 				<a href="/topic">论坛主页</a>
 				>>
 				话题详情
-				<% if (user && (user.name == 'admin' || user.name == topic.user)) { %>
-				<a class="fr uibtn uibtn-mini" href="/addtopic?tid=<%= topic.id %>">&nbsp;编辑&nbsp;</a>
-				<% } %>
 			</div>
 			<div class="inner_topic">
 				<h3>
-					<a title="<%= topic.user %>" href="/user/<%= topic.user %>"><img class="img_m topic_img" alt="<%= topic.user %>" src="<%= img %>" /></a>
+					<a href="/user/<%= topic.user %>">
+						<img class="img_m topic_img" title="<%= topic.user %>" alt="<%= topic.user %>" src="<%= img %>" />
+					</a>
 					<% if (topic.top) { %><span class="put_top">置顶</span><% } %>
 					<%= topic.title %>
 				</h3>
 				<hr />
 				<%- topic.content %>
 				<hr />
+				<span class="fr user user-gray">by <a href="/user/<%= topic.user %>" title="<%= UT[topic.user] %>" class="user user-<%= UC[topic.user] %>"><%= topic.user %>.</a></span>
 				于
 				<span class="user-gray"><%= getDate(topic.inDate) %></span>
 				编辑
-				<span class="fr user user-gray">by <a href="/user/<%= topic.user %>" title="<%= UT[topic.user] %>" class="user user-<%= UC[topic.user] %>"><%= topic.user %>.</a></span>
 			</div>
 		</div>
 	<% if (comments && comments.length) { %>
@@ -47,8 +50,8 @@
 			<% } %>
 			<div class="reply_area">
 				<div class="reply_avatar">
-					<a title="<%= p.user %>" href="/user/<%= p.user %>">
-						<img class="img_s topic_img" alt="avatar" src="<%= img %>" />
+					<a href="/user/<%= p.user %>">
+						<img class="img_s topic_img" title="<%= p.user %>" alt="<%= p.user %>" src="<%= img %>" />
 					</a>
 				</div>
 				<div class="reply_right">
@@ -77,8 +80,8 @@
 				<div class="reply_sub">
 					<div style="margin-top:5px;">
 						<div class="reply_avatar">
-							<a title="<%= p.user %>" href="/user/<%= p.user %>">
-								<img class="img_s topic_img" alt="avatar" src="<%= img %>" />
+							<a href="/user/<%= p.user %>">
+								<img class="img_s topic_img" title="<%= p.user %>" alt="<%= p.user %>" src="<%= img %>" />
 							</a>
 						</div>
 						<div class="reply_right">

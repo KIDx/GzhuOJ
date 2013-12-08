@@ -2537,34 +2537,54 @@ exports.contest = function(req, res) {
 
 exports.addcourse = function(req, res) {
   if (!req.session.user) {
-    req.session.msg = 'Please login first!';
+    req.session.msg = '请先登录！';
     return res.redirect('/course');
   }
   if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
-    req.session.msg = 'You have no permission to Edit Course!';
+    req.session.msg = '对不起，您的权限不足！';
     return res.redirect('/course');
   }
   id = parseInt(req.query.id, 10);
-  var RP = function(C, P){
+  var RP = function(C, P, G){
     res.render('addcourse', { title: 'AddCourse',
                               user: req.session.user,
                               message: req.session.msg,
                               time: (new Date()).getTime(),
                               course: C,
                               key: 1003,
-                              pName: P
+                              pName: P,
+                              groups: G
     });
   };
   if (!id) {
-    return RP(null, {});
-  } else {
-    Course.watch(id, function(err, course){
+    return RP(null, {}, null);
+  }
+  Course.watch(id, function(err, course){
+    if (err) {
+      OE(err);
+      req.session.msg = '系统错误！';
+      return res.redirect('/course');
+    }
+    if (!course) {
+      return res.end('404');    //not allow
+    }
+    Group.find({id: {$in: course.groups}}, function(err, groups){
       if (err) {
+        OE(err);
         req.session.msg = '系统错误！';
         return res.redirect('/course');
       }
-      Problem.find({problemID: {$in: course.probs}}, function(err, probs){
+      var ps = new Array();
+      if (groups) {
+        groups.forEach(function(p){
+          p.pids.forEach(function(i){
+            ps.push(i);
+          });
+        });
+      }
+      Problem.find({problemID: {$in: ps}}, function(err, probs){
         if (err) {
+          OE(err);
           req.session.msg = '系统错误！';
           return res.redirect('/course');
         }
@@ -2574,88 +2594,283 @@ exports.addcourse = function(req, res) {
             pName[p.problemID] = p.title;
           });
         }
-        return RP(course, pName);
+        return RP(course, pName, groups);
       });
     });
+  });
+};
+
+exports.changeCourseTitle = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end('2');    //reflash
   }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.end('2');    //reflash
+  }
+  var cid = parseInt(req.body.cid, 10)
+  ,   title = clearSpace(req.body.title);
+  if (!cid || !title) {
+    return res.end();   //not allow
+  }
+  Course.update(cid, {$set: {title: title}}, function(err){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    return res.end();
+  });
+};
+
+exports.changeGroupName = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end('2');    //reflash
+  }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.end('2');    //reflash
+  }
+  var gid = parseInt(req.body.gid, 10)
+  ,   name = clearSpace(req.body.name);
+  if (!gid || !name) {
+    return res.end();   //not allow
+  }
+  Group.update(gid, {$set: {name: name}}, function(err){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    return res.end();
+  });
+};
+
+exports.addGroup = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end('2');    //reflash
+  }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.end('2');    //reflash
+  }
+  var cid = parseInt(req.body.cid, 10);
+  if (!cid) {
+    return res.end();   //not allow
+  }
+  Course.watch(cid, function(err, course){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    if (!course) {
+      return res.end(); //not allow
+    }
+    if (course.groups.length >= 15) {
+      return res.end('3');
+    }
+    IDs.get('groupID', function(err, id){
+      if (err) {
+        OE(err);
+        return res.end('1');
+      }
+      (new Group({id: id})).save(function(err){
+        if (err) {
+          OE(err);
+          return res.end('1');
+        }
+        Course.update(cid, {$addToSet: {groups: id}}, function(err){
+          if (err) {
+            OE(err);
+            return res.end('1');
+          }
+          return res.end(id.toString());
+        });
+      });
+    });
+  });
+};
+
+exports.delGroup = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end('2');    //reflash
+  }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.end('2');    //reflash
+  }
+  var cid = parseInt(req.body.cid, 10)
+  ,   gid = parseInt(req.body.gid, 10);
+  if (!cid || !gid) {
+    return res.end();   //not allow
+  }
+  Course.watch(cid, function(err, course){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    if (!course) {
+      return res.end(); //not allow
+    }
+    if (course.groups.length < 2) {
+      return res.end('3');
+    }
+    Group.remove({id: gid}, function(err){
+      if (err) {
+        OE(err);
+        return res.end('1');
+      }
+      Course.update(cid, {$pull: {groups: gid}}, function(err){
+        if (err) {
+          OE(err);
+          return res.end('1');
+        }
+        return res.end();
+      });
+    });
+  });
+};
+
+exports.addProbToGroup = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end('2');    //reflash
+  }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.end('2');    //reflash
+  }
+  var gid = parseInt(req.body.gid, 10)
+  ,   str = clearSpace(req.body.str);
+  if (!gid || !str) {
+    return res.end();   //not allow
+  }
+  var pids = str.split(' ');
+  Problem.find({problemID: {$in: pids}}, function(err, probs){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    var tmp = new Array(), P = {};
+    if (probs) {
+      probs.forEach(function(p){
+        P[p.problemID] = p.title;
+        tmp.push(p.problemID);
+      });
+    }
+    Group.watch(gid, function(err, group){
+      if (err) {
+        OE(err);
+        return res.end('1');
+      }
+      var n = 0, has = {};
+      if (group) {
+        group.pids.forEach(function(p){
+          has[p] = true;
+        });
+        n = group.pids.length;
+      }
+      tmp.forEach(function(p){
+        if (!has[p]) {
+          has[p] = true;
+          ++n;
+        }
+      });
+      if (n > 10) {
+        return res.end('3');
+      }
+      Group.update(gid, {$addToSet: {pids: {$each: tmp}}}, function(err){
+        if (err) {
+          OE(err);
+          return res.end('1');
+        }
+        return res.json(P);
+      });
+    });
+  });
+};
+
+exports.delProbInGroup = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end('2');    //reflash
+  }
+  if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
+    req.session.msg = '对不起，您的权限不足！';
+    return res.end('2');    //reflash
+  }
+  var gid = parseInt(req.body.gid, 10)
+  ,   pid = parseInt(req.body.pid, 10);
+  if (!gid || !pid) {
+    return res.end();   //not allow
+  }
+  Group.update(gid, {$pull: {pids: pid}}, function(err){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    return res.end();
+  });
 };
 
 exports.doAddcourse = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
-    req.session.msg = 'Failed! Please login first!';
+    req.session.msg = '请先登录！';
     return res.end();
   }
   if (!req.session.user.privilege || parseInt(req.session.user.privilege, 10) < 82) {
-    req.session.msg = 'You have no permission to Edit Course!';
+    req.session.msg = '对不起，您的权限不足！';
     return res.end();
   }
-  var title = clearSpace(req.body.title)
-  ,   a = parseInt(req.body.a, 10)
-  ,   b = parseInt(req.body.b, 10);
-  if (!title || b < a || b-a+1 > 100) {
+  var title = clearSpace(req.body.title);
+  if (!title) {
     return res.end();   //not allow
   }
-  var cid = parseInt(req.body.cid, 10)
-  ,   RP = function(ary){
-    if (!cid) {
-      IDs.get('contestID', function(err, id){
-        if (err) {
-          req.session.msg = '系统错误！';
-          return res.end();
-        }
-        var course = new Course({
-          courseID: id,
-          title   : title,
-          probs   : ary
-        });
-        course.save(function(err){
-          if (err) {
-            req.session.msg = '系统错误！';
-            return res.end();
-          }
-          req.session.msg = 'the Course has been added successfully!';
-          return res.end(id.toString());
-        });
-      });
-    } else {
-      Course.update(cid, {$set: {title: title}}, function(err){
-        if (err) {
-          req.session.msg = '系统错误！';
-          return res.end();
-        }
-        if (ary.length == 0) {
-          req.session.msg = 'the Course has been updated successfully!';
-          return res.end();
-        }
-        Course.update(cid, {$addToSet: {probs: {$each: ary}}}, function(err){
-          if (err) {
-            req.session.msg = '系统错误！';
-            return res.end();
-          }
-          req.session.msg = 'the Course has been updated successfully!';
-          return res.end();
-        });
-      });
-    }
-  };
-  if (!a || !b) {
-    return RP([]);
-  }
-  Problem.find({problemID: {$gte:a, $lte:b}}, function(err, problems){
+  IDs.get('contestID', function(err, id){
     if (err) {
+      OE(err);
       req.session.msg = '系统错误！';
       return res.end();
     }
-    if (!problems) {
-      req.session.msg = 'the problems is Not exist!';
-      return res.end();
-    }
-    var ary = new Array();
-    problems.forEach(function(p, i){
-      ary.push(p.problemID);
+    IDs.get('groupID', function(err, gid){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      (new Group({id: gid})).save(function(err){
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        var groups = new Array();
+        groups.push(gid);
+        var course = new Course({
+          courseID  : id,
+          title     : title,
+          groups    : groups
+        });
+        course.save(function(err){
+          if (err) {
+            OE(err);
+            req.session.msg = '系统错误！';
+            return res.end();
+          }
+          req.session.msg = '课程新建成功！';
+          return res.end(id.toString());
+        });
+      });
     });
-    return RP(ary);
   });
 };
 
@@ -2672,95 +2887,81 @@ exports.onecourse = function(req, res) {
     req.session.msg = '抱歉，普通用户无法进入！';
     return res.redirect('/course');
   }
-  var page = parseInt(req.query.page, 10);
-  if (!page) {
-    page = 1;
-  } else if (page < 0) {
-    return res.redirect('/onecourse/'+id);
-  }
-  User.watch(req.session.user.name, function(err, user){
+  Course.watch(id, function(err, course){
     if (err) {
       OE(err);
       req.session.msg = '系统错误！';
       return res.redirect('/');
     }
-    req.session.user = user;  //update sesstion
-    Course.watch(id, function(err, course){
+    if (!course) {
+      return res.end('404');
+    }
+    var RP = function(R, P, G, n) {
+      res.render('onecourse', { title: 'OneCourse',
+                                user: req.session.user,
+                                message: req.session.msg,
+                                time: (new Date()).getTime(),
+                                key: 15,
+                                Tag: Tag,
+                                Pt: ProTil,
+                                R: R,
+                                P: P,
+                                groups: G,
+                                course: course,
+                                n: n
+      });
+    };
+    Group.find({id: {$in: course.groups}}, function(err, groups){
       if (err) {
         OE(err);
         req.session.msg = '系统错误！';
         return res.redirect('/');
       }
-      if (!course) {
-        return res.end('404');
+      var pids = new Array(), has = {};
+      if (groups) {
+        groups.forEach(function(p){
+          p.pids.forEach(function(i){
+            if (!has[i]) {
+              has[i] = true;
+              pids.push(i);
+            }
+          });
+        });
       }
-      var q = { problemID: { $in: course.probs } }
-      ,   Q, search = req.query.search;
-      if (search) {
-        q.title = new RegExp("^.*"+toEscape(search)+".*$", 'i');
-      }
-      if (!req.session.user) {
-        Q = {$and: [ q, {hide:false} ]};
-      } else if (req.session.user.name != 'admin') {
-        Q = {$and: [ q, {$or:[{hide:false}, {manager:req.session.user.name}]} ]};
-      } else Q = q;
-      Problem.get(Q, page, function(err, problems, n, total) {
+      Problem.find({problemID: {$in: pids}}, function(err, probs){
         if (err) {
           OE(err);
           req.session.msg = '系统错误！';
           return res.redirect('/');
         }
-        if (n < 0) {
-          return res.redirect('/onecourse/'+id);
+        if (!probs || !probs.length) {
+          return RP(null, null, groups, 0);
         }
-        var RP = function(R){
-          if (!req.query.page && !req.query.search) {
-            req.session.msg = '欢迎来到《'+course.title+'》！';
+        var P = {};
+        probs.forEach(function(p){
+          P[p.problemID] = p;
+        });
+        Solution.find({
+          problemID: {$in: pids},
+          userName: req.session.user.name
+        }, function(err, sols){
+          if (err) {
+            OE(err);
+            req.session.msg = '系统错误！';
+            return res.redirect('/');
           }
-          res.render('onecourse', { title: 'OneCourse',
-                                    user: req.session.user,
-                                    message: req.session.msg,
-                                    time: (new Date()).getTime(),
-                                    key: 15,
-                                    n: n,
-                                    total: total,
-                                    problems: problems,
-                                    page: page,
-                                    search: search,
-                                    Tag: Tag,
-                                    Pt: ProTil,
-                                    R: R,
-                                    course: course
-          });
-        };
-        if (req.session.user && problems && problems.length > 0) {
-          var pids = new Array(), R = {};
-          problems.forEach(function(p){
-            pids.push(p.problemID);
-          });
-          Solution.find({
-            problemID: {$in: pids},
-            userName: req.session.user.name
-          }, function(err, sols){
-            if (err) {
-              OE(err);
-              req.session.msg = '系统错误！';
-              return res.redirect('/');
-            }
-            if (sols) {
-              sols.forEach(function(s){
-                if (s.result != 2 && !R[s.problemID]) {
-                  R[s.problemID] = 1;
-                } else if (s.result == 2 && R[s.problemID] != 2) {
-                  R[s.problemID] = 2;
-                }
-              });
-              return RP(R);
-            }
-          });
-        } else {
-          return RP({});
-        }
+          var R = {};
+          if (sols) {
+            sols.forEach(function(s){
+              if (s.result != 2 && !R[s.problemID]) {
+                R[s.problemID] = 1;
+              } else if (s.result == 2 && R[s.problemID] != 2) {
+                R[s.problemID] = 2;
+              }
+            });
+          }
+          return RP(R, P, groups, probs.length);
+        });
       });
     });
   });
@@ -2769,47 +2970,18 @@ exports.onecourse = function(req, res) {
 exports.courseDelete = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
-    req.session.msg = 'Failed! Please login first!';
+    req.session.msg = '请先登录！';
     return res.end();
   }
   if (parseInt(req.session.user.privilege, 10) < 82) {
-    req.session.msg = 'Failed! You have no permission to delete Course!';
+    req.session.msg = '对不起，您的权限不足！';
     return res.end();
   }
   var cid = parseInt(req.body.cid, 10);
   if (!cid) {
     return res.end();   //not allow
   }
-  Solution.watch({cID: cid}, function(err, sol){
-    if (err) {
-      OE(err);
-      req.session.msg = '系统错误！';
-      return res.end();
-    }
-    if (sol) {
-      req.session.msg = 'Can\'t delete the course, because there are some submits in this course!';
-      return res.end();
-    }
-    Course.dele({courseID: cid}, function(err){
-      if (err) {
-        OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
-      }
-      req.session.msg = 'Course '+cid+' has been deleted successfully!';
-      return res.end();
-    });
-  });
-};
-
-exports.delCourseProb = function(req, res) {
-  res.header('Content-Type', 'text/plain');
-  var pid = parseInt(req.body.pid, 10)
-  ,   cid = parseInt(req.body.cid, 10);
-  if (!pid || !cid) {
-    return res.end(); //not allow
-  }
-  Course.update(cid, {$pull: {probs: pid}}, function(err){
+  Course.remove({courseID: cid}, function(err){
     if (err) {
       OE(err);
       req.session.msg = '系统错误！';
@@ -2877,87 +3049,77 @@ exports.courseRank = function(req, res) {
     req.session.user.grade = g + '1';
   }
   if (!req.session.user.grade) {
-    req.session.msg = '您的班级信息为空，请找老师或管理员完善！';
+    req.session.msg = '您的班级信息为空，请找管理员完善！';
     return redirect('/course');
   }
   if (!req.session.user.college) {
-    req.session.msg = '您的学院信息为空，请找老师或管理员完善！';
+    req.session.msg = '您的学院信息为空，请找管理员完善！';
     return redirect('/course');
   }
-  var RP = function(Q, U){
-    Course.watch(id, function(err, course){
+  var RP = function(Q, C, U){
+    Solution.mapReduce({
+      map: function(){
+        emit(this.userName, {pid:this.problemID, AC:{}, solved:1, submit:1, result:this.result});
+      },
+      reduce: function(k, vals){
+        var val = {pid:null, AC:{}, solved:0, submit:0, result:null};
+        vals.forEach(function(p){
+          if (p.pid) {
+            if (!val.AC[p.pid] && p.result == 2) {
+              val.AC[p.pid] = true;
+              ++val.solved;
+            }
+          } else {
+            if (p.AC) {
+              for (var i in p.AC) {
+                if (!val.AC[i]) {
+                  val.AC[i] = true;
+                  ++val.solved;
+                }
+              }
+            }
+          }
+          val.submit += p.submit;
+        });
+        return val;
+      },
+      finalize: function(key, val){
+        if (val.pid) {
+          if (val.result != 2) {
+            return {solved:0, submit:1};
+          } else {
+            return {solved:1, submit:1};
+          }
+        }
+        return {solved: val.solved, submit: val.submit};
+      },
+      query: Q,
+      sort: {runID: 1}
+    }, function(err, ranks){
       if (err) {
         OE(err);
         req.session.msg = '系统错误！';
         return res.redirect('/');
       }
-      if (!course) {
-        return res.end('404');
-      }
-      Solution.mapReduce({
-        map: function(){
-          emit(this.userName, {pid:this.problemID, AC:{}, solved:1, submit:1, result:this.result});
-        },
-        reduce: function(k, vals){
-          var val = {pid:null, AC:{}, solved:0, submit:0, result:null};
-          vals.forEach(function(p){
-            if (p.pid) {
-              if (!val.AC[p.pid] && p.result == 2) {
-                val.AC[p.pid] = true;
-                ++val.solved;
-              }
-            } else {
-              if (p.AC) {
-                for (var i in p.AC) {
-                  if (!val.AC[i]) {
-                    val.AC[i] = true;
-                    ++val.solved;
-                  }
-                }
-              }
+      if (ranks) {
+        ranks.sort(function(a, b){
+          if (a.value.solved == b.value.solved) {
+            if (a.value.submit == b.value.submit) {
+              return a._id < b._id ? -1 : 1;
             }
-            val.submit += p.submit;
-          });
-          return val;
-        },
-        finalize: function(key, val){
-          if (val.pid) {
-            if (val.result != 2) {
-              return {solved:0, submit:1};
-            } else {
-              return {solved:1, submit:1};
-            }
+            return a.value.submit < b.value.submit ? -1 : 1;
           }
-          return {solved: val.solved, submit: val.submit};
-        },
-        query: {$and: [{problemID: {$in: course.probs}}, Q] },
-        sort: {runID: 1}
-      }, function(err, ranks){
-        if (err) {
-          OE(err);
-          req.session.msg = '系统错误！';
-          return res.redirect('/');
-        }
-        if (ranks) {
-          ranks.sort(function(a, b){
-            if (a.value.solved == b.value.solved) {
-              if (a.value.submit == b.value.submit) {
-                return a._id < b._id ? -1 : 1;
-              }
-              return a.value.submit < b.value.submit ? -1 : 1;
-            }
-            return a.value.solved > b.value.solved ? -1 : 1;
-          });
-        }
-        res.render('courserank', {title: 'CourseRank',
-                                  user: req.session.user,
-                                  message: req.session.msg,
-                                  time: (new Date()).getTime(),
-                                  key: 16,
-                                  ranks: ranks,
-                                  course: course,
-                                  UI: U
+          return a.value.solved > b.value.solved ? -1 : 1;
         });
+      }
+      res.render('courserank', {title: 'CourseRank',
+                                user: req.session.user,
+                                message: req.session.msg,
+                                time: (new Date()).getTime(),
+                                key: 16,
+                                ranks: ranks,
+                                course: C,
+                                UI: U
       });
     });
   };
@@ -2980,7 +3142,27 @@ exports.courseRank = function(req, res) {
         };
       });
     }
-    return RP({userName: {$in: names}}, UI);
+    Course.watch(id, function(err, course){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
+      }
+      if (!course) {
+        return res.end('404');
+      }
+      Group.find({id: {$in: course.groups}}, function(err, groups){
+        var pids = new Array();
+        if (groups) {
+          groups.forEach(function(p){
+            p.pids.forEach(function(i){
+              pids.push(i);
+            });
+          });
+        }
+        return RP({$and: [{problemID: {$in: pids}}, {userName: {$in: names}}] }, course, UI);
+      });
+    });
   });
 };
 

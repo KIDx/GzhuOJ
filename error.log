@@ -1,0 +1,24 @@
+2013-12-06 15:51:57 [GzhuOJ/models/problem.js:85:9]
+Problem.get failed!
+2013-12-06 15:51:57 [GzhuOJ/routes/index.js:2732:11]
+TypeError: Cannot call method 'map' of undefined
+2013-12-07 14:53:24 [GzhuOJ/models/problem.js:85:9]
+Problem.get failed!
+2013-12-07 14:53:24 [GzhuOJ/routes/index.js:2706:11]
+TypeError: Cannot call method 'map' of undefined
+2013-12-07 20:55:57 [GzhuOJ/models/course.js:73:7]
+Course.update failed!
+2013-12-07 20:55:57 [GzhuOJ/routes/index.js:2677:11]
+CastError: Cast to number failed for value "[object Object]" at path "courseID"
+2013-12-07 21:16:18 [GzhuOJ/models/problem.js:85:9]
+Problem.get failed!
+2013-12-07 21:16:18 [GzhuOJ/routes/index.js:2786:11]
+TypeError: Cannot call method 'map' of undefined
+2013-12-08 13:39:21 [GzhuOJ/models/group.js:56:7]
+Group.update failed!
+2013-12-08 13:39:21 [GzhuOJ/routes/index.js:2773:9]
+CastError: Cast to number failed for value "[object Object]" at path "id"
+2013-12-08 17:43:44 [GzhuOJ/models/problem.js:72:7]
+Problem.find failed!
+2013-12-08 17:43:44 [GzhuOJ/routes/index.js:2905:11]
+TypeError: Object #<Object> has no method 'map'

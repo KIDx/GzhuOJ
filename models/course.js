@@ -8,7 +8,7 @@ var mongoose = require('mongoose')
 function Course(course) {
   this.courseID = course.courseID;
   this.title = course.title;
-  this.probs = course.probs;
+  this.groups = course.groups;
 };
 
 module.exports = Course;
@@ -16,7 +16,7 @@ module.exports = Course;
 var courseObj = new Schema({
   courseID: {type: Number, index: {unique: true}},
   title: String,
-  probs: Array
+  groups: Array
 });
 
 mongoose.model('courses', courseObj);
@@ -26,7 +26,7 @@ Course.prototype.save = function(callback){
   course = new courses();
   course.courseID = this.courseID;
   course.title = this.title;
-  course.probs = this.probs;
+  course.groups = this.groups;
   course.save(function(err){
     if (err) {
       OE('Course.save failed!');
@@ -76,10 +76,10 @@ Course.update = function(cid, H, callback){
   });
 };
 
-Course.dele = function(Q, callback){
-  courses.findOneAndRemove(Q, function(err){
+Course.remove = function(Q, callback){
+  courses.remove(Q, function(err){
     if (err) {
-      OE('Course.dele failed');
+      OE('Course.remove failed');
     }
     return callback(err);
   });

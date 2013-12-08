@@ -20,6 +20,34 @@ a.disabled {
     background: #fff!important;
 }
 
+a.edit {
+    padding: 0;
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: url('img/edit.png');
+}
+
+a.add {
+    padding: 0;
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: url('img/add.png');
+}
+
+a.delete {
+    padding: 0;
+    display: block;
+    width: 16px;
+    height: 16px;
+    background: url('img/delete.png');
+}
+
+a.delete:hover {
+    background: url('img/_delete.png');
+}
+
 .my-radio {
     overflow: hidden;
 }
@@ -243,7 +271,7 @@ a.user {
 }
 
 .content {
-    width: 800px;
+    width: 900px;
     margin: 0 auto;
 }
 
@@ -256,7 +284,8 @@ a.user {
 
 .inner_topic {
     padding: 10px;
-    word-break: break-all;
+    word-break: break-word;
+    overflow: hidden;
 }
 
 .reply_area {
@@ -541,7 +570,11 @@ div.mylist > div#tablediv {
     text-align: center;
 }
 
-div.mylist > div#tablediv > a {
+div.prob_list {
+    text-align: center;
+}
+
+div.prob_list > a {
     font-size: large;
     margin-right: .3em;
     line-height: 25px;
@@ -558,13 +591,6 @@ div.tablebg div#pager {
     height: 30px;
     padding-right: 2px;
     position: relative;
-}
-
-div.tablebg div#header {
-    text-align: left;
-    font-weight: bold;
-     color: #555;
-    padding: 3px 0 3px 6px;
 }
 
 div.tablebg div#tablediv {
@@ -780,6 +806,7 @@ div.roundbox {
     background-color: whitesmoke;
     box-shadow: 0 1px 1px rgba(0,0,0,0.05) inset;
     overflow: hidden;
+    margin-bottom: 10px;
 }
 
 div.roundbox > h3 {

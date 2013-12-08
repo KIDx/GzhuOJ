@@ -19,7 +19,7 @@ var groupObj = new Schema({
 mongoose.model('groups', groupObj);
 var groups = mongoose.model('groups');
 
-Group.prototype.save = function(callback){
+Group.prototype.save = function(callback) {
   group = new groups();
   group.id = this.id;
   group.name = '新的分组';
@@ -32,7 +32,16 @@ Group.prototype.save = function(callback){
   });
 };
 
-Group.watch = function(gid, callback){
+Group.find = function(Q, callback) {
+  groups.find(Q, function(err, docs){
+    if (err) {
+      OE('Group.find failed!');
+    }
+    return callback(err, docs);
+  })
+};
+
+Group.watch = function(gid, callback) {
   groups.findOne({id:gid}, function(err, doc){
     if (err) {
       OE('Group.watch failed!');
@@ -41,11 +50,20 @@ Group.watch = function(gid, callback){
   });
 };
 
-Group.update = function(gid, H, callback){
+Group.update = function(gid, H, callback) {
   groups.update({id:gid}, H, function(err){
     if (err) {
       OE('Group.update failed!');
     }
     return callback(err);
   });
+};
+
+Group.remove = function(Q, callback) {
+  groups.remove(Q, function(err){
+    if (err) {
+      OE('Group.remove failed!');
+    }
+    return callback(err);
+  })
 };

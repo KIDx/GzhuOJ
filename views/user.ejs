@@ -16,7 +16,7 @@
         <li><a href="/status?name=<%= u.name %>">submissions</a></li>
       </ul>
     </div>
-    <div class="roundbox avatar_box">
+    <div class="roundbox">
       <div class="img avatar"><img alt="avatar" src="<%= img %>" /></div>
       <h3>
         <span>
@@ -105,11 +105,11 @@
         <li>AddProblem: <% if(u.addprob == 1) { %>YES<% } else { %>NO<% } %></li>
       </ul>
     </div>
-    <div class="tablebg mylist">
-      <div id="header">
+    <div class="topic_box">
+      <div class="header">
         List of <span class="success-text">solved</span> problems
       </div>
-      <div id="tablediv">
+      <div class="inner_topic prob_list">
       <% if (A.length == 0) { %>
         <span class="error-text">No problems has been solved :(</span>
       <% } %>
@@ -118,11 +118,11 @@
       <% } %>
       </div>
     </div>
-    <div class="tablebg mylist">
-      <div id="header">
+    <div class="topic_box">
+      <div class="header">
         List of <span class="error-text">unsolved</span> problems
       </div>
-      <div id="tablediv">
+      <div class="inner_topic prob_list">
       <% if (B.length == 0) { %>
         <p class="success-text">No unsolved problems :)</p>
       <% } %>

@@ -11,39 +11,56 @@
 		<h1 align="center"><%= type %> Course</h1>
 	</div>
 	<div class="form-horizontal" id="form">
-		<div style="width:800px;margin:0 auto;min-height:400px;">
+		<div style="width:850px;margin:0 auto;min-height:400px;">
 			<div class="control-group">
-				<label class="control-label" for="cname">课程名称：</label>
+				<label class="control-label" for="cname">课程标题：</label>
 				<div class="controls">
-					<input style="margin-right:20px;" <% if (course) { %>value="<%= course.title %>"<% } %> type="text" id="cname" class="input-xlarge" placeholder="课程名称" />
-					<span class="inline-block error-text" id="err"></span>
+					<input type="text" id="cname" class="input-xlarge" placeholder="请在此输入课程标题" <% if (course) { %>value="<%= course.title %>" disabled<% } %>/>
+					<% if (course) { %>
+					<a id="edit" href="javascript:;" title="修改标题" class="edit help-inline"></a>
+					<% } %>
 				</div>
 			</div>
+		<% if (course) { %>
 			<div class="control-group">
-				<label class="control-label" for="a">添加题目：</label>
+				<label class="control-label">题目分组：</label>
 				<div class="controls">
-					<input id="a" type="text" class="input-small" placeholder="题目编号" /> ~ 
-					<input style="margin-right:20px;" id="b" type="text" class="input-small" placeholder="题目编号" />
-					<span class="inline-block error-text" id="err2"></span>
-				</div>
-			</div>
-			<% if (course) { %>
-			<div class="control-group">
-				<label class="control-label">已有<%= course.probs.length %>道题：</label>
-				<div class="controls">
-					<% course.probs.forEach(function(p, i){ %>
-					<div class="tag-box">
-						<a target="_blank" href="/problem?pid=<%= p %>"><%= p %></a>
-						<%= pName[p] %>
-						<span id="<%= p %>" class="del" title="删除此题">×</span>
+					<% groups.forEach(function(p){ %>
+					<div class="topic_box" gid="<%= p.id %>">
+						<div class="header">
+							<a href="javascript:;" title="删除" class="fr delete"></a>
+							<input class="groupname" style="margin:0;padding:2px;" type="text" value="<%= p.name %>" disabled/>
+							<a href="javascript:;" title="修改组名" class="gedit edit help-inline"></a>
+							<a href="javascript:;" title="添加题目" class="add help-inline"></a>
+						</div>
+						<div class="inner_topic">
+						<% if (p.pids.length == 0) { %>
+							<span class="error-text">该分组还没有题目。</span>
+						<% } else { %>
+							<% p.pids.forEach(function(i){ %>
+							<div class="tag-box">
+								<a target="_blank" href="/problem?pid=<%= i %>"><%= i %></a>
+								<%= pName[i] %>
+								<span id="<%= i %>" class="del" title="删除此题">×</span>
+							</div>
+							<% }); %>
+						<% } %>
+						</div>
 					</div>
 					<% }); %>
+					<a id="newgroup" style="margin:0;" class="uibtn" href="javascript:;">新建分组</a>
 				</div>
 			</div>
-			<% } %>
+		<% } else { %>
+			<div class="control-group">
+				<div class="controls">
+					<a id="create" href="javascript:;" style="margin:0;" class="uibtn">点击新建课程</a>
+					<span id="err" class="error-text"></span>
+				</div>
+			</div>
+		<% } %>
 		</div>
 		<div class="form-actions" align="center">
-			<a class="uibtn" href="javascript:;" id="submit">保存</a>
 			<a class="uibtn" href="/course">返回</a>
 			<% if (course) { %>
 			<a class="uibtn" target="_blank" href="/onecourse/<%= course.courseID %>">预览课程</a>

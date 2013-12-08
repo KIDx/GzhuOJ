@@ -2,12 +2,11 @@
 <fieldset>
   <div>
     <legend id="onecourse" cid="<%= course.courseID %>">
-      课程<%= course.courseID %>：<%= course.title %>，共（<%= total %>）题
+      课程<%= course.courseID %>：<%= course.title %>，共（<%= n %>）题
     </legend>
   </div>
   <div class="tablebg">
     <div id="pager">
-      <%- partial('pager', {page:page, n:n}) %>
       <% if (user) { %>
       <div class="fr" id="filter">
         <% if (user && user.privilege == '82') { %>
@@ -34,30 +33,34 @@
           </tr>
         </thead>
         <tbody>
-        <% if (!problems || problems.length == 0) { %>
-          <tr class="odd">
-            <td class="error-text center" colspan="5">No Problems are matched.</td>
+      <% groups.forEach(function(p){ %>
+          <tr class="info">
+            <td colspan="5"><%= p.name %></td>
           </tr>
-        <% } else { %>
-        <% problems.forEach(function(p, i){ %>
+      <% if (!p.pids || p.pids.length == 0) { %>
+          <tr class="odd">
+            <td class="error-text" colspan="5">No problems in this group.</td>
+          </tr>
+      <% } else { %>
+        <% p.pids.forEach(function(pid, i){ %>
         <% var c, s; %>
         <% if (i % 2 == 1) { %>
         <% c = 'even'; %>
         <% } else { %>
         <% c = 'odd'; %>
         <% } %>
-        <% if (R[p.problemID] == 1) { %>
+        <% if (R[pid] == 1) { %>
         <% s = 'WA'; %>
-        <% } else if (R[p.problemID] == 2) { %>
+        <% } else if (R[pid] == 2) { %>
         <% s = 'AC'; %>
         <% } %>
           <tr class="<%= c %>">
-            <td class="center <%= s %>"><%= p.problemID %></td>
+            <td class="center <%= s %>"><%= pid %></td>
             <td>
-              <a target="_blank" href="/problem?pid=<%= p.problemID %>&cid=<%= course.courseID %>"><%= p.title %></a>
-            <% if (p.tags && p.tags.length > 0) { %>
+              <a target="_blank" href="/problem?pid=<%= pid %>&cid=<%= course.courseID %>"><%= P[pid].title %></a>
+            <% if (P[pid].tags && P[pid].tags.length > 0) { %>
               <div class="table-tab prob-tag">
-              <% p.tags.forEach(function(t, i){ %>
+              <% P[pid].tags.forEach(function(t, i){ %>
                 <% if (i > 0) { %>,<% } %>
                 <span title="<%= Pt[t] %>">
                   <%= Tag[t] %>
@@ -67,23 +70,24 @@
             <% } %>
             </td>
             <td class="ellipsis">
-              <small class="user-gray" title="<%= p.source %>"><%= p.source %></small>
+              <small class="user-gray" title="<%= P[pid].source %>"><%= P[pid].source %></small>
             </td>
             <td <% if (s) { %>class="<%= s %>-fill"<% } %>>
               <span class="act-item">
-                <a id="gotosubmit" class="checklogin" href="javascript:;" pid="<%= p.problemID %>">
+                <a id="gotosubmit" class="checklogin" href="javascript:;" pid="<%= pid %>">
                   <img src="/img/submit.png" title="Submit" alt="Submit"/>
                 </a>
               </span>
             </td>
           <% var res = '0.00'; %>
-          <% if (p.submit > 0) res = (p.AC/p.submit*100).toFixed(2); %>
+          <% if (P[pid].submit > 0) res = (P[pid].AC/P[pid].submit*100).toFixed(2); %>
             <td class="center">
-              <%= res %>%(<a href="/status?pid=<%= p.problemID%>&result=2"><%= p.AC %></a>/<a href="/status?pid=<%= p.problemID %>"><%= p.submit %></a>)
+              <%= res %>%(<a href="/status?pid=<%= pid %>&result=2"><%= P[pid].AC %></a>/<a href="/status?pid=<%= pid %>"><%= P[pid].submit %></a>)
             </td>
           </tr>
         <% }); %>
-        <% } %>
+      <% } %>
+      <% }); %>
         </tbody>
       </table>
     </div>

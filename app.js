@@ -126,8 +126,18 @@ app.post('/contestDelete', routes.contestDelete);
 app.post('/show', routes.show);
 //删除一个课程
 app.post('/courseDelete', routes.courseDelete);
-//删除课程里的一道题
-app.post('/delCourseProb', routes.delCourseProb);
+//to change course's title
+app.post('/changeCourseTitle', routes.changeCourseTitle);
+//to change group's name
+app.post('/changeGroupName', routes.changeGroupName);
+//新建分组
+app.post('/addGroup', routes.addGroup);
+//删除分组
+app.post('/delGroup', routes.delGroup);
+//为分组添加题目
+app.post('/addProbToGroup', routes.addProbToGroup);
+//为分组删除题目
+app.post('/delProbInGroup', routes.delProbInGroup);
 //公有VIPContest的注册
 app.post('/contestReg', routes.contestReg);
 //用户提交注册报名私有VIPContest

@@ -148,8 +148,6 @@ var current_time
 
 var $finput = $('input[type="text"], textarea').eq(1);
 
-var Msg = $footTime.attr('msg');
-
 var $logindialog = $('div#logindialog')
 ,   $logininput = $logindialog.find('input')
 ,   $loginerr = $logindialog.find('small#login_error')
@@ -293,11 +291,10 @@ $(document).ready(function(){
     setInterval(SetCurrentTime, 1000);
 
     //message
-    if (Msg) {
-        $.post('/msgClear', function(){
-            ShowMessage(Msg);
-        });
-    }
+    $.post('/getMessage', function(res){
+        if (res)
+            ShowMessage(res);
+    });
 
     //login
     if ($logindialog.length) {

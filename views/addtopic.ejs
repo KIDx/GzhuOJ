@@ -11,11 +11,17 @@
 		<h1 align="center"><%= type %> Topic</h1>
 	</div>
 	<div class="form-horizontal">
-		<div style="margin:0 auto;">
+		<div class="mc">
 			<div class="control-group">
 				<label class="control-label" for="Title">标题：</label>
 				<div class="controls">
 					<input <% if (topic) { %>value="<%= topic.title %>"<% } %> type="text" id="Title" class="input-xxlarge" placeholder="请在此输入标题" />
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label" for="Title"><span class="user user-red">注意：</span></label>
+				<div class="controls" style="padding-top:5px;">
+					<span class="user user-green">要多使用表情左边的<span class="user user-red">插入代码功能</span>哦~</span>
 				</div>
 			</div>
 			<div class="control-group">

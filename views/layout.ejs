@@ -18,7 +18,7 @@
     <div class="w">
       <div class="fl">ACM-ICPC</div>
       <marquee style="margin-left:20px;float:left;width:50%;" id="marquee" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="scroll">
-        <a class="user user-red" href="/regform/1011">点击报名《13级专场：我们的第二场比赛》</a>
+        <span class="user user-green">解题报告已发，大家多关注论坛哈~</span>
       </marquee>
       <ul class="navigation">
     <% if (!user) { %>
@@ -48,8 +48,8 @@
     <% if (user) { %>
       <% var img = '/img/avatar/%3Ddefault%3D/3.jpeg'; %>
       <% if (user.imgType) { img = '/img/avatar/'+user.name+'/3.'+user.imgType; } %>
-        <a class="fr" title="change picture" href="/avatar">
-          <img class="img_m topic_img" alt="avatar" src="<%= img %>" />
+        <a class="fr" href="/avatar">
+          <img class="img_m topic_img" title="change picture" alt="change picture" src="<%= img %>" />
         </a>
     <% } %>
       <a href="/" title="Gzhu Online Judge">
@@ -80,7 +80,7 @@
     <div class="w" id="footer">
       <div><a href="#">GzhuOnlineJudge</a> (c) Copyright 2012-2014 KIDx, TT_last</div>
       <div>Any bug please contect 972169909@qq.com</div>
-      <div>Server time: <span <% if(key == 6) { %>type="<%= type %>"<% } %> <% if (user) { %>user="<%= user.name %>"<% } %> time="<%= time %>" id="timer" <% if (message) { %>msg="<%= message %>"<% } %>></span></div>
+      <div>Server time: <span <% if(key == 6) { %>type="<%= type %>"<% } %> <% if (user) { %>user="<%= user.name %>"<% } %> time="<%= time %>" id="timer"></span></div>
     </div>
 <!--****************Dialogs****************-->
     <% if (!user) { %>

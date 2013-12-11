@@ -10,6 +10,9 @@ var interceptorTime = 300
 ,	cnt;	//行号
 
 var $contest = $('#contest')
+,	$p_span = $('span.cpid')
+,	pids = new Array()
+,	alias = new Array()
 ,	ctype = parseInt($contest.attr('ctype'), 10)
 ,	pageNum = $contest.attr('pageNum')
 ,	display = $contest.attr('display')
@@ -84,7 +87,8 @@ function lang(s) {
 	if (s == 1) return 'C';
 	if (s == 2) return 'C++';
 	if (s == 3) return 'Java';
-	return 'C++11';
+	if (s == 4) return 'C++11';
+	return 'unknow';
 }
 
 function buildRow(sol) {
@@ -97,7 +101,7 @@ function buildRow(sol) {
 
 	html += '<td>'+sol.runID+'</td>';
 	var pvl = parseInt(Users[sol.userName], 10);
-	html += '<td><a href="/user/'+sol.userName+'" class="user user-';
+	html += '<td><a target="_blank" href="/user/'+sol.userName+'" class="user user-';
 	html += UserCol(pvl)+'" title="'+UserTitle(pvl)+'">'+sol.userName+'</a></td>';
 	html += '<td><a class="plink" href="#problem-'+pmap[sol.problemID]+'">'+pmap[sol.problemID]+'</a></td>';
 
@@ -231,9 +235,8 @@ function noActive(i) {
 var $overview = $div.find('#overviewtab')
 ,	$o_index = $overview.find('td.o_index')
 ,	$o_sol = $overview.find('td.o_sol')
-,	$pidtext = $('span.cpid')
 ,	$clone = $('#clone')
-,	prob_num = $pidtext.length
+,	prob_num = $p_span.length
 ,	overviewTimeout
 ,	overviewAjax;
 
@@ -314,9 +317,12 @@ var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Outpu
 
 function ProblemsResponse(prob) {
 	if (!problemAjax || !prob || !isActive(1)) return ;
+	function getTitle(i) {
+		return alias[i] ? alias[i] : prob.title;
+	}
 	if (!ProblemAPI[ID]) ProblemAPI[ID] = prob;
 	$title.eq(0).text( F.charAt(ID) );
-	$title.eq(1).text( $pidtext.eq(ID).text() );
+	$title.eq(1).text( getTitle(ID) );
 	$limit.eq(0).text( 2*prob.timeLimit+'/'+prob.timeLimit );
 	$limit.eq(1).text( 2*prob.memoryLimit+'/'+prob.memoryLimit );
 	if (prob.spj == 1) {
@@ -346,13 +352,17 @@ function ProblemsResponse(prob) {
 	$problemlink.eq(ID).addClass('active');
 
 	//增加题号,题目属性
-	$probsubmit.attr('pid', pid_index); $probsubmit2.attr('pid', pid_index);
+	$probsubmit.attr('pid', prob.problemID); $probsubmit2.attr('pid', prob.problemID);
 	$probsubmit.next().attr('pid', ID); $probsubmit2.next().attr('pid', ID);
-	$probsubmit.attr('tname', pid_name); $probsubmit2.attr('tname', pid_name);
+	$probsubmit.attr('tname', getTitle(ID)); $probsubmit2.attr('tname', getTitle(ID));
 	if ($rejudge.length) {
 		$rejudge.unbind('click');
 		$rejudge.click(function(){
-			$.post('/rejudge', {pid:pid_index, cid:'1'}, function(res){
+			if ($(this).hasClass('disabled')) {
+				return false;
+			}
+			$(this).addClass('disabled');
+			$.post('/rejudge', {pid:prob.problemID, cid:'1'}, function(res){
 				$pid.val(F.charAt(ID));
 				if (res == '0') ShowMessage('Failed! You have no permission to Rejudge.');
 				else if (res == '1') ShowMessage('Problem '+F.charAt(ID)+' has been Rejudged successfully!');
@@ -372,8 +382,6 @@ function GetProblem() {
 	clearTimeout(problemTimeout);
 	problemTimeout = setTimeout(function(){
 		if (!ID || ID < 0) ID = 0;
-		pid_index = $pidtext.eq(ID).attr('id');
-		pid_name = $pidtext.eq(ID).text();
 		if (ProblemAPI[ID]) {
 			ProblemsResponse(ProblemAPI[ID]);
 		} else {
@@ -382,9 +390,8 @@ function GetProblem() {
 				url: '/getProblem',
 				dataType: 'json',
 				data: {
-					curl: 'problem/'+F.charAt(ID),
 					cid: cid,
-					pid: pid_index,
+					pid: pids[ID],
 					all: true
 				},
 				timeout: 5000
@@ -717,11 +724,13 @@ function runningTimer() {
 
 function runContest() {
 	//bulid map pmap and fmap
-	$.each($pidtext, function(i) {
-		var tpid = $(this).attr('id'), tch = F.charAt(i);
-		pmap[tpid] = tch;
-		fmap[tch] = tpid;
+	$.each($p_span, function(i, p){
+		alias.push($(p).attr('alias'));
+		pids.push($(p).attr('pid'));
+		pmap[pids[i]] = F.charAt(i);
+		fmap[F.charAt(i)] = pids[i];
 	});
+	console.log(pmap);
 
 	$link.click(function(){
 		if ($(this).parent().hasClass('active')) {
@@ -791,7 +800,8 @@ $(document).ready(function(){
 
 //bind submit
 var $SubmitDialog = $('#submitdialog')
-,	$sublink = $('a.consubmit');
+,	$sublink = $('a.consubmit')
+,	pid_index;
 
 $(document).ready(function(){
 	$.each($sublink, function(i, p) {
@@ -861,26 +871,14 @@ $(document).ready(function(){
 	}
 });
 
-var $Delete = $('#deletedialog');
+var $del = $('a#delete');
 
 $(document).ready(function(){
-	//delete the contest
-	if ($Delete.length > 0) {
-		$Delete.jqm({
-			overlay: 30,
-			trigger: $('a#delete'),
-			modal: true,
-			closeClass: 'deleteclose',
-			onShow: function(h) {
-				h.o.fadeIn(200);
-				h.w.fadeIn(200);
-			},
-			onHide: function(h) {
-				h.w.fadeOut(200);
-				h.o.fadeOut(200);
+	if ($del.length) {
+		$del.click(function(){
+			if (!window.confirm('Are you sure to delete this contest?')) {
+				return false;
 			}
-		}).jqDrag('.jqDrag');
-		$Delete.find('a#sure').click(function(){
 			$.post('/contestDelete', {cid:cid}, function(){
 				window.location.href = '/contest/'+ctype;
 			});
@@ -889,17 +887,31 @@ $(document).ready(function(){
 });
 
 //show problems in problemset
-var $show = $('#show');
+var $toggleHide = $('a.toggleHide');
 
 $(document).ready(function(){
-	if ($show.length) {
-		$show.click(function(){
-			$.post('/show', {cid:cid}, function(res){
-				if (res) {
+	if ($toggleHide.length) {
+		$toggleHide.click(function(){
+			var $p = $(this);
+			if ($p.hasClass('disabled')) {
+				return false;
+			}
+			$p.addClass('disabled');
+			var pid = $p.attr('pid');
+			$.post('/toggleHide', {pid: pid}, function(res){
+				if (res == '1') {
 					ShowMessage('系统错误！');
+				} else if (res == '2') {
+					window.location.reload(true);
 				} else {
-					ShowMessage('Problems have been Updated successfully!');
+					if (res == 'h') {
+						$p.text('显示到题库');
+					} else {
+						$p.text('隐藏');
+					}
+					ShowMessage('Problem '+pid+' have been Updated successfully!');
 				}
+				$p.removeClass('disabled');
 			});
 		});
 	}

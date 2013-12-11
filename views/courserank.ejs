@@ -16,7 +16,6 @@
   </div>
   <div class="tablebg">
     <div id="pager">
-      <div id="header" class="fl"><%= user.grade %><%= T %>排名</div>
       <% if (user && user.privilege == '82') { %>
       <div class="fr" id="filter">
         <div>
@@ -40,6 +39,7 @@
         </div>
       </div>
       <% } %>
+      <div class="theader"><%= user.grade %><%= T %>排名</div>
     </div>
     <div id="tablediv">
       <table class="table tdcenter table-rank" style="table-layout:fixed;" id="rank">

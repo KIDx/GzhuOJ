@@ -87,6 +87,10 @@ var settings = require('../settings')
 var data_path = settings.data_path
 ,   root_path = settings.root_path;
 
+function nan(n) {
+  return n != n;
+}
+
 function nil(n) {
   return (typeof(n) == 'undefined');
 }
@@ -873,10 +877,6 @@ exports.changeInfo = function(req, res) {
 
 exports.getProblem = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  if (req.body.curl) {
-    if (!req.session.oneQ) req.session.oneQ = {};
-    req.session.oneQ[req.body.cid] = req.body.curl;
-  }
   var pid = parseInt(req.body.pid, 10);
   if (!pid) {
     return res.end();   //not allow!
@@ -1346,7 +1346,6 @@ exports.index = function(req, res){
   //IDs.Init();
   res.render('index', { title: 'Gzhu Online Judge',
                         user: req.session.user,
-                        message: req.session.msg,
                         time: (new Date()).getTime(),
                         key: -1
   });
@@ -1355,7 +1354,7 @@ exports.index = function(req, res){
 exports.user = function(req, res) {
   var name = req.params.name;
   if (!name) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   User.watch(name, function(err, user){
     if (err) {
@@ -1364,7 +1363,7 @@ exports.user = function(req, res) {
       return res.redirect('/');
     }
     if (!user) {
-      return res.end('404');
+      return res.redirect('/404');
     }
     if (!user.addprob) user.addprob = 0;
     else user.addprob = 1;
@@ -1390,7 +1389,6 @@ exports.user = function(req, res) {
       var RP = function(H) {
         res.render('user', {title: 'User',
                             user: req.session.user,
-                            message: req.session.msg,
                             time: (new Date()).getTime(),
                             key: 0,
                             u: user,
@@ -1440,7 +1438,6 @@ exports.avatar = function(req, res) {
   }
   res.render('avatar', {title: 'Avatar Setting',
                         user: req.session.user,
-                        message: req.session.msg,
                         time: (new Date()).getTime(),
                         key: 12
   });
@@ -1575,7 +1572,6 @@ exports.addstudent = function(req, res) {
   }
   res.render('addstudent', { title: 'addstudent',
                              user: req.session.user,
-                             message: req.session.msg,
                              time: (new Date()).getTime(),
                              key: 13,
                              C: College
@@ -1601,7 +1597,6 @@ exports.addproblem = function(req, res) {
     }
     res.render('addproblem', { title: 'addproblem',
                                user: req.session.user,
-                               message: req.session.msg,
                                time: (new Date()).getTime(),
                                problem: P,
                                key: tk,
@@ -1800,7 +1795,7 @@ exports.dataUpload = function(req, res) {
         if (!user || !user.addprob) {
           return res.end();
         }
-        fs.writeFile(data_path+pid+'/'+fname, data, function(err){
+        fs.writeFile(data_path+pid+'/'+fname, String(data).replace(/\r/g, ''), function(err){
           if (err) {
             OE(err);
             return res.end('3');
@@ -1883,7 +1878,6 @@ exports.problem = function(req, res) {
   if (!pid) {
     res.render('problem', {title: 'Problem',
                             user: req.session.user,
-                            message: req.session.msg,
                             time: (new Date()).getTime(),
                             key: -1,
                             problem: null
@@ -1917,7 +1911,6 @@ exports.problem = function(req, res) {
           }
           res.render('problem', { title: 'Problem '+pid,
                                   user: req.session.user,
-                                  message: req.session.msg,
                                   time: (new Date()).getTime(),
                                   key: 8,
                                   problem: problem,
@@ -1996,7 +1989,6 @@ exports.problemset = function(req, res) {
     var RP = function(R){
       res.render('problemset', {title: 'ProblemSet',
                                 user: req.session.user,
-                                message: req.session.msg,
                                 time: (new Date()).getTime(),
                                 key: 3,
                                 n: n,
@@ -2107,7 +2099,6 @@ exports.status = function(req, res) {
       }
       res.render('status', {title: 'Status',
                             user: req.session.user,
-                            message: req.session.msg,
                             time: (new Date()).getTime(),
                             key: 4,
                             n: n,
@@ -2129,28 +2120,32 @@ exports.status = function(req, res) {
 };
 
 exports.addcontest = function(req, res) {
-  var type = parseInt(req.query.type);
-  if (!type || type < 1 || type > 3)
-    return res.end('cannot GET this page.');
+  var type = parseInt(req.query.type, 10);
+  if (!type || type < 1 || type > 3) {
+    return res.redirect('/404');
+  }
   if (!req.session.user) {
     req.session.msg = 'Please login first!';
     return res.redirect('/contest/'+type);
   }
-  var RP = function(C, clone, type) {
+  var RP = function(C, clone, type, E, P) {
     res.render('addcontest', {title: 'AddContest',
                               user: req.session.user,
-                              message: req.session.msg,
                               time: (new Date()).getTime(),
                               contest: C,
                               key: 1002,
                               date: getDate(new Date()).split(' ')[0],
                               clone: clone,
-                              type: type
+                              type: type,
+                              edit: E,
+                              P: P
     });
-  };
-  tcid = parseInt(req.query.cID, 10);
-  if (!tcid) {
-    if (type == 2 && req.session.user.name != 'admin') {
+  }
+  ,   name = req.session.user.name
+  ,   cid = parseInt(req.query.cID, 10);
+
+  if (!cid) {
+    if (type == 2 && name != 'admin') {
       req.session.msg = 'You have no permission to add VIP Contest!';
       return res.redirect('/contest/2');
     }
@@ -2158,42 +2153,96 @@ exports.addcontest = function(req, res) {
       req.session.msg = 'You have no permission to add Exam!';
       return res.redirect('/contest/3');
     }
-    return RP(null, 0, type);
+    return RP(null, 0, type, true, {});
   } else {
     var clone = 0;
-    if (tcid < 0) {
+    if (cid < 0) {
       clone = 1;
-      tcid = -tcid;
+      cid = -cid;
     }
-    Contest.watch (tcid, function(err, contest){
+    Contest.watch(cid, function(err, contest){
       if (err) {
+        OE(err);
         req.session.msg = '系统错误！';
-        return res.redirect('/contest/'+type);
+        return res.redirect('/');
       }
-      if (contest && clone == 0 && req.session.user.name != contest.userName) {
+      if (!contest) {
+        return res.redirect('/404');
+      }
+      if (clone == 0 && name != contest.userName && name != 'admin') {
         req.session.msg = 'You are not the manager of this contest!';
-        return res.redirect('/onecontest/'+tcid);
+        return res.redirect('/onecontest/'+cid);
       }
-      if (clone == 1 && (!req.session.user || req.session.user.name != contest.userName)) {
-        if ((contest.type != 2 && contest.password) ||
-          getDate(new Date()) <= calDate(contest.startTime, contest.len)) {
-            req.session.msg = 'Error! Illegal operation!';
-          return res.redirect('/contest/'+type);
+      if (clone == 1 && name != contest.userName && name != 'admin') {
+        if (getDate(new Date()) <= calDate(contest.startTime, contest.len)) {
+          return res.end();   //not allow
         }
       }
-      return RP(contest, clone, null);
+      var TP = function(E) {
+        var pids = new Array();
+        if (contest.probs) {
+          contest.probs.forEach(function(p){
+            pids.push(p[0]);
+          });
+        }
+        Problem.find({problemID: {$in: pids}}, function(err, problems){
+          if (err) {
+            OE(err);
+            req.session.msg = '系统错误！';
+            return res.redirect('/');
+          }
+          var P = {};
+          if (problems) {
+            problems.forEach(function(p){
+              P[p.problemID] = p;
+            });
+          }
+          return RP(contest, clone, null, E, P);
+        });
+      };
+      if (clone == 1) {
+        TP(true);
+      } else {
+        Solution.watch({cID: cid}, function(err, sol){
+          if (err) {
+            OE(err);
+            req.session.msg = '系统错误！';
+            return res.redirect('/');
+          }
+          var E = sol ? false : true;
+          return TP(E);
+        });
+      }
     });
   }
 };
 
 exports.doAddcontest = function(req, res) {
   res.header('Content-Type', 'text/plain');
+
+  var psw = ''
+  ,   title = clearSpace(req.body.title)
+  ,   date = clearSpace(req.body.date)
+  ,   hour = deal(req.body.hour)
+  ,   min = deal(req.body.min)
+  ,   dd = parseInt(req.body.dd, 10)
+  ,   hh = parseInt(req.body.hh, 10)
+  ,   mm = parseInt(req.body.mm, 10)
+  ,   desc = clearSpace(req.body.desc)
+  ,   anc = clearSpace(req.body.anc);
+
+  if (!title || !date || !hour || !min ||
+      nan(dd) || nan(hh) || nan(mm)) {
+    return res.end();   //not allow!
+  }
+
   if (!req.session.user) {
     req.session.msg = 'Failed! Please login first!';
     return res.end();
   }
-  var type = parseInt(req.body.type, 10);
-  if (type == 2 && req.session.user.name != 'admin') {
+  var type = parseInt(req.body.type, 10)
+  ,   name = req.session.user.name;
+  if (type == 2 && name != 'admin') {
     req.session.msg = 'Failed! You have no permission to add VIP Contest!';
     return res.end();
   }
@@ -2201,141 +2250,166 @@ exports.doAddcontest = function(req, res) {
     req.session.msg = 'Failed! You have no permission to add Exam!';
     return res.end();
   }
-  var password = ''
-  ,   ctitle = clearSpace(req.body.ctitle)
-  ,   cdate = clearSpace(req.body.cdate)
-  ,   chour = deal(req.body.chour)
-  ,   cmin = deal(req.body.cminute)
-  ,   cDay = parseInt(req.body.cDay, 10)
-  ,   cHour = parseInt(req.body.cHour, 10)
-  ,   cMin = parseInt(req.body.cMinute, 10)
-  ,   desc = clearSpace(req.body.Description)
-  ,   anc = clearSpace(req.body.Announcement);
-
-  if (!ctitle || !cdate || nil(chour) ||
-      nil(cmin) || nil(cDay) || nil(cHour) || nil(cMin)) {
-    return res.end();   //not allow!
-  }
 
   if (type == 2) {
-    password = req.body.cpassword;
-  } else if (req.body.cpassword) {
+    psw = req.body.psw ? '1' : '';
+  } else if (req.body.psw) {
     var md5 = crypto.createHash('md5');
-    password = md5.update(req.body.cpassword).digest('base64');
+    psw = md5.update(req.body.psw).digest('base64');
   }
-  if (!password) {
-    password = '';
-  }
-
-  var ary = new Array();
-  if (req.body.ary && req.body.ary.length) {
-    req.body.ary.forEach(function(p){
-      ary.push(p);
+  
+  var pids = new Array();
+  if (req.body.pids && req.body.pids.length) {
+    req.body.pids.forEach(function(p){
+      pids.push(p);
     });
   }
-  var newContest = new Contest({
-    title: ctitle,
-    startTime: cdate+' '+chour+':'+cmin,
-    len: cDay*1440+cHour*60+cMin,
-    description: desc,
-    msg: anc,
-    password: password
+  var alias = req.body.alias ? req.body.alias : {}
+  , RP = function(ary) {
+    var startTime = date+' '+hour+':'+min
+    ,   len = dd*1440 + hh*60 + mm
+    ,   cid = parseInt(req.body.cid, 10);
+    if (cid) {
+      Contest.watch(cid, function(err, con) {
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        if (!con || con.type != type) {
+          return res.end();   //not allow
+        }
+        if (name != con.userName && name != 'admin') {
+          req.session.msg = 'Update Failed! You are not the manager!';
+          return res.end();
+        }
+        con.title = title;
+        var flg = false;
+        if (con.startTime != startTime || con.len > len) {
+          flg = true;
+          con.updateTime = con.maxRunID = 0;
+        }
+        con.startTime = startTime;
+        con.len = len;
+        con.description = desc;
+        con.msg = anc;
+        if (con.password != req.body.psw)
+          con.password = psw;
+        var save = function() {
+          con.save(function(err){
+            if (err) {
+              OE(err);
+              req.session.msg = '系统错误！';
+              return res.end();
+            }
+            req.session.msg = 'Your '+(type == 3 ? 'Exam' : 'Contest')+' has been updated successfully!';
+            var tp = cid.toString();
+            if (!flg) {
+              return res.end(tp);
+            }
+            if (con.type == 2) {
+              ContestRank.update({'_id.cid':cid}, {$set:{value:{solved:0,penalty:0,status:{}}}}, function(err){
+                if (err) {
+                  OE(err);
+                  req.session.msg = '系统错误！';
+                  return res.end();
+                }
+                return res.end(tp);
+              });
+            } else {
+              ContestRank.remove({'_id.cid':cid}, function(err){
+                if (err) {
+                  OE(err);
+                  req.session.msg = '系统错误！';
+                  return res.end();
+                }
+                return res.end(tp);
+              });
+            }
+          });
+        }, judge = function() {
+          if (ary.length != con.probs.length) {
+            return false;
+          }
+          for (var i = 0; i < ary.length; i++) {
+            if (ary[i][0] != con.probs[i][0])
+              return false;
+          }
+          return true;
+        };
+        if (judge()) {
+          con.probs = ary;
+          return save();
+        }
+        Solution.watch({cID: cid}, function(err, sol){
+          if (err) {
+            OE(err);
+            req.session.msg = '系统错误！';
+            return res.end();
+          }
+          if (!sol)
+            con.probs = ary;
+          return save();
+        });
+      });
+    } else {
+      if (!ary.length) {
+        return res.end();   //not allow
+      }
+      IDs.get('contestID', function(err, id) {
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        (new Contest({
+          contestID   : id,
+          userName    : name,
+          title       : title,
+          startTime   : startTime,
+          len         : len,
+          description : desc,
+          msg         : anc,
+          probs       : ary,
+          password    : psw,
+          type        : type
+        })).save(function(err) {
+          if (err) {
+            OE(err);
+            req.session.msg = '系统错误！';
+            return res.end();
+          }
+          req.session.msg = 'Your '+(type == 3 ? 'Exam' : 'Contest')+' has been added successfully!';
+          return res.end(id.toString());
+        });
+      });
+    }
+  };
+  Problem.find({problemID: {$in: pids}}, function(err, problems){
+    if (err) {
+      OE(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    var has = {};
+    if (problems) {
+      problems.forEach(function(p){
+        has[p.problemID] = true;
+      });
+    }
+    var ary = new Array();
+    pids.forEach(function(p, i){
+      if (has[p])
+        ary.push([p, clearSpace(alias[i])]);
+    });
+    return RP(ary);
   });
-  var cid = parseInt(req.body.cid, 10);
-  if (cid >= 1000) {
-    newContest.contestID = cid;
-    Contest.watch(cid, function(err, con) {
-      if (err) {
-        OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
-      }
-      if (!con) {
-        return res.end();
-      }
-      if (req.session.user.name != con.userName) {
-        req.session.msg = 'Update Failed! You are not the manager!';
-        return res.end();
-      }
-      con.title = newContest.title;
-      var flg = false;
-      if (con.startTime != newContest.startTime) {
-        con.startTime = newContest.startTime;
-        flg = true;
-      }
-      if (con.len > newContest.len) {
-        flg = true;
-      }
-      con.len = newContest.len;
-      if (flg) con.updateTime = con.maxRunID = 0;
-      con.description = newContest.description;
-      con.msg = newContest.msg;
-      con.probs =  ary;
-      con.password = newContest.password;
-      con.save(function(err){
-        if (err) {
-          OE(err);
-          req.session.msg = '系统错误！';
-          return res.end();
-        }
-        var cstr = 'Contest';
-        if (type == 3) cstr = 'Exam';
-        req.session.msg = 'Your '+cstr+' has been updated successfully!';
-        var tp = cid.toString();
-        if (!flg) {
-          return res.end(tp);
-        }
-        if (con.type == 2) {
-          ContestRank.update({'_id.cid':cid}, {$set:{value:{solved:0,penalty:0,status:{}}}}, function(err){
-            if (err) {
-              OE(err);
-              req.session.msg = '系统错误！';
-              return res.end();
-            }
-            return res.end(tp);
-          });
-        } else {
-          ContestRank.remove({'_id.cid':cid}, function(err){
-            if (err) {
-              OE(err);
-              req.session.msg = '系统错误！';
-              return res.end();
-            }
-            return res.end(tp);
-          });
-        }
-      });
-    });
-  } else {
-    IDs.get ('contestID', function(err, id) {
-      if (err) {
-        OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
-      }
-      newContest.contestID = id;
-      newContest.userName = req.session.user.name;
-      newContest.probs = ary;
-      newContest.type = type;
-      newContest.save(function(err) {
-        if (err) {
-          OE(err);
-          req.session.msg = '系统错误！';
-          return res.end();
-        }
-        var cstr = 'Contest';
-        if (type == 3) cstr = 'Exam';
-        req.session.msg = 'Your '+cstr+' has been added successfully!';
-        return res.end(id.toString());
-      });
-    });
-  }
 };
 
 exports.onecontest = function(req, res) {
   var cid = parseInt(req.params.cid, 10);
   if (!cid) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   Contest.watch(cid, function(err, contest) {
     if (err) {
@@ -2344,7 +2418,7 @@ exports.onecontest = function(req, res) {
       return res.redirect('/');
     }
     if (!contest) {
-      return res.end('404');
+      return res.redirect('/404');
     }
     if (contest.type == 3) {
       if (!req.session.user) {
@@ -2358,7 +2432,7 @@ exports.onecontest = function(req, res) {
     }
     if (contest.type != 2) {
       if (contest.password) {
-        if (!req.session.user || req.session.user.name != contest.userName) {
+        if (!req.session.user || (req.session.user.name != contest.userName && req.session.user.name != 'admin')) {
           if (!req.session.cid || !req.session.cid[cid]) {
             req.session.msg = 'you should login the contest '+cid+' first!';
             return res.redirect('/contest/'+contest.type);
@@ -2373,26 +2447,45 @@ exports.onecontest = function(req, res) {
         IsRegCon(contest.contestants, req.session.user.name)))) {
       isContestant = true;
     }
-    User.watch(contest.userName, function(err, user){
+    var pids = new Array();
+    if (contest.probs) {
+      contest.probs.forEach(function(p){
+        pids.push(p[0]);
+      });
+    }
+    Problem.find({problemID: {$in: pids}}, function(err, problems){
       if (err) {
         OE(err);
         req.session.msg = '系统错误！';
         return res.redirect('/');
       }
-      if (!user) {
-        return res.end();   //not allow
+      var Pt = {};
+      if (problems) {
+        problems.forEach(function(p){
+          Pt[p.problemID] = p;
+        });
       }
-      res.render('onecontest', {title: 'OneContest',
-                                user: req.session.user,
-                                message: req.session.msg,
-                                time: (new Date()).getTime(),
-                                key: 9,
-                                contest: contest,
-                                getDate: getDate,
-                                isContestant: isContestant,
-                                pageNum: contestRank_pageNum,
-                                MC: UserCol(user.privilege),
-                                MT: UserTitle(user.privilege)
+      User.watch(contest.userName, function(err, user){
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.redirect('/');
+        }
+        if (!user) {
+          return res.end();   //not allow
+        }
+        res.render('onecontest', {title: 'OneContest',
+                                  user: req.session.user,
+                                  time: (new Date()).getTime(),
+                                  key: 9,
+                                  contest: contest,
+                                  getDate: getDate,
+                                  isContestant: isContestant,
+                                  pageNum: contestRank_pageNum,
+                                  MC: UserCol(user.privilege),
+                                  MT: UserTitle(user.privilege),
+                                  Pt: Pt
+        });
       });
     });
   });
@@ -2403,59 +2496,40 @@ exports.contestDelete = function(req, res) {
   if (!req.session.user) {
     return res.end();   //not allow
   }
-  var cid = parseInt(req.body.cid, 10);
-  if (!cid) {
+  var cid = parseInt(req.body.cid, 10)
+  ,   name = req.session.user.name;
+  if (!cid || !name) {
     return res.end();   //not allow
   }
-  var name = req.session.user.name;
-  if (!name) {
-    return res.end();   //not allow
-  }
-  Solution.watch({cID: cid}, function(err, sol){
+  Contest.watch(cid, function(err, con){
     if (err) {
       OE(err);
       req.session.msg = '系统错误！';
       return res.end();
     }
-    if (sol) {
-      req.session.msg = 'Can\'t delete the contest, because there are some submits in this contest!';
+    if (name != con.userName && name != 'admin') {
+      req.session.msg = 'Delete Failed! You are not the manager!';
       return res.end();
     }
-    Contest.dele({contestID: cid, userName: name}, function(err){
+    Solution.watch({cID: cid}, function(err, sol){
       if (err) {
         OE(err);
         req.session.msg = '系统错误！';
         return res.end();
       }
-      req.session.msg = 'Contest '+cid+' has been Deleted successfully!';
-      return res.end();
-    });
-  });
-};
-
-exports.show = function(req, res) {
-  var cid = parseInt(req.body.cid, 10);
-  if (!cid) {
-    return res.end();     //not allow
-  }
-  Contest.watch(cid, function(err, contest){
-    if (err) {
-      OE(err);
-      return res.end('1');
-    }
-    if (!contest || !contest.probs) {
-      return res.end();   //not allow!
-    }
-    var pids = new Array();
-    contest.probs.forEach(function(p){
-      pids.push(p[0]);
-    });
-    Problem.multiUpdate({problemID: {$in: pids}}, {hide: false}, function(err){
-      if (err) {
-        OE(err);
-        return res.end('1');
+      if (sol) {
+        req.session.msg = 'Can\'t delete the contest, because there are some submits in this contest!';
+        return res.end();
       }
-      return res.end();
+      Contest.remove(cid, function(err){
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        req.session.msg = 'Contest '+cid+' has been Deleted successfully!';
+        return res.end();
+      });
     });
   });
 };
@@ -2463,7 +2537,7 @@ exports.show = function(req, res) {
 exports.contest = function(req, res) {
   var type = parseInt(req.params.type, 10);
   if (!type || type < 0 || type > 3) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   if (!req.query.page) {
     page = 1;
@@ -2517,7 +2591,6 @@ exports.contest = function(req, res) {
       }
       res.render ('contest', {title: 'Contest',
                               user: req.session.user,
-                              message: req.session.msg,
                               time: now,
                               key: 6,
                               type: type,
@@ -2548,7 +2621,6 @@ exports.addcourse = function(req, res) {
   var RP = function(C, P, G){
     res.render('addcourse', { title: 'AddCourse',
                               user: req.session.user,
-                              message: req.session.msg,
                               time: (new Date()).getTime(),
                               course: C,
                               key: 1003,
@@ -2566,7 +2638,7 @@ exports.addcourse = function(req, res) {
       return res.redirect('/course');
     }
     if (!course) {
-      return res.end('404');    //not allow
+      return res.redirect('/404')    //not allow;
     }
     Group.find({id: {$in: course.groups}}, function(err, groups){
       if (err) {
@@ -2752,7 +2824,15 @@ exports.addProbToGroup = function(req, res) {
   if (!gid || !str) {
     return res.end();   //not allow
   }
-  var pids = str.split(' ');
+  var tp = str.split(' ')
+  ,   pids = new Array();
+  if (tp) {
+    tp.forEach(function(p){
+      var pid = parseInt(p, 10);
+      if (pid)
+        pids.push(pid);
+    });
+  }
   Problem.find({problemID: {$in: pids}}, function(err, probs){
     if (err) {
       OE(err);
@@ -2877,7 +2957,7 @@ exports.doAddcourse = function(req, res) {
 exports.onecourse = function(req, res) {
   var id = parseInt(req.params.id, 10);
   if (!id) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   if (!req.session.user) {
     req.session.msg = '请先登录！';
@@ -2894,12 +2974,11 @@ exports.onecourse = function(req, res) {
       return res.redirect('/');
     }
     if (!course) {
-      return res.end('404');
+      return res.redirect('/404');
     }
     var RP = function(R, P, G, n) {
       res.render('onecourse', { title: 'OneCourse',
                                 user: req.session.user,
-                                message: req.session.msg,
                                 time: (new Date()).getTime(),
                                 key: 15,
                                 Tag: Tag,
@@ -3019,7 +3098,6 @@ exports.course = function(req, res) {
     }
     res.render ('course', {title: 'Course',
                             user: req.session.user,
-                            message: req.session.msg,
                             time: (new Date()).getTime(),
                             key: 14,
                             courses: courses,
@@ -3033,7 +3111,7 @@ exports.course = function(req, res) {
 exports.courseRank = function(req, res) {
   var id = parseInt(req.params.id);
   if (!id) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   if (!req.session.user) {
     req.session.msg = '请先登录！';
@@ -3114,7 +3192,6 @@ exports.courseRank = function(req, res) {
       }
       res.render('courserank', {title: 'CourseRank',
                                 user: req.session.user,
-                                message: req.session.msg,
                                 time: (new Date()).getTime(),
                                 key: 16,
                                 ranks: ranks,
@@ -3149,7 +3226,7 @@ exports.courseRank = function(req, res) {
         return res.redirect('/');
       }
       if (!course) {
-        return res.end('404');
+        return res.redirect('/404');
       }
       Group.find({id: {$in: course.groups}}, function(err, groups){
         var pids = new Array();
@@ -3198,7 +3275,6 @@ exports.ranklist = function(req, res) {
     }
     res.render('ranklist', {title: 'Ranklist',
                             user: req.session.user,
-                            message: req.session.msg,
                             time: (new Date()).getTime(),
                             key: 5,
                             n: n,
@@ -3215,7 +3291,6 @@ exports.ranklist = function(req, res) {
 exports.submit = function(req, res) {
   res.render('submit', {title: 'Submit',
                         user: req.session.user,
-                        message: req.session.msg,
                         time: (new Date()).getTime(),
                         key: 10,
                         id: req.query.pid
@@ -3314,7 +3389,7 @@ exports.doSubmit = function(req, res) {
 exports.sourcecode = function(req, res) {
   var runid = parseInt(req.params.runid, 10);
   if (!runid) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   Solution.watch({runID:runid}, function(err, solution) {
     if (err) {
@@ -3323,12 +3398,11 @@ exports.sourcecode = function(req, res) {
       return res.redirect('/');
     }
     if (!solution) {
-      return res.end('404');
+      return res.redirect('/404');
     }
     var RP = function(flg){
       res.render('sourcecode', {title: 'Sourcecode',
                                 user: req.session.user,
-                                message: req.session.msg,
                                 time: (new Date()).getTime(),
                                 key: 11,
                                 solution: solution,
@@ -3361,7 +3435,7 @@ exports.sourcecode = function(req, res) {
 exports.statistic = function(req, res) {
   var pid = parseInt(req.params.pid, 10);
   if (!pid) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   var page = parseInt(req.query.page, 10);
   if (!page) {
@@ -3376,7 +3450,7 @@ exports.statistic = function(req, res) {
       return res.redirect('/');
     }
     if (!problem) {
-      return res.end('404');
+      return res.redirect('/404');
     }
     var lang = parseInt(req.query.lang, 10), Q = {problemID:pid, result:2};
     if (lang) {
@@ -3467,7 +3541,6 @@ exports.statistic = function(req, res) {
             }
             res.render('statistic', { title: 'Problem Statistic',
                                       user: req.session.user,
-                                      message: req.session.msg,
                                       time: (new Date()).getTime(),
                                       key: 1,
                                       pid: pid,
@@ -3492,7 +3565,7 @@ exports.statistic = function(req, res) {
 exports.regCon = function(req, res) {
   var cid = parseInt(req.params.type, 10);
   if (!cid || cid < 0) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   var page = parseInt(req.query.page, 10);
   if (!page) {
@@ -3538,7 +3611,6 @@ exports.regCon = function(req, res) {
         left = (new Date(C.startTime)).getTime() - now - 300000;
         res.render('regform', { title: 'Register Form',
                                 user: req.session.user,
-                                message: req.session.msg,
                                 time: now,
                                 key: 2,
                                 contest: C,
@@ -3567,7 +3639,7 @@ exports.regCon = function(req, res) {
       return res.redirect('/');
     }
     if (!contest || contest.type != 2 || !contest.password) {
-      return res.end('404');
+      return res.redirect('/404');
     }
     return RP(contest, {$or:[q1, q2]}, cid);
   });
@@ -3883,19 +3955,10 @@ exports.toggleStar = function(req, res) {
       return res.end();     //not allow!
     }
     var has = {}, names = new Array();
-    if (con.contestants) {
-      con.contestants.forEach(function(p){
-        has[p] = true;
+    if (str) {
+      str.split(' ').forEach(function(p){
+          names.push(p);
       });
-      var tmp = str.split(' ');
-      if (tmp) {
-        tmp.forEach(function(p){
-          if (has[p]) {
-            names.push(p);
-            has[p] = false;
-          }
-        });
-      }
     }
     User.distinct('name', {name: {$in: names}}, function(err, users){
       if (err) {
@@ -3904,8 +3967,10 @@ exports.toggleStar = function(req, res) {
         return res.end();
       }
       var H;
-      if (type == 1) H = {$addToSet: {stars: {$each: users}}};
-      else H = {$pullAll: {stars: users}};
+      if (type == 1)
+        H = {$addToSet: {stars: {$each: users}}};
+      else
+        H = {$pullAll: {stars: users}};
       Contest.update(cid, H, function(err){
         if (err) {
           OE(err);
@@ -3961,7 +4026,6 @@ exports.topic = function(req, res) {
       }
       res.render('topic', { title: 'Topic',
                             user: req.session.user,
-                            message: req.session.msg,
                             time: (new Date()).getTime(),
                             key: 17,
                             topics: topics,
@@ -3978,7 +4042,7 @@ exports.topic = function(req, res) {
 exports.onetopic = function(req, res) {
   var tid = parseInt(req.params.id, 10);
   if (!tid) {
-    return res.end('404');
+    return res.redirect('/404');
   }
   Topic.watch(tid, function(err, topic){
     if (err) {
@@ -3987,7 +4051,7 @@ exports.onetopic = function(req, res) {
       return res.redirect('/');
     }
     if (!topic) {
-      return res.end('404');
+      return res.redirect('/404');
     }
     Topic.update(tid, {$inc: {browseQty: 1}}, function(err){
       if (err) {
@@ -4038,7 +4102,6 @@ exports.onetopic = function(req, res) {
           }
           res.render('onetopic', {title: 'OneTopic',
                                   user: req.session.user,
-                                  message: req.session.msg,
                                   time: (new Date()).getTime(),
                                   key: 18,
                                   topic: topic,
@@ -4067,7 +4130,6 @@ exports.addtopic = function(req, res) {
     }
     res.render('addtopic', {title: type+'Topic',
                             user: req.session.user,
-                            message: req.session.msg,
                             time: (new Date()).getTime(),
                             topic: T,
                             key: 1004
@@ -4197,6 +4259,36 @@ exports.toggleTop = function(req, res) {
         return res.end();
       }
       req.session.msg = '操作成功！';
+      return res.end();
+    });
+  });
+};
+
+exports.toggleHide = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user || req.session.user.name != 'admin') {
+    return res.end('2');  //not allow
+  }
+  var pid = parseInt(req.body.pid, 10);
+  if (!pid) {
+    return res.end();     //not allow
+  }
+  Problem.watch(pid, function(err, problem){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    if (!problem) {
+      return res.end();   //not allow
+    }
+    problem.hide = !problem.hide;
+    problem.save(function(err){
+      if (err) {
+        OE(err);
+        return res.end('1');
+      }
+      if (problem.hide)
+        return res.end('h');
       return res.end();
     });
   });

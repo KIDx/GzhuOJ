@@ -5,6 +5,7 @@ body {
     min-width: 920px;
     margin: auto;
     color: #555;
+    background: url('img/bg.gif');
 }
 
 input, button, select, textarea {
@@ -13,6 +14,10 @@ input, button, select, textarea {
 
 pre {
     font-size: 14px;
+}
+
+.mc {
+    margin: 0 auto;
 }
 
 a.disabled {
@@ -33,6 +38,14 @@ a.add {
     display: block;
     width: 24px;
     height: 24px;
+    background: url('img/add.png');
+}
+
+a.add2 {
+    padding: 0;
+    display: block;
+    width: 18px;
+    height: 18px;
     background: url('img/add.png');
 }
 
@@ -84,7 +97,8 @@ td.first_blood {
 .w {
     overflow: hidden;
     padding: 5px 10px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
+    border-radius: 5px;
     box-shadow: 0 1px 5px #ccc;
     margin: 5px;
     background: #fff;
@@ -391,6 +405,8 @@ div.tag-box {
     background: whitesmoke;
     float: left;
     border-radius: 3px;
+    display: block;
+    word-break: keep-all;
 }
 
 div.tag-box span.del {
@@ -426,6 +442,10 @@ div.tablebg,
 div#xbody input,
 div#xbody textarea {
     font-size: 14px;
+}
+
+div.theader {
+    padding: 2px 5px;
 }
 
 div#preload_logo {
@@ -656,12 +676,14 @@ div.tablebg div#filter button {
 
 form div#simpleInput div input,
 .table tr td input[type="text"],
+.table tr td input[type="password"],
 .table tr th input[type="text"] {
     margin: 0;
-    padding: 0;
+    padding: 0 3px;
 }
 
 /**************bootstrap fixed**************/
+
 .hidden {
     display: none;
 }
@@ -697,10 +719,6 @@ ul.nav-tabs > li.active > a:hover {
 ul.nav-tabs > li > a:hover {
     color: #333;
     background: #d6d6d6;
-}
-
-.jqtop {
-    background: url('img/tab.png') repeat-x scroll 0 -43px white;
 }
 
 .img {
@@ -905,6 +923,10 @@ legend{
     color: #666;
 }
 
+table#addprob th {
+    vertical-align: middle;
+}
+
 .table td {
     vertical-align: middle;
 }
@@ -1052,10 +1074,6 @@ table.table-head {
 .table#overviewtable td {
     padding: 5px;
     border-top: 0;
-}
-
-table#addcontest {
-    background-color: rgb(245,245,245);
 }
 
 div.des-box {
@@ -1277,21 +1295,12 @@ table th img {
 .jqmSubmit {
     display: none;
     position: fixed;
-    background-color: #e7f5ff;
     color: #333;
     border: 0;
-    padding: 2px;
     overflow: hidden;
-    border-radius: 4px 4px 4px 4px;
-    box-shadow: 0 5px 8px rgba(0,0,0, 0.50);
-    background-image: -webkit-gradient(
-        linear,
-        left bottom,
-        left top,
-        color-stop(0.1, #D8EFFF),
-        color-stop(0.95, white)
-    );
-    background-image: -moz-linear-gradient(center bottom , #D8EFFF 10%, white 95%);
+    background-color: #ecfdff;
+    border: 5px solid #ddd;
+    border-radius: 4px;
     background-attachment: fixed;
 }
 
@@ -1313,16 +1322,20 @@ table th img {
 }
 
 .jqtop {
-    margin: 0 0 5px 0;
-    min-height:25px;
-    padding:2px 5px 0 0;
+    margin: 0 auto;
+    height:27px;
+    padding: 5px 0 0;
     position: relative;
     top: 0;
     left: 0;
-    border: 1px solid #ddd;
+    font-size: 16px;
+    color: gray;
+    text-align: center;
+    background: #d4ffcf;
 }
 
 .jqcontent {
+    border-top: 1px solid #ccc;
     border-bottom: 1px solid #CCC;
     padding-left: 10px;
     margin: 0;
@@ -1391,13 +1404,17 @@ div.jqfoot .btn {
 }
 
 .jqclose {
-    width: 14px;
-    height: 14px;
-    background: url('img/icons.png') 0 0 transparent;
+    width: 16px;
+    height: 16px;
+    background: url('img/delete.png');
     position: absolute;
     top: 6px;
     right: 10px;
     cursor: pointer;
+}
+
+.jqclose:hover {
+    background: url('img/_delete.png');
 }
 
 .jqmClose {

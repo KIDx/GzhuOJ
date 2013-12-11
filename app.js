@@ -13,7 +13,7 @@ var express = require('express')
 var fs = require('fs');
 
 //访问日志和错误日志
-//var accessLogfile = fs.createWriteStream('access.log', {flags: 'a'});acdpst
+//var accessLogfile = fs.createWriteStream('access.log', {flags: 'a'});
 
 //服务器配置
 app.configure(function(){
@@ -39,14 +39,13 @@ app.configure(function(){
       db: settings.db
     })
   }));
-
+  //使用静态资源服务以及设置缓存
+  app.use(express.static(path.join(__dirname, 'public')));
   app.use(app.router);
 });
 
 //设置环境: production, development
 app.configure('development', function(){
-  //使用静态资源服务以及设置缓存
-  app.use(express.static(path.join(__dirname, 'public')));
   //app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
@@ -108,6 +107,10 @@ app.get('/statistic/:pid', routes.statistic);
 //regform页面
 app.get('/regform/:type', routes.regCon);
 
+app.get('*', function(req, res){
+  res.render('404', {layout: null});
+});
+
 //#####jquery ajax
 //注册
 app.post('/doReg', routes.doReg);
@@ -123,7 +126,7 @@ app.post('/getProblem', routes.getProblem);
 //删除一个比赛或考试
 app.post('/contestDelete', routes.contestDelete);
 //显示比赛的题目到problemset
-app.post('/show', routes.show);
+app.post('/toggleHide', routes.toggleHide);
 //删除一个课程
 app.post('/courseDelete', routes.courseDelete);
 //to change course's title
@@ -193,12 +196,17 @@ app.post('/toggleTop', routes.toggleTop);
 //添加回复
 app.post('/review', routes.review);
 //清除服务器消息
-app.post('/msgClear', function(req, res){
-  req.session.msg = null;
-  res.end();
+app.post('/getMessage', function(req, res){
+  res.header('Content-Type', 'text/plain');
+  var msg = req.session.msg;
+  req.session.msg = '';
+  if (!msg)
+    return res.end();
+  return res.end(msg);
 });
 //课程排名查询会话（存储当前询问，刷新不变）
 app.post('/courseRankSession', function(req, res){
+  res.header('Content-Type', 'text/plain');
   if (!req.session.user || !req.session.user.privilege || req.session.user.privilege != '82') {
     return res.end();
   }

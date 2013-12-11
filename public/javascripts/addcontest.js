@@ -1,246 +1,215 @@
-//for the left table
-var $table = $('#addcontest tr');
-var $addcontestForm = $('#form');
+//left
+var $addcontest = $('#addcontest')
+,	c_type = $addcontest.attr('type')
+,	cid = $addcontest.attr('cid')
+,	$date = $('#datepicker');
 
-var FormData = {
-	type:$addcontestForm.attr('type'),
-	cid:$addcontestForm.attr('cid')
-};
-
-$('document').ready(function() {
-	var date = $addcontestForm.attr('date');
-	var start = getDate(new Date()).split(' ')[0];
-	if (!date) date = start;
-	$('input#datepicker').Zebra_DatePicker({
-		direction	:[start, 60],
-		show_icon	:false,
-		offset		:[-20,270]
+$(document).ready(function() {
+	var date = $date.val();
+	if (!date) date = getDate(new Date()).split(' ')[0];
+	$date.Zebra_DatePicker({
+		show_icon	: false,
+		offset		: [-20,270]
 	}).val(date);
 });
 
-//for the right table
-//keyup 截流响应
-var searchTimeout;
+var $title = $('#Title')
+,	$hour = $('#hour')
+,	$min = $('#min')
+,	$dd = $('#dd')
+,	$hh = $('#hh')
+,	$mm = $('#mm')
+,	$psw = $('#psw')
+,	$desc = $('#desc')
+,	$anc = $('#anc')
+,	$submit = $('#submit')
+,	$err = $('#err');
 
-var $right_table = $('table#addproblems');
-var $rows = $right_table.find('tr');
-//add or delete problem button
-var $button = $rows.find('a.adbtn');
-//problemID
-var $pid = $rows.find('th input:eq(0)');
-//Alias
-var $alias = $rows.find('th input:eq(1)');
+function nan(n) {
+  return n != n;
+}
 
-//means how many problems for the contest
-//which must be about to be posted to the Server
-var k = $right_table.find('tr:visible').length-1;
-
-//Title
-var $ptitle = $rows.find('td');
-//for $ptitle Set: (from 0 to k-1)
-//for $pid and $alias Set: (from 0 to k-1)
-//for $rows Set: (from 1 to k)
-
-function CheckTheProblem(pid, $ttl, key){
-	if (!pid || pid.length > 5) {
-		$ttl.text('No Such Problem!');
-		$ttl.removeClass().addClass('error-text');
-		return ;
-	}
-	$.post('/getProblem', {'pid':pid}, function(res){
-		if (res) {
-			$ttl.text(res);
-			$ttl.removeClass().addClass('success-text');
-		} else {
-			$ttl.text('No Such Problem!');
-			$ttl.removeClass().addClass('error-text');
+function limit($i) {
+	$i.keyup(function(){
+		var tp = parseInt($(this).val(), 10);
+		if (nan(tp)) {
+			tp = '';
 		}
-		if (key == 1) {
-			var $ta = $ttl.prev().prev().find('input');
-			var tp = $ta.attr('alias');
-			if (tp && tp != $ttl.text()) {
-				$ta.val(tp);
-				$ta.removeAttr('alias');
-			}
-		}
-	});
-}
-
-$('document').ready(function(){
-	$ptitle.eq(0).text('No Such Problem!').addClass('error-text');
-	$button.each(function(i){
-		$button.eq(i).click(function(){
-			if (i == 0) {
-				++k;
-				$rows.eq(k).show();
-				var $oldpid = $pid.eq(k-2), $newpid = $pid.eq(k-1);
-				var $ttl = $ptitle.eq(k-1);
-				if (k > 1 && $oldpid.val()) {
-					$newpid.val( parseInt($oldpid.val())+1 );
-				}
-				CheckTheProblem($newpid.val(), $ttl, 0);
-				if (k == 26) $button.eq(0).hide();
-			} else {
-				$button.each(function(j){
-					if (j >= k) return false;
-					if (j < i) return true;
-					$pid.eq(j-1).val( $pid.eq(j).val() );
-					$alias.eq(j-1).val( $alias.eq(j).val() );
-					$ptitle.eq(j-1).text( $ptitle.eq(j).text() )
-				});
-				$pid.eq(k-1).val('');
-				$alias.eq(k-1).val('');
-				$rows.eq(k).hide();
-				--k;
-				if (k == 25) $button.eq(0).show();
-			}
-		});
-	});
-});
-
-//to check if it can be submited
-var $tr1 = $table.eq(0);
-var $tr2 = $table.eq(1);
-var $tr3 = $table.eq(2);
-var $tr8 = $table.eq(6);
-
-var $title = $tr1.find('input');
-var $date = $tr2.find('input');
-var $len = $tr3.find('input');
-
-var $info = $tr8.find('td').eq(1);
-
-var $hour = $date.eq(1);
-var $minute = $date.eq(2);
-var $lday = $len.eq(0);
-var $lhour = $len.eq(1);
-var $lmin = $len.eq(2);
-
-function CheckDate() {
-	if (!$date.eq(0).val()) {
-		$tr8.addClass('error');
-		$info.text('Date Can Not Be Empty!');
-		return false;
-	}
-	var hour = $hour.val();
-	var minute = $minute.val();
-	if (hour < 0 || hour >= 24 || minute < 0 || minute >= 60) {
-		$tr8.addClass('error');
-		$info.text('Begin Time Format Error!');
-		return false;
-	}
-	return true;
-}
-
-function CheckProblem() {
-	var flg = true, hash = {}, sign = false;
-	$ptitle.each(function(i){
-		if (i >= k) return false;
-		if (!$ptitle.eq(i).text() || $ptitle.eq(i).text() == 'No Such Problem!') {
-			flg = false;
-			$ptitle.eq(i).text('No Such Problem!');
-			$ptitle.eq(i).addClass('error-text');
-		} else if (flg == true && sign == false) {
-			if (!hash[$pid.eq(i).val()])
-				hash[$pid.eq(i).val()] = true;
-			else sign = true;
-		}
-	});
-	if (flg && sign) {
-		$info.text('A problem can\'t be added more than once!');
-		return false;
-	}
-	if (!flg) {
-		$info.text('There are invalid problems!');
-	}
-	return flg;
-}
-
-function CheckTitle() {
-	var str = JudgeString($title.val());
-	if (!str) {
-		$tr8.addClass('error');
-		$info.text('Contest Title should not be empty!');
-		return false;
-	}
-	$title.val(str);
-	return true;
-}
-
-function CheckSubmit() {
-	if (k === 0) {
-		$tr8.addClass('error');
-		$info.text('You should add at least one problem!');
-		return false;
-	}
-	if (!CheckProblem()) {
-		$tr8.addClass('error');
-		return false;
-	}
-	if (CheckTitle() && CheckDate())
-		return true;
-	return false;
-}
-
-function InputLimit($limit) {
-	function run() {
-		var tp = $limit.val();
-		tp = tp.replace(/[^\d]{1,2}$/g, '');
-		$limit.val( tp );
-	}
-	$limit.keyup(function(){
-		run();
-	});
-	$limit.change(function(){
-		run();
-		if (!$limit.val()) {
-			$limit.val( 0 );
-		}
+		$(this).val(tp);
 	});
 }
 
 $(document).ready(function(){
-	$pid.each(function(i){
-		var $tpid = $pid.eq(i);
-		var $ttl = $ptitle.eq(i);
-		setTimeout(function(){
-			CheckTheProblem ($tpid.val(), $ttl, 1);
-		}, 300);
-		$tpid.keyup(function(){
-			clearTimeout(searchTimeout);
-			searchTimeout = setTimeout(function(){
-				CheckTheProblem ($tpid.val(), $ttl, 0);
-			}, 300);
-		});
+	limit($hour);
+	limit($min);
+	limit($dd);
+	limit($hh);
+	limit($mm);
+});
+
+//right
+var $add = $('#add')
+,	$del = $('a.delete')
+,	$pid_in = $('input.probnum')
+,	$alias_in = $('input.alias')
+,	$p_index = $('td.p_index')
+,	$p_title = $('td.title')
+,	$addprob = $('#addprob')
+,	F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function init() {
+	$del.unbind();
+	$pid_in.unbind();
+	$del = $('a.delete');
+	$pid_in = $('input.probnum');
+	$alias_in = $('input.alias');
+	$p_index = $('td.p_index');
+	$p_title = $('td.title');
+	$.each($p_index, function(i, p){
+		$(p).text(F[i]);
 	});
-	$('#addcontestSubmit').click(function(){
-		if (!CheckSubmit()) return false;
-		FormData.ctitle = $title.val();
-		FormData.cdate = $date.eq(0).val();
-		FormData.chour = $hour.val(); FormData.cminute = $minute.val();
-		FormData.cDay = $lday.val();
-		FormData.cHour = $lhour.val(); FormData.cMinute = $lmin.val();
-		if (FormData.type == 2) FormData.cpassword = $table.eq(3).find(':checked').val();
-		else FormData.cpassword = $table.eq(3).find(':input').val();
-		FormData.Description = $table.eq(4).find(':input').val();
-		FormData.Announcement = $table.eq(5).find(':input').val();
-		FormData.ary = new Array();
-		for (var i = 0; i < k; i++) {
-			var tmp = JudgeString($alias.eq(i).val());
-			if (!tmp) tmp = $ptitle.eq(i).text();
-			FormData.ary.push([$pid.eq(i).val(), tmp]);
+}
+
+var timeout, ajax;
+
+function getProblem($p, $t) {
+	return ($.post('/getProblem', {pid: $p.val()}, function(res){
+		if (!res) {
+			$t.removeClass('success-text')
+			.addClass('error-text')
+			.text('No Such Problem!');
+		} else {
+			$t.removeClass('error-text')
+			.addClass('success-text')
+			.text(res);
 		}
-		$.post('/addcontest', FormData, function(res){
-			if (!res) {
-				window.location.href = '/';
-			} else {
-				window.location.href = '/onecontest/'+res;
-			}
+	}));
+}
+
+function bind() {
+	$.each($del, function(i, p){
+		$(p).click(function(){
+			$(this).parent().parent().remove();
+			init();
+			bind();
 		});
 	});
-	InputLimit($hour);
-	InputLimit($minute);
-	InputLimit($lday);
-	InputLimit($lhour);
-	InputLimit($lmin);
+	$.each($pid_in, function(i, p){
+		$(p).keyup(function(){
+			clearTimeout(timeout);
+			if (ajax)
+				ajax.abort();
+			timeout = setTimeout(function(){
+				ajax = getProblem($(p), $p_title.eq(i));
+			}, 100);
+		});
+	});
+}
+
+$(document).ready(function(){
+	if ($add.length) {
+		bind();
+		$add.click(function(){
+			if ($pid_in.length >= 26) {
+				return false;
+			}
+			var html = '<tr><td>'
+			html += '<a title="delete" href="javascript:;" class="mc user user-red delete"></a>';
+			html += '</td><td><input type="text" class="probnum input-mini"'
+			if ($pid_in.length) {
+				var pid = parseInt($pid_in.last().val(),10)+1;
+				if (pid) {
+					html += 'value="'+pid+'"';
+				}
+			}
+			html += '/></td>';
+			html += '<td><input type="text" class="alias input-medium" /></td>';
+			html += '<td class="bold p_index"></td>';
+			html += '<td class="error-text title" style="text-align:left;">';
+			html += '</td></tr>';
+			$addprob.append(html);
+			init();
+			bind();
+			getProblem($pid_in.last(), $p_title.last());
+		});
+	}
+});
+
+//submit
+$(document).ready(function(){
+	$submit.click(function(){
+		if ($(this).hasClass('disabled')) {
+			return false;
+		}
+		var title = JudgeString($title.val());
+		if (!title) {
+			errAnimate($err, 'Contest title can not be empty!');
+			return false;
+		}
+		var date = $date.val()
+		,	hour = parseInt($hour.val(), 10)
+		,	min = parseInt($min.val(), 10);
+		if (!date ||
+			nan(hour) || hour < 0 || hour > 23 ||
+			nan(min) || min < 0 || min > 59) {
+			errAnimate($err, 'The format of Begin Time is not Correct!');
+			return false;
+		}
+		var dd = parseInt($dd.val(), 10)
+		,	hh = parseInt($hh.val(), 10)
+		,	mm = parseInt($mm.val(), 10);
+		if (nan(dd) || nan(hh) || nan(mm) ||
+			dd < 0 || hh < 0 || mm < 0) {
+			errAnimate($err, 'The format of Length is not Correct!');
+			return false;
+		}
+		var desc = JudgeString($desc.val())
+		,	anc = JudgeString($anc.val())
+		,	pids, alias
+		,	psw;
+		if ($psw.length) {
+			psw = $psw.val();
+		} else {
+			psw = $('input[name="psw"]:checked').val();
+		}
+
+		if ($p_title.hasClass('error-text')) {
+			errAnimate($err, 'one or more Valid problem has been found!');
+			return false;
+		}
+		pids = new Array(); alias = new Array();
+		$.each($pid_in, function(i, p){
+			var tp = parseInt($(p).val(), 10);
+			pids.push(tp);
+			var tmp = JudgeString($alias_in.eq(i).val());
+			if (!tmp) tmp = ' ';
+			alias.push(tmp);
+		});
+
+		$(this).addClass('disabled');
+		$.ajax({
+			type: 'POST',
+			url: '/addcontest',
+			dataType: 'text',
+			data: {
+				cid 	: cid,
+				type 	: c_type,
+				title 	: title,
+				date 	: date,
+				hour 	: hour,
+				min 	: min,
+				dd 		: dd,
+				hh 		: hh,
+				mm 		: mm,
+				psw 	: psw,
+				desc 	: desc,
+				anc 	: anc,
+				pids 	: pids,
+				alias 	: alias
+			},
+			timeout: 5000
+		}).done(function(res){
+			window.location.href = '/onecontest/' + res;
+		});
+	});
 });

@@ -38,7 +38,7 @@ CKEDITOR.dialog.add('insertcode', function(editor){
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#39;');
-            editor.insertHtml('<br /><pre class=\"brush:' + lang + ';\">' + html + '</pre>');
+            editor.insertHtml('<pre class=\"brush:' + lang + ';\">' + html + '</pre>');
         },
         onLoad: function(){
         }

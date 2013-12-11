@@ -6,12 +6,16 @@ var mongoose = require('mongoose')
 ,   OE = settings.outputErr;
 
 function Contest(contest) {
+  this.contestID = contest.contestID;
+  this.userName = contest.userName,
   this.title = contest.title;
   this.startTime = contest.startTime;
   this.len = contest.len;
   this.description = contest.description;
   this.msg = contest.msg;
+  this.probs = contest.probs;
   this.password = contest.password;
+  this.type = contest.type;
 };
 
 module.exports = Contest;
@@ -66,7 +70,7 @@ Contest.get = function(Q, page, callback){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
-    contests.find(Q).sort({startTime:-1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
+    contests.find(Q).sort({startTime:-1, contestID:-1}).skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs){
       if (err) {
         OE('Contest.get failed!');
       }
@@ -102,10 +106,10 @@ Contest.update = function(cid, H, callback){
   });
 };
 
-Contest.dele = function(Q, callback){
-  contests.findOneAndRemove(Q, function(err){
+Contest.remove = function(cid, callback){
+  contests.remove({contestID: cid}, function(err){
     if (err) {
-      OE('Contest.dele failed');
+      OE('Contest.remove failed');
     }
     return callback(err);
   });

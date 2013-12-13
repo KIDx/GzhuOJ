@@ -37,11 +37,11 @@
 
 ~addcontest~
  !cid     : add a new contest
- cid < 0  : clone a contest(clone a contest to a DIY Contest)
+ cid < 0  : clone a contest(clone a contest to DIY Contest)
  cid > 0  : edit a contest
 
 ~contest.type~
- 1 : DIY Contest (all registered user can add)
+ 1 : DIY Contest (all registered users can add)
  2 : VIP Contest (only admin can add)
  3 : Exam (user.privilege >= 82(teacher) can add)
 
@@ -217,7 +217,8 @@ function getTime(n) {
 exports.connectMongodb = function() {
   Solution.connect(function(err){
     if (err) {
-      console.log('connect failed');
+      OE('connect failed');
+      OE(err);
       throw err;
     }
   });
@@ -226,7 +227,8 @@ exports.connectMongodb = function() {
 exports.disconnectMongodb = function() {
   Solution.disconnect(function(err){
     if (err) {
-      console.log('disconnect failed');
+      OE('disconnect failed');
+      OE(err);
       throw err;
     }
   });
@@ -234,7 +236,7 @@ exports.disconnectMongodb = function() {
 
 exports.updateStatus = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  var id = parseInt(req.body.runid, 10);
+  var id = parseInt(req.body.rid, 10);
   if (!id) {
     return res.end();   //not allow
   }
@@ -243,40 +245,42 @@ exports.updateStatus = function(req, res) {
       OE(err);
       return res.end(); //not refresh!
     }
-    if (!sol || sol.result == 0) {
+    if (!sol) {
       return res.end(); //not allow
     }
     var RP = function(X){
+      var t, m;
       if (X > 0) {
-        sol.time = '---'; sol.memory = '---';
+        t = m = '---';
+      } else {
+        t = sol.time; m = sol.memory;
       }
-      return res.json({result: sol.result, time: sol.time, memory: sol.memory, userName: sol.userName});
+      return res.json({result: sol.result, time: t, memory: m, userName: sol.userName});
     };
     if (sol.cID == -1) {
       return RP(0);
     }
-    if (req.session.user) {
-      var me = req.session.user.name;
-      if (me == sol.userName || me == 'admin') {
-        return RP(0);
-      } else {
-        Contest.watch(sol.cID, function(err, contest){
-          if (err) {
-            OE(err);
-            return res.end();   //not refresh!
-          }
-          if (!contest) {
-            return res.end();   //not allow
-          }
-          if (me == contest.userName) {
-            return RP(0);
-          }
-          return RP(1);
-        });
-      }
-    } else {
+    if (!req.session.user) {
       return RP(1);
     }
+    var me = req.session.user.name;
+    if (me == sol.userName || me == 'admin') {
+      return RP(0);
+    }
+    Contest.watch(sol.cID, function(err, contest){
+      if (err) {
+        OE(err);
+        return res.end();   //not refresh!
+      }
+      if (!contest) {
+        return res.end();   //not allow
+      }
+      if (calDate(contest.startTime, contest.len) < getDate(new Date()) ||
+          me == contest.userName) {
+        return RP(0);
+      }
+      return RP(1);
+    });
   });
 };
 
@@ -1358,42 +1362,41 @@ exports.user = function(req, res) {
   }
   User.watch(name, function(err, user){
     if (err) {
-      req.session.msg = '系统错误！';
       OE(err);
+      req.session.msg = '系统错误！';
       return res.redirect('/');
     }
     if (!user) {
       return res.redirect('/404');
     }
-    if (!user.addprob) user.addprob = 0;
-    else user.addprob = 1;
-    Solution.find({userName:name}, function(err, solutions) {
+    Solution.aggregate([
+    { $match: { userName: name, result:{$gt:1} } }
+  , { $group: { _id: '$problemID', result: {$min: '$result'} } }
+  , { $sort: { _id: 1 } }
+    ], function(err, sols){
       if (err) {
-        req.session.msg = '系统错误！';
         OE(err);
+        req.session.msg = '系统错误！';
         return res.redirect('/');
       }
-      var A = new Array(), B = new Array(), AC = {}, WA = {};
-      solutions.forEach(function(p){
-        if (p.result == 2 && !AC[p.problemID]) {
-          A.push(p.problemID);
-          AC[p.problemID] = true;
-        }
-      });
-      solutions.forEach(function(p){
-        if (p.result != 2 && !AC[p.problemID] && !WA[p.problemID]) {
-          B.push(p.problemID);
-          WA[p.problemID] = true;
-        }
-      });
+      var A = new Array(), B = new Array();
+      if (sols) {
+        sols.forEach(function(p){
+          if (p.result == 2) {
+            A.push(p._id);
+          } else {
+            B.push(p._id);
+          }
+        });
+      }
       var RP = function(H) {
         res.render('user', {title: 'User',
                             user: req.session.user,
                             time: (new Date()).getTime(),
                             key: 0,
                             u: user,
-                            A: A.sort(),
-                            B: B.sort(),
+                            A: A,
+                            B: B,
                             C: College,
                             H: H,
                             UC: UserCol,
@@ -1700,11 +1703,7 @@ exports.doAddproblem = function(req, res) {
           req.session.msg = '系统错误！';
           return res.redirect('/');
         }
-        fs.mkdir(data_path+id, function(err){
-          if (err) {
-            console.log('fs.mkdir err: ' + err);
-            return res.redirect('/');
-          }
+        fs.mkdir(data_path+id, function(){
           req.session.msg = 'Problem '+id+' has been created successfully!';
           return res.redirect('/addproblem?pID='+id);
         });
@@ -1958,7 +1957,7 @@ exports.problemset = function(req, res) {
     return res.redirect('/problemset');
   }
 
-  var q1 = {}, q2 = {}, q3 = {}, Q, search = req.query.search;
+  var q1 = {}, q2 = {}, q3 = {}, Q, search = clearSpace(req.query.search);
 
   if (search) {
     var pattern = new RegExp("^.*"+toEscape(search)+".*$", 'i'), tag = new Array();
@@ -2006,21 +2005,22 @@ exports.problemset = function(req, res) {
       problems.forEach(function(p){
         pids.push(p.problemID);
       });
-      Solution.find({
-        problemID: {$in: pids},
-        userName: req.session.user.name
-      }, function(err, sols){
+      Solution.aggregate([
+      { $match: { userName: req.session.user.name, result:{$gt:1} } }
+    , { $group: { _id: '$problemID', result: {$min: '$result'} } }
+    , { $sort: { _id: 1 } }
+      ], function(err, sols){
         if (err) {
           OE(err);
           req.session.msg = '系统错误！';
           return res.redirect('/');
         }
         if (sols) {
-          sols.forEach(function(s){
-            if (s.result != 2 && !R[s.problemID]) {
-              R[s.problemID] = 1;
-            } else if (s.result == 2 && R[s.problemID] != 2) {
-              R[s.problemID] = 2;
+          sols.forEach(function(p){
+            if (p.result == 2) {
+              R[p._id] = 2;
+            } else {
+              R[p._id] = 1;
             }
           });
           return RP(R);
@@ -2042,7 +2042,7 @@ exports.status = function(req, res) {
     return res.redirect('/status');
   }
 
-  name = req.query.name;
+  name = clearSpace(req.query.name);
   if (name) {
     Q.userName = toEscape(name);
   }
@@ -2062,7 +2062,7 @@ exports.status = function(req, res) {
   lang = parseInt(req.query.lang, 10);
   if (lang) Q.language = lang;
 
-  Solution.get(Q, page, function(err, solutions, n) {
+  Solution.get(Q, page, function(err, sols, n) {
     if (err) {
       OE(err);
       req.session.msg = '系统错误！';
@@ -2074,8 +2074,8 @@ exports.status = function(req, res) {
     var flg = false, has = {}
     ,   names = new Array()
     ,   R = new Array(), C = new Array();
-    if (solutions) {
-      solutions.forEach(function(p, i){
+    if (sols) {
+      sols.forEach(function(p, i){
         R.push(Res(p.result));
         C.push(Col(p.result));
         if (!has[p.userName]) {
@@ -2102,7 +2102,7 @@ exports.status = function(req, res) {
                             time: (new Date()).getTime(),
                             key: 4,
                             n: n,
-                            solutions: solutions,
+                            sols: sols,
                             name: name,
                             pid: pid,
                             result: result,
@@ -3081,7 +3081,7 @@ exports.course = function(req, res) {
     return res.redirect('/course');
   }
   
-  var q = {}, search = req.query.search;
+  var q = {}, search = clearSpace(req.query.search);
 
   if (search) {
     q.title = new RegExp("^.*"+toEscape(search)+".*$", 'i');
@@ -3252,7 +3252,7 @@ exports.ranklist = function(req, res) {
   }
 
   var q1 = {}, q2 = {};
-  var search = req.query.search;
+  var search = clearSpace(req.query.search);
   if (search) {
     q1.name = q2.nick = new RegExp("^.*"+toEscape(search)+".*$", 'i');
   }
@@ -3499,6 +3499,12 @@ exports.statistic = function(req, res) {
           req.session.msg = '系统错误！';
           return res.redirect('/');
         }
+        var names = new Array();
+        if (sols) {
+          sols.forEach(function(p){
+            names.push(p._id);
+          });
+        }
         var N = {}, sum = 0, Q = {problemID: pid};
         Solution.aggregate([
           {$match  : Q2}
@@ -3526,7 +3532,7 @@ exports.statistic = function(req, res) {
             });
             N[0] = sum;
           }
-          User.find({name: {$in:users}}, function(err, users){
+          User.find({name: {$in:names}}, function(err, users){
             if (err) {
               OE(err);
               req.session.msg = '系统错误！';

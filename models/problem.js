@@ -36,7 +36,7 @@ var problemObj = new Schema({
 mongoose.model('problems', problemObj);
 var problems = mongoose.model('problems');
 
-Problem.prototype.save = function(callback){
+Problem.prototype.save = function(callback) {
   //存入 Mongodb 的文档
   problem = new problems();
   problem.problemID = this.problemID;
@@ -75,7 +75,7 @@ Problem.find = function(Q, callback) {
   });
 };
 
-Problem.get = function(Q, page, callback){
+Problem.get = function(Q, page, callback) {
   problems.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
@@ -89,7 +89,7 @@ Problem.get = function(Q, page, callback){
   });
 };
 
-Problem.watch = function(pid, callback){
+Problem.watch = function(pid, callback) {
   problems.findOne({problemID: pid}, function(err, doc) {
     if (err) {
       OE('Problem.watch failed!');
@@ -98,7 +98,7 @@ Problem.watch = function(pid, callback){
   });
 };
 
-Problem.update = function(pid, H, callback){
+Problem.update = function(pid, H, callback) {
   problems.update({problemID: pid}, H, function(err){
     if (err) {
       OE('Problem.update failed!');
@@ -107,7 +107,7 @@ Problem.update = function(pid, H, callback){
   });
 };
 
-Problem.multiUpdate = function(Q, H, callback){
+Problem.multiUpdate = function(Q, H, callback) {
   problems.update(Q, H, {multi:true}, function(err){
     if (err) {
       OE('Problem.multiUpdate failed!');

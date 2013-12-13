@@ -1,49 +1,54 @@
 
-//update status in per A ms
-var $statustable = $('#statustable')
-,	$verdict
-,	updateInterval, A = 250;
+//update status
 
-function getStatus() {
-	$verdict = $statustable.find('td.unknow');
-	if ($verdict.length) {
-		$.each($verdict, function(i, p){
-			$p = $(p);
-			$.ajax({
-				type 	 : 'POST',
-				url 	 : '/updateStatus',
-				dataType : 'json',
-				data 	 : {
-					runid : $p.attr('rid')
+function updateStatus($p) {
+	$.ajax({
+		type: 'POST',
+		url: '/updateStatus',
+		dataType: 'json',
+		data: {
+			rid : $p.attr('rid')
+		},
+		timeout: 5000
+	}).done(function(sol){
+		if (sol) {
+			if (sol.result == 8 && (sol.userName == current_user || current_user == 'admin')) {
+				$p.removeClass()
+				.addClass('bold')
+				.html('<a href="javascript:;" title="more information" rid="'+$p.attr('rid')+'" class="CE special-text">Compilation Error</a>');
+				BindCE();
+			} else {
+				if (sol.result == 1 && $p.text() != 'Running...') {
+					$p.next().html('<img src="/img/running.gif" style="width:16px;height:16px;" />');
 				}
-			})
-			.done(function(sol){
-				if (sol) {
-					$next = $p.next();
-					if (sol.result == 1) {
-						if ($p.text() != 'Running...') {
-							$p.text('Running...');
-							$next.html('<img src="/img/running.gif" style="width:16px;height:16px;" />');
-						}
-					} else {
-						if (sol.result == 8 && (sol.userName == current_user || current_user == 'admin')) {
-							$p.html('<a href="javascript:;" title="more information" rid="'+$p.attr('rid')+'" class="CE special-text">Compilation Error</a>');
-							BindCE();
-						} else {
-							$p.text(Res(sol.result));
-						}
-						$p.removeClass().addClass('bold').addClass(Col(sol.result));
-						$next.text(sol.time+' MS');
-						$next.next().text(sol.memory+' KB');
-					}
+				$p.removeClass()
+				.addClass('bold')
+				.addClass(Col(sol.result))
+				.text(Res(sol.result));
+				if (sol.result < 2) {
+					setTimeout(function(){
+						updateStatus($p);
+						console.log('123');
+					}, 250);
 				}
-			});
-		});
-	} else {
-		clearInterval(updateInterval);
-	}
+			}
+			if (sol.result > 1) {
+				if (sol.time != '---') {
+					sol.time += ' MS';
+					sol.memory += ' KB';
+				}
+				$p.next().text(sol.time);
+				$p.next().next().text(sol.memory);
+			}
+		}
+	});
 }
 
-$(document).ready(function(){
-	updateInterval = setInterval(getStatus, A);
-});
+function getStatus() {
+	$verdict = $('#statustable td.unknow');
+	if ($verdict.length) {
+		$.each($verdict, function(i, p){
+			updateStatus($(p));
+		});
+	}
+}

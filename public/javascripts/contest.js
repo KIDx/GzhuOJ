@@ -70,9 +70,9 @@ $(document).ready(function(){
 		$.each($register, function(){
 			$(this).click(function(){
 				if ($(this).hasClass('public')) {
-					if ($logindialog.length > 0) {
+					if ($dialog_lg.length > 0) {
 						nextURL = '';
-						$logindialog.jqmShow();
+						$dialog_lg.jqmShow();
 						return false;
 					}
 					var $clickreg = $(this);
@@ -91,10 +91,10 @@ $(document).ready(function(){
 	}
 });
 
-var $logcolog = $('div#logcolog')
-,	$psw = $logcolog.find('#contest_password')
-,	$submit = $logcolog.find('#contest_submit')
-,	$err = $logcolog.find('#contest_error')
+var $dialog_lc = $('div#dialog_lc')
+,	$psw = $dialog_lc.find('#contest_password')
+,	$submit = $dialog_lc.find('#contest_submit')
+,	$err = $dialog_lc.find('#contest_error')
 ,	$cid = $('a.cid');
 
 $(document).ready(function(){
@@ -102,7 +102,7 @@ $(document).ready(function(){
 		$.each($cid, function(){
 			$(this).click(function(){
 				var cid = $(this).attr('id');
-				$logcolog.jqmShow();
+				$dialog_lc.jqmShow();
 				$submit.unbind();
 				$psw.unbind();
 				$submit.click(function(){
@@ -128,8 +128,8 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
-	if ($logcolog.length > 0) {
-		$logcolog.jqm({
+	if ($dialog_lc.length > 0) {
+		$dialog_lc.jqm({
 			overlay: 30,
 			trigger: false,
 			modal: true,
@@ -147,11 +147,11 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
-	if ($logindialog.length) {
+	if ($dialog_lg.length) {
 		$.each($('a.check'), function(){
 			$(this).click(function(){
 				nextURL = '/onecontest/'+$(this).attr('id');
-				$logindialog.jqmShow();
+				$dialog_lg.jqmShow();
 			});
 		})
 	}

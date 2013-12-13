@@ -20,6 +20,9 @@ CKEDITOR.editorConfig = function( config )
 	}, {
 		name: 'insert',
 		items: [ 'Image','Table','HorizontalRule' ]
+	}, {
+		name: 'about',
+		items: [ 'About' ]
 	}, '/', {
 		name: 'basicstyles',
 		items : [ 'Bold', 'Italic','Underline','Strike','Subscript','Superscript' ]

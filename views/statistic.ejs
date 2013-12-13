@@ -2,15 +2,17 @@
 <% var _id = [0, 2, 6, 3, 4, 5, 7, 8, 9, 13, 14]; %>
 <% var lan = partial('language').split(','); %>
 <% var tc = ['', '', '']; %>
-<legend id="statistic" pid="<%= pid %>" <% if (sort_key >= 0) { %>sort="<%= sort_key %>"<% } %>>统计</legend>
+<legend id="statistic" pid="<%= pid %>" <% if (sort_key >= 0) { %>sort="<%= sort_key %>"<% } %>>
+  统计 <a href="/problem?pid=<%= pid %>">Problem <%= pid %></a>
+</legend>
 <fieldset>
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
     <tr>
-      <td valign="top" width="30%">
+      <td style="vertical-align:top;width:30%;">
         <div class="tablebg">
-          <div id="header">Problem Status</div>
-          <div id="tablediv">
-            <table class="table table-cf tdcenter tdmini">
+          <div class="theader">Problem Statistic</div>
+          <div class="tablediv">
+            <table class="table table-cf tdcenter tdmini" id="static">
               <thead>
                 <tr>
                   <th>Verdict</th>
@@ -20,15 +22,16 @@
               <tbody>
               <% _id.forEach(function(p, i){ %>
               <% var c = ''; %>
-              <% if (i % 2 == 1) { %>
-              <% c = 'even'; %>
-              <% } else { %>
+              <% if (i == 0 || i % 2 == 1) { %>
               <% c = 'odd'; %>
+              <% } else { %>
+              <% c = 'even'; %>
               <% } %>
               <% var v = 0; %>
               <% if (N[p]) { %>
               <% v = N[p]; %>
               <% } %>
+                <% if (i == 1) { %><tr><th colspan="2"><div id="chart" style="height:400px;"></div></th></tr><% } %>
                 <tr class="<%= c %>">
                   <td>
                     <% if (i == 0) { %>Total Submissions<% } else { %><%= Res(p) %><% } %>
@@ -47,10 +50,6 @@
       </td>
       <td width="3%"></td>
       <td valign="top">
-        <div style="text-align:center;">
-          <h3 style="color:#666;">The Best Solutions For <a href="/problem?pid=<%= pid %>">Problem <%= pid %></a>
-          </h3>
-        </div>
         <div class="tablebg">
           <div id="pager">
             <%- partial('pager', {page:page, n:n}) %>
@@ -66,7 +65,7 @@
               </select>
             </div>
           </div>
-          <div id="tablediv">
+          <div class="tablediv">
             <table class="table table-cf tdcenter sort" id="statistic">
               <thead>
                 <tr>

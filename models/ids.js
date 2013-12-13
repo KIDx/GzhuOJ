@@ -18,9 +18,9 @@ var idsObj = new Schema({
 mongoose.model('idss', idsObj);
 var idss = mongoose.model('idss');
 
-IDs.Init = function(){
-  var tnames = ['problemID', 'runID', 'contestID', 'regID', 'topicID'];
-  for (var i = 0; i < 4; i++) {
+IDs.Init = function() {
+  var tnames = ['problemID', 'runID', 'contestID', 'regID', 'topicID', 'groupID'];
+  for (var i = 0; i < tnames.length; i++) {
     ids = new idss();
     ids.name = tnames[i];
     ids.id = 999;
@@ -31,7 +31,7 @@ IDs.Init = function(){
   }
 };
 
-IDs.get = function(idname, callback){
+IDs.get = function(idname, callback) {
   idss.findOneAndUpdate({name: idname}, {$inc:{'id':1}}, function(err, doc) {
     if (err) {
       OE('IDs.get failed!');

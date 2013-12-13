@@ -102,7 +102,7 @@
       <% if(u.grade) { %>
         <li>班别: <%= u.grade %>班</li>
       <% } %>
-        <li>AddProblem: <% if(u.addprob == 1) { %>YES<% } else { %>NO<% } %></li>
+        <li>AddProblem: <% if(u.addprob) { %>YES<% } else { %>NO<% } %></li>
       </ul>
     </div>
     <div class="topic_box">
@@ -147,5 +147,4 @@
     </div>
     <% } %>
   </div>
-  <%- partial('settings', {u:u}) %>
 </fieldset>

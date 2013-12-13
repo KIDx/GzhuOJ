@@ -22,7 +22,7 @@ var courseObj = new Schema({
 mongoose.model('courses', courseObj);
 var courses = mongoose.model('courses');
 
-Course.prototype.save = function(callback){
+Course.prototype.save = function(callback) {
   course = new courses();
   course.courseID = this.courseID;
   course.title = this.title;
@@ -35,7 +35,7 @@ Course.prototype.save = function(callback){
   });
 };
 
-Course.get = function(Q, page, callback){
+Course.get = function(Q, page, callback) {
   courses.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
@@ -49,7 +49,7 @@ Course.get = function(Q, page, callback){
   });
 };
 
-Course.watch = function(cid, callback){
+Course.watch = function(cid, callback) {
   courses.findOne({courseID:cid}, function(err, doc){
     if (err) {
       OE('Course.watch failed!');
@@ -58,7 +58,7 @@ Course.watch = function(cid, callback){
   });
 };
 
-Course.findOneAndUpdate = function(Q, H, O, callback){
+Course.findOneAndUpdate = function(Q, H, O, callback) {
   courses.findOneAndUpdate(Q, H, O, function(err, doc){
     if (err) {
       OE('Course.findOneAndUpdate failed!');
@@ -67,7 +67,7 @@ Course.findOneAndUpdate = function(Q, H, O, callback){
   });
 };
 
-Course.update = function(cid, H, callback){
+Course.update = function(cid, H, callback) {
   courses.update({courseID:cid}, H, function(err){
     if (err) {
       OE('Course.update failed!');
@@ -76,7 +76,7 @@ Course.update = function(cid, H, callback){
   });
 };
 
-Course.remove = function(Q, callback){
+Course.remove = function(Q, callback) {
   courses.remove(Q, function(err){
     if (err) {
       OE('Course.remove failed');

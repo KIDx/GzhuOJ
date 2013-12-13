@@ -48,3 +48,52 @@ $(document).ready(function(){
 		go(null);
 	});
 });
+
+var $stat = $('#static').find('tr')
+,	$title = $stat.find('td:eq(0)')
+,	$qty = $stat.find('td:eq(1) > a')
+,	data = new Array()
+,	names = ['', 'AC', 'WA', 'PE', 'TLE', 'MLE', 'OLE', 'CE', 'RE'];
+
+$(document).ready(function(){
+	for (var i = 0; i < names.length; i++) {
+		if (i) {
+			data.push({
+				name: names[i],
+				title: $title.eq(i).text(),
+				y: parseInt($qty.eq(i).text(), 10)
+			});
+		}
+	}
+	//data[0].sliced = data[0].selected = true;
+	$('#chart').highcharts({
+		chart: {
+			plotBackgroundColor: null,
+			plotBorderWidth: null,
+			plotShadow: false
+		},
+		credits: {
+			enabled: false
+		},
+		title: {
+			text: 'Statistic'
+		},
+		tooltip: {
+			pointFormat: '<b>{point.title}:{point.y}次</b><b>, {point.percentage:.1f}%</b>'
+		},
+		plotOptions: {
+			pie: {
+				allowPointSelect: true,
+				cursor: 'pointer',
+				dataLabels: {
+					enabled: true
+				},
+				showInLegend: true
+			}
+		},
+		series: [{
+			type: 'pie',
+			data: data
+		}]
+	});
+});

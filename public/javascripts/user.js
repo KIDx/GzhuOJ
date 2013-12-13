@@ -75,16 +75,16 @@ $(document).ready(function(){
     }
 });
 
-var $setdialog = $('div#setdialog');
+var $dialog_st = $('div#dialog_st');
 
 $(document).ready(function(){
     //settings
-    if ($setdialog.length > 0) {
-        var $setinput = $setdialog.find('input')
-        ,   $seterr = $setdialog.find('small#set_error')
-        ,   $setsubmit = $setdialog.find('#set_submit');
+    if ($dialog_st.length > 0) {
+        var $setinput = $dialog_st.find('input')
+        ,   $seterr = $dialog_st.find('small#set_error')
+        ,   $setsubmit = $dialog_st.find('#set_submit');
 
-        $setdialog.jqm({
+        $dialog_st.jqm({
             overlay: 30,
             trigger: $('a#set'),
             modal: true,
@@ -141,13 +141,13 @@ $(document).ready(function(){
                 errAnimate($seterr, 'the length of email should be no more than 50!');
                 return false;
             }
-            var signature = JudgeString($setdialog.find('textarea').attr('value'));
+            var signature = JudgeString($dialog_st.find('textarea').attr('value'));
             if (signature.length > 200) {
                 errAnimate($seterr, 'the length of signature should be no more than 200!');
                 return false;
             }
             $.post('/changeInfo', {
-                name: $setdialog.attr('name'),
+                name: $dialog_st.attr('name'),
                 oldpassword: oldpassword,
                 password: password,
                 nick: nick,

@@ -92,15 +92,15 @@ var $CE;
 
 //show Compilation Error information
 function BindCE() {
-    var $infodialog = $('div#infodialog');
-    var $text = $infodialog.find('#text');
+    var $dialog_ce = $('div#dialog_ce');
+    var $text = $dialog_ce.find('#text');
     if ($CE && $CE.length) {
         $CE.unbind();
     }
     $CE = $('a.CE');
     if ($CE.length) {
         $CE.click(function(){
-            $infodialog.jqm({
+            $dialog_ce.jqm({
                 overlay: 30,
                 trigger: false,
                 modal: false,
@@ -148,10 +148,10 @@ var current_time
 
 var $finput = $('input[type="text"], textarea').eq(1);
 
-var $logindialog = $('div#logindialog')
-,   $logininput = $logindialog.find('input')
-,   $loginerr = $logindialog.find('small#login_error')
-,   $loginsubmit = $logindialog.find('a#login_submit');
+var $dialog_lg = $('div#dialog_lg')
+,   $logininput = $dialog_lg.find('input')
+,   $loginerr = $dialog_lg.find('small#login_error')
+,   $loginsubmit = $dialog_lg.find('a#login_submit');
 
 var $checklogin = $('a.checklogin, button.checklogin');
 
@@ -283,7 +283,7 @@ function ShowMessage(msg) {
 $(document).ready(function(){
     if ($tablebg.length) {
         $tablebg.prepend('<div class="lt"></div><div class="rt"></div><div class="lb"></div><div class="rb"></div>');
-        $tablebg.find('div#tablediv').prepend('<div class="ilt"></div><div class="irt"></div>');
+        $tablebg.find('#tablediv,div.tablediv').prepend('<div class="ilt"></div><div class="irt"></div>');
     }
     $('div.alert').slideDown();
 
@@ -297,9 +297,9 @@ $(document).ready(function(){
     });
 
     //login
-    if ($logindialog.length) {
+    if ($dialog_lg.length) {
 
-        $logindialog.jqm({
+        $dialog_lg.jqm({
             overlay: 30,
             trigger: false,
             modal: true,
@@ -315,7 +315,7 @@ $(document).ready(function(){
         }).jqDrag('.jqDrag').jqResize('.jqResize');
         $('a#login').click(function(){
             nextURL='';
-            $logindialog.jqmShow();
+            $dialog_lg.jqmShow();
         });
 
         $loginsubmit.click(function(){
@@ -341,7 +341,7 @@ $(document).ready(function(){
                         errAnimate($loginerr, 'username and password do not match!');
                         return ;
                     }
-                    $logindialog.jqmHide();
+                    $dialog_lg.jqmHide();
                     if (!nextURL) {
                         window.location.reload(true);
                     } else {
@@ -371,9 +371,9 @@ $(document).ready(function(){
                 var tp = '/submit?pid=' + $(this).attr('pid')
                 ,   cid = $(this).attr('cid');
                 if (cid) tp += '&cid='+cid;
-                if ($logindialog.length > 0) {
+                if ($dialog_lg.length > 0) {
                     nextURL = tp;
-                    $logindialog.jqmShow();
+                    $dialog_lg.jqmShow();
                     break;
                 }
                 window.location.href = tp;
@@ -381,17 +381,17 @@ $(document).ready(function(){
             }
             case 'addcontest': {
                 nextURL = '/addcontest?type='+contest_type;
-                $logindialog.jqmShow();
+                $dialog_lg.jqmShow();
                 break;
             }
             case 'addcourse': {
                 nextURL = '/addcourse';
-                $logindialog.jqmShow();
+                $dialog_lg.jqmShow();
                 break;
             }
             case 'addtopic': {
                 nextURL = '/addtopic';
-                $logindialog.jqmShow();
+                $dialog_lg.jqmShow();
                 break;
             }
         }

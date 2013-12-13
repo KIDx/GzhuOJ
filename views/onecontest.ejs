@@ -219,7 +219,7 @@
                 <select id="pid" style="width:160px;">
                   <option value="nil" selected>All</option>
                 <% contest.probs.forEach(function(p, i) { %>
-                  <option value="<%= F[i] %>"><%= F[i] %> - <%= Pt[p[0]] %></option>
+                  <option value="<%= F[i] %>"><%= F[i] %> - <%= Pt[p[0]].title %></option>
                 <% }); %>
                 </select>
               </div>
@@ -269,7 +269,7 @@
 <!--ranktab-->
       <% var mw = 6 + 41 + 181 + 81 + 41 + 61 + 81*probNum; %>
       <div class="tab-pane" id="ranktab" style="margin:0px 10px;">
-      <% if (user && user.name == contest.userName) { %>
+      <% if (watch) { %>
         <% if (contest.type == 2) { %>
         <div class="form-inline" style="margin-bottom:10px;">
           <input class="input-medium" type="text" id="userstr" placeholder="用户名" title="用户名" />
@@ -286,6 +286,11 @@
           <button class="btn" id="star">提交</button>
           <small class="user-gray">PS: 多个用户请用空格隔开</small>
           <span class="error-text" id="starerr"></span>
+        </div>
+        <div class="form-inline" style="margin-bottom:10px;">
+          <input class="input-xxlarge" type="text" id="msg_data" placeholder="在此填写消息内容" title="在此填写消息内容"/>
+          <button class="btn" id="broadcast">广播消息</button>
+          <span class="error-text" id="msg_err"></span>
         </div>
       <% } %>
         <div class="tablebg" style="width:<%= mw %>px">

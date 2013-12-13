@@ -61,12 +61,12 @@
           </tr>
         </thead>
         <tbody>
-        <% if (!solutions || solutions.length == 0) { %>
+        <% if (!sols || sols.length == 0) { %>
           <tr class="odd">
             <td class="error-text center" colspan="9">No Status are matched.</td>
           </tr>
         <% } else { %>
-          <% solutions.forEach(function(p, i){ %>
+          <% sols.forEach(function(p, i){ %>
             <% var c, v, vc = '', time, memory, len; %>
             <% if (user && user.name == p.userName) { %>
             <% c = 'highlight'; %>

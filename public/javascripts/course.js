@@ -59,9 +59,9 @@ $(document).ready(function(){
 	if ($cid.length) {
 		$.each($cid, function(i, p){
 			$(p).click(function(){
-				if ($logindialog.length > 0) {
+				if ($dialog_lg.length > 0) {
 					nextURL = '/onecourse/'+$(this).attr('id');
-					$logindialog.jqmShow();
+					$dialog_lg.jqmShow();
 				}
 			});
 		});

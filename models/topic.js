@@ -31,7 +31,7 @@ var topicObj = new Schema({
 mongoose.model('topics', topicObj);
 var topics = mongoose.model('topics');
 
-Topic.prototype.save = function(callback){
+Topic.prototype.save = function(callback) {
   topic = new topics();
   topic.id = this.id;
   topic.title = this.title;
@@ -49,7 +49,7 @@ Topic.prototype.save = function(callback){
   });
 };
 
-Topic.get = function(Q, page, callback){
+Topic.get = function(Q, page, callback) {
   topics.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
@@ -63,7 +63,7 @@ Topic.get = function(Q, page, callback){
   });
 };
 
-Topic.watch = function(tid, callback){
+Topic.watch = function(tid, callback) {
   topics.findOne({id:tid}, function(err, doc){
     if (err) {
       OE('Topic.watch failed!');
@@ -72,7 +72,7 @@ Topic.watch = function(tid, callback){
   });
 };
 
-Topic.update = function(tid, H, callback){
+Topic.update = function(tid, H, callback) {
   topics.update({id:tid}, H, function(err){
     if (err) {
       OE('Topic.update failed!');

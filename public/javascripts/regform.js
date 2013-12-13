@@ -5,11 +5,11 @@ var $fil = $('#fil')
 ,	type = $('#regform').attr('type')
 ,	cid = parseInt(type, 10);
 
-var $reglog = $('div#regcolog')
-,	$number = $reglog.find('#number')
-,	$realname = $reglog.find('#realname')
-,	$regc_submit = $reglog.find('#regc_submit')
-,	$regerr = $reglog.find('#regc_error');
+var $dialog_rc = $('div#dialog_rc')
+,	$number = $dialog_rc.find('#number')
+,	$realname = $dialog_rc.find('#realname')
+,	$regc_submit = $dialog_rc.find('#regc_submit')
+,	$regerr = $dialog_rc.find('#regc_error');
 
 var $checkbox = $(':checkbox')
 ,	$submit = $('#submit');
@@ -116,8 +116,8 @@ $(document).ready(function(){
 	}
 
 	//register dialog
-	if ($reglog.length > 0) {
-		$reglog.jqm({
+	if ($dialog_rc.length > 0) {
+		$dialog_rc.jqm({
 			overlay: 30,
 			trigger: false,
 			modal: true,
@@ -136,12 +136,12 @@ $(document).ready(function(){
 	}
 
 	$('#signup').click(function(){
-		if ($logindialog.length > 0) {
+		if ($dialog_lg.length > 0) {
 			nextURL = '';
-			$logindialog.jqmShow();
+			$dialog_lg.jqmShow();
 			return false;
 		}
-		$reglog.jqmShow();
+		$dialog_rc.jqmShow();
 		$number.val($number.val());
 		$regc_submit.unbind('click');
 		$regc_submit.click(function(){
@@ -159,8 +159,8 @@ $(document).ready(function(){
 				cid: type,
 			    number: num,
 			    realname: name,
-			    sex: $reglog.find('#sex').val(),
-			    college: $reglog.find('#college').val(),
+			    sex: $dialog_rc.find('#sex').val(),
+			    college: $dialog_rc.find('#college').val(),
 			    grade: $('#grade').val()+$('#class').val()
 			}, function(){
 				window.location.reload(true);

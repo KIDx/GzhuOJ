@@ -48,7 +48,7 @@ var userObj = new Schema({
 mongoose.model('users', userObj);
 var users = mongoose.model('users');
 
-User.prototype.save = function(callback){
+User.prototype.save = function(callback) {
   user = new users();
   user.name = this.name;
   user.password = this.password;
@@ -79,7 +79,7 @@ User.prototype.save = function(callback){
   });
 };
 
-User.watch = function(username, callback){
+User.watch = function(username, callback) {
   users.findOne({name:username}, function(err, doc){
     if (err) {
       OE('User.watch failed!');
@@ -106,7 +106,7 @@ User.find = function(Q, callback){
   });
 };
 
-User.get = function(Q, page, callback){
+User.get = function(Q, page, callback) {
   users.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
@@ -120,7 +120,7 @@ User.get = function(Q, page, callback){
   });
 };
 
-User.count = function(Q, callback){
+User.count = function(Q, callback) {
   users.count(Q, function(err, count){
     if (err) {
       OE('User.count failed!');
@@ -129,7 +129,7 @@ User.count = function(Q, callback){
   });
 };
 
-User.update = function(Q, H, callback){
+User.update = function(Q, H, callback) {
   users.update(Q, H, function(err){
     if (err) {
       OE('User.update failed!');
@@ -138,7 +138,7 @@ User.update = function(Q, H, callback){
   });
 };
 
-User.multiUpdate = function(Q, H, callback){
+User.multiUpdate = function(Q, H, callback) {
   users.update(Q, H, { multi: true }, function(err){
     if (err) {
       OE('User.multiUpdate failed!');

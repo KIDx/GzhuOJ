@@ -20,7 +20,7 @@ var rankObj = new Schema({
 mongoose.model('ranks', rankObj);
 var ranks = mongoose.model('ranks');
 
-Rank.prototype.save = function(callback){
+Rank.prototype.save = function(callback) {
   //存入 Mongodb 的文档
   rank = new ranks();
   rank.value = {penalty:0, solved:0};
@@ -42,7 +42,7 @@ Rank.findOne = function(Q, callback) {
   });
 };
 
-Rank.get = function(Q, page, callback){
+Rank.get = function(Q, page, callback) {
   ranks.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);

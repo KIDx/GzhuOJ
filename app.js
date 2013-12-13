@@ -2,52 +2,55 @@
 * Module dependencies.
 */
 var express = require('express')
-,   routes = require('./routes')
-,   http = require('http')
-,   path = require('path')
-,   partials = require('express-partials')
-,   MongoStore = require('connect-mongo')(express)
-,   settings = require('./settings')
-,   app = express();
-
-var fs = require('fs');
+,	routes = require('./routes')
+,	http = require('http')
+,	path = require('path')
+,	partials = require('express-partials')
+,	MongoStore = require('connect-mongo')(express)
+,	settings = require('./settings')
+,	OE = settings.outputErr
+,	app = express()
+,	server = http.createServer(app)
+,	io = require('socket.io').listen(server)
+,	fs = require('fs')
+,	cookie = require('express/node_modules/cookie')
+,	utils = require('express/node_modules/connect/lib/utils')
+,	sessionStore = new MongoStore({ db : settings.db });
 
 //访问日志和错误日志
 //var accessLogfile = fs.createWriteStream('access.log', {flags: 'a'});
 
 //服务器配置
 app.configure(function(){
-  
-  app.set('port', process.env.PORT || 3000);
-  app.set('views', __dirname + '/views');
-  app.set('view engine', 'ejs');
+	
+	app.set('port', process.env.PORT || 3000);
+	app.set('views', __dirname + '/views');
+	app.set('view engine', 'ejs');
 
-  app.use(partials());
+	app.use(partials());
 
-  app.use(express.logger('dev'));
-  //app.use(express.logger({stream: accessLogfile}));
+	app.use(express.logger('dev'));
+	//app.use(express.logger({stream: accessLogfile}));
 
-  app.use(express.compress());    //使用gzip进行压缩传输
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
+	app.use(express.compress());		//使用gzip进行压缩传输
+	app.use(express.bodyParser());
+	app.use(express.methodOverride());
 
-  app.use(express.cookieParser());
-  
-  app.use(express.session({
-    secret: settings.cookie_secret,
-    store: new MongoStore({
-      db: settings.db
-    })
-  }));
-  //使用静态资源服务以及设置缓存
-  app.use(express.static(path.join(__dirname, 'public')));
-  app.use(app.router);
+	app.use(express.cookieParser());
+	
+	app.use(express.session({
+		secret: settings.cookie_secret,
+		store: sessionStore
+	}));
+	//使用静态资源服务以及设置缓存
+	app.use(express.static(path.join(__dirname, 'public')));
+	app.use(app.router);
 });
 
 //设置环境: production, development
 app.configure('development', function(){
-  //app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+	//app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
+	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
 //#####server response
@@ -108,7 +111,7 @@ app.get('/statistic/:pid', routes.statistic);
 app.get('/regform/:type', routes.regCon);
 
 app.get('*', function(req, res){
-  res.render('404', {layout: null});
+	res.render('404', {layout: null});
 });
 
 //#####jquery ajax
@@ -195,41 +198,77 @@ app.post('/toggleStar', routes.toggleStar);
 app.post('/toggleTop', routes.toggleTop);
 //添加回复
 app.post('/review', routes.review);
+
 //清除服务器消息
 app.post('/getMessage', function(req, res){
-  res.header('Content-Type', 'text/plain');
-  var msg = req.session.msg;
-  req.session.msg = '';
-  if (!msg)
-    return res.end();
-  return res.end(msg);
+	res.header('Content-Type', 'text/plain');
+	var msg = req.session.msg;
+	req.session.msg = '';
+	if (!msg)
+		return res.end();
+	return res.end(msg);
 });
+
 //课程排名查询会话（存储当前询问，刷新不变）
 app.post('/courseRankSession', function(req, res){
-  res.header('Content-Type', 'text/plain');
-  if (!req.session.user || !req.session.user.privilege || req.session.user.privilege != '82') {
-    return res.end();
-  }
-  var g = parseInt(req.body.g, 10), c = req.body.c;
-  if (!g) {
-    g = (new Date()).getFullYear() % 100;
-    c = '';
-  }
-  if (g < 10) g = '0' + g;
-  req.session.user.grade = g.toString()+c;
-  return res.end();
+	res.header('Content-Type', 'text/plain');
+	if (!req.session.user || !req.session.user.privilege || req.session.user.privilege != '82') {
+		return res.end();
+	}
+	var g = parseInt(req.body.g, 10), c = req.body.c;
+	if (!g) {
+		g = (new Date()).getFullYear() % 100;
+		c = '';
+	}
+	if (g < 10) g = '0' + g;
+	req.session.user.grade = g.toString()+c;
+	return res.end();
 });
+
 //connect mongodb
 routes.connectMongodb();
 //disconnect mongodb
-app.on('close', function(err) {
-  routes.disconnectMongodb();
+app.on('close', function(err){
+	if (err) {
+		OE(err);
+	}
+	routes.disconnectMongodb();
 });
-//running server
-if (!module.parent) {
-  http.createServer(app).listen(app.get('port'), function(){
-    console.log("Server running at http://localhost:3000");
-  });
-}
 
-module.exports = app;
+
+//running server
+server.listen(app.get('port'), function(){
+	console.log("Server running at http://localhost:3000");
+});
+
+//websocket设置session
+io.set('authorization', function(handshakeData, accept){
+	if (!handshakeData.headers.cookie) {
+		return accept('no cookie.', false);
+	}
+	handshakeData.cookies = utils.parseSignedCookies(
+			cookie.parse(handshakeData.headers.cookie),
+			settings.cookie_secret);
+	sessionStore.get(handshakeData.cookies['connect.sid'], function(err, session){
+		if (err || !session) {
+			return accept('no session.', false);
+		}
+		handshakeData.session = session;
+		return accept(null, true);
+	});
+});
+
+//socket
+io.sockets.on('connection', function(socket){
+	var session = socket.handshake.session;
+	if (session && session.user && session.user.name == 'admin') {
+		socket.on('broadcast', function(data){
+			if (data) {
+				socket.broadcast.to(data.room).emit('broadcast', data.msg);
+			}
+		});
+	}
+	socket.on('login', function(room){
+		socket.join(room.toString());
+	});
+});

@@ -31,7 +31,7 @@ var commentObj = new Schema({
 mongoose.model('comments', commentObj);
 var comments = mongoose.model('comments');
 
-Comment.prototype.save = function(callback){
+Comment.prototype.save = function(callback) {
   comment = new comments();
   comment.id = this.id;
   comment.content = this.content;
@@ -50,7 +50,7 @@ Comment.prototype.save = function(callback){
 };
 
 Comment.get = function(Q, callback){
-  comments.count(Q, function(err, count){
+  comments.count(Q, function(err, count) {
     comments.find(Q).sort({id: 1}).exec(function(err, docs){
       if (err) {
         OE('Comment.get failed!');
@@ -60,7 +60,7 @@ Comment.get = function(Q, callback){
   });
 };
 
-Comment.watch = function(tid, callback){
+Comment.watch = function(tid, callback) {
   comments.findOne({id:tid}, function(err, doc){
     if (err) {
       OE('Comment.watch failed!');
@@ -69,7 +69,7 @@ Comment.watch = function(tid, callback){
   });
 };
 
-Comment.update = function(tid, H, callback){
+Comment.update = function(tid, H, callback) {
   comments.update({id:tid}, H, function(err){
     if (err) {
       OE('Comment.update failed!');

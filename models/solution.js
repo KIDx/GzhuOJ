@@ -19,11 +19,11 @@ function Solution(solution) {
 
 module.exports = Solution;
 
-Solution.connect = function(callback){
+Solution.connect = function(callback) {
   mongoose.connect(dburl);
 };
 
-Solution.disconnect = function(callback){
+Solution.disconnect = function(callback) {
   mongoose.disconnect(callback);
 };
 
@@ -45,7 +45,7 @@ var solutionObj = new Schema({
 mongoose.model('solutions', solutionObj);
 var solutions = mongoose.model('solutions');
 
-Solution.prototype.save = function(callback){
+Solution.prototype.save = function(callback) {
   //存入 Mongodb 的文档
   solution = new solutions();
   solution.runID = this.runID;
@@ -67,7 +67,7 @@ Solution.prototype.save = function(callback){
   });
 };
 
-Solution.find = function(Q, callback){
+Solution.find = function(Q, callback) {
   solutions.find(Q, function(err, docs){
     if (err) {
       OE('Solution.find failed!');
@@ -85,7 +85,7 @@ Solution.findMax = function(Q, callback) {
   });
 };
 
-Solution.get = function(Q, page, callback){
+Solution.get = function(Q, page, callback) {
   solutions.count(Q, function(err, count) {
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
@@ -100,7 +100,7 @@ Solution.get = function(Q, page, callback){
   });
 };
 
-Solution.distinct = function(key, Q, callback){
+Solution.distinct = function(key, Q, callback) {
   solutions.distinct(key, Q, function(err, docs){
     if (err) {
       OE('Solution.distinct failed!');
@@ -109,7 +109,7 @@ Solution.distinct = function(key, Q, callback){
   });
 };
 
-Solution.update = function(Q, H, callback){
+Solution.update = function(Q, H, callback) {
   solutions.update(Q, H, { multi:true }, function(err){
     if (err) {
       OE('Solution.update failed!');
@@ -118,19 +118,7 @@ Solution.update = function(Q, H, callback){
   });
 };
 
-Solution.stats = function(Q, sq, page, callback){
-  solutions.find(Q).sort(sq).exec(function(err, docs){
-    if (err) {
-      OE('Solution.statis failed!');
-    }
-    var sols = new Array(), has = {};
-    if (docs) {
-    }
-    return callback(err, docs);
-  });
-};
-
-Solution.watch = function(Q, callback){
+Solution.watch = function(Q, callback) {
   solutions.findOne(Q, function(err, doc){
     if (err) {
       OE('Solution.watch failed!');
@@ -139,7 +127,7 @@ Solution.watch = function(Q, callback){
   });
 };
 
-Solution.mapReduce = function(o, callback){
+Solution.mapReduce = function(o, callback) {
   solutions.mapReduce(o, function(err, docs){
     if (err) {
       OE('Solution.mapReduce failed!');
@@ -148,7 +136,7 @@ Solution.mapReduce = function(o, callback){
   });
 };
 
-Solution.aggregate = function(o, callback){
+Solution.aggregate = function(o, callback) {
   solutions.aggregate(o, function(err, docs){
     if (err) {
       OE('Solution.aggregate failed!');
@@ -157,7 +145,7 @@ Solution.aggregate = function(o, callback){
   });
 };
 
-Solution.count = function(Q, callback){
+Solution.count = function(Q, callback) {
   solutions.count(Q, function(err, count){
     if (err) {
       OE('Solution.count failed!');

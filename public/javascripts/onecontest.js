@@ -179,8 +179,7 @@ function Response(json) {
 	});
 	BindCE();
 	$status.fadeIn(100, function(){
-		clearTimeout(updateInterval);
-		updateInterval = setInterval(getStatus, A);
+		getStatus();
 	});
 }
 
@@ -267,9 +266,9 @@ function OverviewResponse(json) {
 	if ($clone.length) {
 		$clone.unbind('click');
 		$clone.click(function(){
-			if ($logindialog.length > 0) {
+			if ($dialog_lg.length > 0) {
 				nextURL = '/addcontest?cID=-'+cid+'&type=1';
-				$logindialog.jqmShow();
+				$dialog_lg.jqmShow();
 			} else {
 				window.location.href = '/addcontest?cID=-'+cid+'&type=1';
 			}
@@ -439,7 +438,7 @@ function buildRank(U) {
 	html += '</td>';
 
 	var pvl = parseInt(Users[U.name], 10);
-	html += '<td><a href="/user/'+U.name+'" class="user user-'+UserCol(pvl);
+	html += '<td><a target="_blank" href="/user/'+U.name+'" class="user user-'+UserCol(pvl);
 	html += '" title="'+UserTitle(pvl)+'">';
 	html += U.name+'</a>';
 	html += '</div></td><td>';
@@ -730,7 +729,6 @@ function runContest() {
 		pmap[pids[i]] = F.charAt(i);
 		fmap[F.charAt(i)] = pids[i];
 	});
-	console.log(pmap);
 
 	$link.click(function(){
 		if ($(this).parent().hasClass('active')) {
@@ -799,49 +797,49 @@ $(document).ready(function(){
 });
 
 //bind submit
-var $SubmitDialog = $('#submitdialog')
+var $dialog_sm = $('#dialog_sm')
 ,	$sublink = $('a.consubmit')
 ,	pid_index;
 
 $(document).ready(function(){
 	$.each($sublink, function(i, p) {
 		$(p).click(function(){
-			if ($logindialog.length) {
+			if ($dialog_lg.length) {
 				nextURL = '';
-				$logindialog.jqmShow();
+				$dialog_lg.jqmShow();
 				return false;
 			}
-			if (!$SubmitDialog.length) {
+			if (!$dialog_sm.length) {
 				ShowMessage('You can not submit because you have not registered the contest yet!');
 				return false;
 			}
-			$SubmitDialog.find('#error').html('&nbsp;');
-			$SubmitDialog.find('#lang').val(2);
-			$SubmitDialog.find('textarea').val('');
+			$dialog_sm.find('#error').html('&nbsp;');
+			$dialog_sm.find('#lang').val(2);
+			$dialog_sm.find('textarea').val('');
 			pid_index = $(this).attr('pid');
-			$SubmitDialog.find('span#pid').text(pmap[pid_index]+' - '+$(this).attr('tname'));
-			$SubmitDialog.jqmShow();
+			$dialog_sm.find('span#pid').text(pmap[pid_index]+' - '+$(this).attr('tname'));
+			$dialog_sm.jqmShow();
 		});
 	});
 
-	if ($SubmitDialog.length) {
-		$SubmitDialog.jqm({
+	if ($dialog_sm.length) {
+		$dialog_sm.jqm({
 			overlay: 30,
 			trigger: false,
 			modal: true,
 			closeClass: 'submitclose',
 			onShow: function(h) {
 				h.o.fadeIn(200);
-				h.w.fadeIn(200, function(){$SubmitDialog.find('textarea').focus();});
+				h.w.fadeIn(200, function(){$dialog_sm.find('textarea').focus();});
 			},
 			onHide: function(h) {
 				h.w.fadeOut(200);
 				h.o.fadeOut(200);
 			}
 		}).jqDrag('.jqDrag').jqResize('.jqResize');
-		var $submit_code = $SubmitDialog.find('textarea')
-		,	$submit_err = $SubmitDialog.find('span#error');
-		$SubmitDialog.find('a#jqcodesubmit').click(function(){
+		var $submit_code = $dialog_sm.find('textarea')
+		,	$submit_err = $dialog_sm.find('span#error');
+		$dialog_sm.find('a#jqcodesubmit').click(function(){
 			var code = $submit_code.val();
 			if (code.length < 50 || code.length > 65536) {
 				errAnimate($submit_err, 'the length of code must be between 50B to 65535B');
@@ -851,13 +849,13 @@ $(document).ready(function(){
 				pid: pid_index,
 				cid: cid,
 				code: code,
-				lang: $SubmitDialog.find('select').val()
+				lang: $dialog_sm.find('select').val()
 			}, function(err){
 				if (err == '1') {
 					window.location.reload(true);
 					return ;
 				}
-				$SubmitDialog.jqmHide();
+				$dialog_sm.jqmHide();
 				if (!err) {
 					ShowMessage('Your code for problem '+pmap[pid_index]+' has been submited successfully!');
 				} else if (err == '2'){
@@ -1008,3 +1006,47 @@ function clearAjax() {
 	if (rankAjax) rankAjax.abort();
 	if (discussAjax) discussAjax.abort();
 }
+
+//socket
+var socket = io.connect('/')
+,	$msg = $('#msg_data')
+,	$msg_err = $('#msg_err')
+,	$broadcast = $('#broadcast')
+,	$dialog_bc = $('#dialog_bc')
+,	$bc_content = $dialog_bc.find('div.bc_content');
+
+$(document).ready(function(){
+	if ($dialog_bc.length) {
+		$dialog_bc.jqm({
+			overlay: 30,
+			trigger: false,
+			modal: true,
+			closeClass: 'bc_close',
+			onShow: function(h) {
+				h.o.fadeIn(200);
+				h.w.fadeIn(200);
+			},
+			onHide: function(h) {
+				h.w.fadeOut(200);
+				h.o.fadeOut(200);
+			}
+		}).jqDrag('.jqDrag');
+	}
+	socket.emit('login', cid);
+	socket.on('broadcast', function(data){
+		$bc_content.text(data);
+		$dialog_bc.jqmShow();
+	});
+	if ($broadcast.length) {
+		$broadcast.click(function(){
+			var msg = JudgeString($msg.val());
+			if (!msg) {
+				errAnimate($msg_err, '消息不能为空！');
+				return false;
+			}
+			socket.emit('broadcast', {room: cid, msg: msg});
+			$bc_content.text('消息已广播完成！');
+			$dialog_bc.jqmShow();
+		});
+	}
+});

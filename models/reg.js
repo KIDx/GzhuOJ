@@ -35,7 +35,7 @@ var regObj = new Schema({
 mongoose.model('regs', regObj);
 var regs = mongoose.model('regs');
 
-Reg.prototype.save = function(callback){
+Reg.prototype.save = function(callback) {
   reg = new regs();
   reg.regID = this.regID;
   reg.cid = this.cid;
@@ -55,7 +55,7 @@ Reg.prototype.save = function(callback){
   });
 };
 
-Reg.get = function(Q, page, callback){
+Reg.get = function(Q, page, callback) {
   regs.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
@@ -69,7 +69,7 @@ Reg.get = function(Q, page, callback){
   });
 };
 
-Reg.findOne = function(Q, callback){
+Reg.findOne = function(Q, callback) {
   regs.findOne(Q, function(err, doc){
     if (err) {
       OE('Reg.findOne failed!');
@@ -78,7 +78,7 @@ Reg.findOne = function(Q, callback){
   });
 };
 
-Reg.update = function(Q, H, callback){
+Reg.update = function(Q, H, callback) {
   regs.findOneAndUpdate(Q, H, function(err, doc) {
     if (err) {
       OE('Reg.update failed!');

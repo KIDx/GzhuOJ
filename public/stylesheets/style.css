@@ -525,8 +525,8 @@ div.rb {
 }
 
 div.tablebg div.pagination {
-    margin: 0 0 4px 0;          /*must not change this*/
-    padding: 2px 10px 1px 8px;
+    margin: 0;
+    padding: 2px 0 0 8px;
 }
 
 div.tablebg div.pagination ul > li > a {
@@ -613,7 +613,8 @@ div.tablebg div#pager {
     position: relative;
 }
 
-div.tablebg div#tablediv {
+div.tablebg > div#tablediv,
+div.tablebg > div.tablediv {
     margin: 0 3px 0 3px;
     background-color: white;
     position: relative;
@@ -640,7 +641,8 @@ div.tablebg div#filter {
 div.tablebg div#filter span.add-on {
     font-size: 12px;
     border: 1px solid #aaa;
-    padding: 0 3px;
+    padding: 1px 3px;
+    line-height: 16px;
 }
 
 div.tablebg div#filter div {
@@ -652,7 +654,7 @@ div.tablebg div#filter div {
 div.tablebg div#filter select,
 div.tablebg div#filter input {
     margin: 0;
-    padding: 0;
+    padding: 1px;
     border: 1px solid #aaa;
 }
 
@@ -670,8 +672,8 @@ div.tablebg div#filter select,
 div.tablebg div#filter button {
     line-height: 15px;
     font-size: 12px;
-    height: 22px;
-    padding: 0 5px;
+    height: 24px;
+    padding: 2px 5px;
 }
 
 form div#simpleInput div input,
@@ -689,7 +691,9 @@ form div#simpleInput div input,
 }
 
 .icon-search {
-    background: url('img/icons.png') -14px 0 transparent;
+    width: 16px;
+    height: 16px;
+    background: url('img/search.png');
 }
 
 ul.nav-tabs {
@@ -1270,6 +1274,23 @@ table th img {
     box-shadow: 0 5px 8px rgba(0,0,0, 0.35);
 }
 
+.bc_box {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #f5f5f5;
+}
+
+.bc_header {
+    padding: 8px 0 5px 8px;
+    font-size: 20px;
+    border-bottom: 1px solid #ccc;
+}
+
+.bc_content {
+    padding: 10px 0 15px 8px;
+    font-size: 16px;
+}
+
 .jqmWindow {
     display: none;
     
@@ -1307,18 +1328,17 @@ table th img {
 .jqmOverlay { background-color: #000; }
 
 .jqDrag {
-    width: 100%;
     cursor: move;
 }
 
 .jqResize {
-    width: 14px;
-    height: 14px;
+    width: 8px;
+    height: 8px;
     position: absolute;
     bottom: 0;
     right: 0;
     cursor: se-resize;
-    background: url('img/icons.png') -28px 0 transparent;
+    background: url('img/resize.png');
 }
 
 .jqtop {
@@ -1329,7 +1349,7 @@ table th img {
     top: 0;
     left: 0;
     font-size: 16px;
-    color: gray;
+    color: #555;
     text-align: center;
     background: #d4ffcf;
 }
@@ -1340,7 +1360,7 @@ table th img {
     padding-left: 10px;
     margin: 0;
     position: absolute;
-    overflow: auto;    
+    overflow: auto; 
 }
 
 div.jqcontent > small.error-text {

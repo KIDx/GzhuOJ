@@ -41,7 +41,7 @@ var contestObj = new Schema({
 mongoose.model('contests', contestObj);
 var contests = mongoose.model('contests');
 
-Contest.prototype.save = function(callback){
+Contest.prototype.save = function(callback) {
   contest = new contests();
   contest.contestID = this.contestID;
   contest.userName = this.userName;
@@ -65,7 +65,7 @@ Contest.prototype.save = function(callback){
   });
 };
 
-Contest.get = function(Q, page, callback){
+Contest.get = function(Q, page, callback) {
   contests.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
@@ -79,7 +79,7 @@ Contest.get = function(Q, page, callback){
   });
 };
 
-Contest.watch = function(cid, callback){
+Contest.watch = function(cid, callback) {
   contests.findOne({contestID:cid}, function(err, doc){
     if (err) {
       OE('Contest.watch failed!');
@@ -88,7 +88,7 @@ Contest.watch = function(cid, callback){
   });
 };
 
-Contest.findOneAndUpdate = function(Q, H, O, callback){
+Contest.findOneAndUpdate = function(Q, H, O, callback) {
   contests.findOneAndUpdate(Q, H, O, function(err, doc){
     if (err) {
       OE('Contest.findOneAndUpdate failed!');
@@ -97,7 +97,7 @@ Contest.findOneAndUpdate = function(Q, H, O, callback){
   });
 };
 
-Contest.update = function(cid, H, callback){
+Contest.update = function(cid, H, callback) {
   contests.update({contestID:cid}, H, function(err){
     if (err) {
       OE('Contest.update failed!');
@@ -106,7 +106,7 @@ Contest.update = function(cid, H, callback){
   });
 };
 
-Contest.remove = function(cid, callback){
+Contest.remove = function(cid, callback) {
   contests.remove({contestID: cid}, function(err){
     if (err) {
       OE('Contest.remove failed');

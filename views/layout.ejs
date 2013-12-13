@@ -18,7 +18,7 @@
     <div class="w">
       <div class="fl">ACM-ICPC</div>
       <marquee style="margin-left:20px;float:left;width:50%;" id="marquee" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="scroll">
-        <span class="user user-green">解题报告已发，大家多关注论坛哈~</span>
+        <span class="user user-green">努力，是因为有梦想~</span>
       </marquee>
       <ul class="navigation">
     <% if (!user) { %>
@@ -84,27 +84,31 @@
     </div>
 <!--****************Dialogs****************-->
     <% if (!user) { %>
-      <%- partial('login') %>
-      <%- partial('register') %>
+      <%- partial('D_login') %>
+      <%- partial('D_register') %>
     <% } %>
-    <% if (key == 2) { %>
+    <% if (key == 0) { %>
+      <% if (user) { %>
+      <%- partial('D_settings', {u:u}) %>
+      <% } %>
+    <% } else if (key == 2) { %>
       <% if (user && user.name != 'admin') { %>
-      <%- partial('regcontest', {u:user, C:C}) %>
+      <%- partial('D_regcontest', {u:user, C:C}) %>
       <% } %>
     <% } else if (key == 4) { %>
-      <%- partial('info') %>
+      <%- partial('D_ce') %>
     <% } else if (key == 6) { %>
       <% if (type != 2) { %>
-        <%- partial('logincontest') %>
+        <%- partial('D_logincontest') %>
       <% } %>
     <% } else if (key == 9) { %>
-      <%- partial('info') %>
+      <%- partial('D_ce') + partial('D_broadcast') %>
       <% if (user && isContestant) { %>
-      <%- partial('contestsubmit') %>
+      <%- partial('D_submit') %>
       <% } %>
     <% } else if (key == 1003) { %>
       <% if (course) { %>
-      <%- partial('addtogroup') %>
+      <%- partial('D_addtogroup') %>
       <% } %>
     <% } %>
 <!--****************Dialogs****************-->
@@ -122,6 +126,8 @@
   <% if (key == 0) { %>
     <script src="/javascripts/user.js"></script>
   <% } else if (key == 1) { %>
+    <script src="/Highcharts/highcharts.js"></script>
+    <script src="/Highcharts/main.js"></script>
     <script src="/javascripts/statistic.js"></script>
   <% } else if (key == 2) { %>
     <script src="/javascripts/regform.js"></script>
@@ -138,6 +144,7 @@
   <% } else if (key == 9) { %>
     <!--<script src="/javascripts/bootstrap.js"></script>-->
     <script src="/javascripts/updatestatus.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="/javascripts/onecontest.js"></script>
   <% } else if (key == 4) { %>
     <script src="/javascripts/updatestatus.js"></script>

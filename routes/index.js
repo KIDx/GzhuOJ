@@ -547,81 +547,91 @@ exports.getRanklist = function(req, res) {
         if (!docs || docs.length == 0) {
           return RP(contest);
         }
-        var maxRunID = docs[0].runID;
-        Q.runID.$lte = maxRunID;
-        Solution.mapReduce({
-          query: Q,
-          sort: {runID: -1},
-          map: function(){
-            var val = { solved:0, penalty:0, status:{} };
-            if (this.result == 2) {
-              val.solved = 1;
-              val.penalty = parseInt((new Date(this.inDate)).getTime()/60000, 10);
-              val.status[this.problemID] = {wa: 0, inDate: val.penalty};
-            } else {
-              val.status[this.problemID] = {wa: -1};
-            }
-            return emit({cid: this.cID, name: this.userName}, val);
-          },
-          reduce: function(key, vals){
-            var val = { solved: 0, penalty: 0, status: {} };
-            for (var j = vals.length-1; j >= 0; j--) {
-              p = vals[j];
-              if (p.status) {
-                for (var i in p.status) {
-                  var o = p.status[i];
-                  if (!val.status[i]) {
-                    if (o.wa >= 0) {
-                      val.solved++;
-                      val.penalty += o.wa*20 + o.inDate;
-                    }
-                    val.status[i] = o;
-                  } else if (val.status[i].wa < 0) {
-                    if (o.wa >= 0) {
-                      val.solved++;
-                      val.status[i].wa = o.wa - val.status[i].wa;
-                      val.status[i].inDate = o.inDate;
-                      val.penalty += val.status[i].wa*20 + o.inDate;
-                    } else {
-                      val.status[i].wa += o.wa;
-                    }
-                  }
-                }
-              }
-            }
-            return val;
-          },
-          out: { reduce: 'ranks' }
-        }, function(err){
+        Solution.watch({$and: [Q, {result: {$lt: 2}}]}, function(err, sol){
           if (err) {
             OE(err);
             return res.end();
           }
-          Solution.aggregate([{
-            $match: {
-              cID: cid,
-              $nor: [{userName:'admin'}],
-              inDate: indate,
-              result: 2
-            }
-          }, { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
-          ], function(err, results){
+          var maxRunID;
+          if (sol) {
+            maxRunID = sol.runID - 1;
+          } else {
+            maxRunID = docs[0].runID;
+          }
+          Solution.mapReduce({
+            query: {$and: [Q, {runID: {$lte: maxRunID}}]},
+            sort: {runID: -1},
+            map: function(){
+              var val = { solved:0, penalty:0, status:{} };
+              if (this.result == 2) {
+                val.solved = 1;
+                val.penalty = parseInt((new Date(this.inDate)).getTime()/60000, 10);
+                val.status[this.problemID] = {wa: 0, inDate: val.penalty};
+              } else {
+                val.status[this.problemID] = {wa: -1};
+              }
+              return emit({cid: this.cID, name: this.userName}, val);
+            },
+            reduce: function(key, vals){
+              var val = { solved: 0, penalty: 0, status: {} };
+              for (var j = vals.length-1; j >= 0; j--) {
+                p = vals[j];
+                if (p.status) {
+                  for (var i in p.status) {
+                    var o = p.status[i];
+                    if (!val.status[i]) {
+                      if (o.wa >= 0) {
+                        val.solved++;
+                        val.penalty += o.wa*20 + o.inDate;
+                      }
+                      val.status[i] = o;
+                    } else if (val.status[i].wa < 0) {
+                      if (o.wa >= 0) {
+                        val.solved++;
+                        val.status[i].wa = o.wa - val.status[i].wa;
+                        val.status[i].inDate = o.inDate;
+                        val.penalty += val.status[i].wa*20 + o.inDate;
+                      } else {
+                        val.status[i].wa += o.wa;
+                      }
+                    }
+                  }
+                }
+              }
+              return val;
+            },
+            out: { reduce: 'ranks' }
+          }, function(err){
             if (err) {
               OE(err);
               return res.end();
             }
-            var FB = {};
-            if (results) {
-              results.forEach(function(p){
-                FB[p._id] = p.userName;
-              });
-            }
-            Contest.findOneAndUpdate({contestID: cid}, {$set: {FB: FB, maxRunID: maxRunID}}, {new: true}, function(err, con){
+            Solution.aggregate([{
+              $match: {
+                cID: cid,
+                $nor: [{userName:'admin'}],
+                inDate: indate,
+                result: 2
+              }
+            }, { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
+            ], function(err, results){
               if (err) {
                 OE(err);
                 return res.end();
               }
-              return RP(con);
+              var FB = {};
+              if (results) {
+                results.forEach(function(p){
+                  FB[p._id] = p.userName;
+                });
+              }
+              Contest.findOneAndUpdate({contestID: cid}, {$set: {FB: FB, maxRunID: maxRunID}}, {new: true}, function(err, con){
+                if (err) {
+                  OE(err);
+                  return res.end();
+                }
+                return RP(con);
+              });
             });
           });
         });

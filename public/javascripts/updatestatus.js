@@ -1,5 +1,6 @@
-
 //update status
+
+var flg = {};
 
 function updateStatus($p) {
 	$.ajax({
@@ -27,8 +28,8 @@ function updateStatus($p) {
 				.text(Res(sol.result));
 				if (sol.result < 2) {
 					setTimeout(function(){
-						updateStatus($p);
-						console.log('123');
+						if (flg[$p.attr('rid')])
+							updateStatus($p);
 					}, 250);
 				}
 			}
@@ -48,6 +49,7 @@ function getStatus() {
 	$verdict = $('#statustable td.unknow');
 	if ($verdict.length) {
 		$.each($verdict, function(i, p){
+			flg[$(p).attr('rid')] = true;
 			updateStatus($(p));
 		});
 	}

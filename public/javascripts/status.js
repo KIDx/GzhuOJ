@@ -58,3 +58,7 @@ $(document).ready(function(){
 	simulateClick($name, $fil);
 	simulateClick($pid, $fil);
 });
+
+$(document).ready(function(){
+	getStatus();
+});

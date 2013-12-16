@@ -1,8 +1,14 @@
 {
   "name": "GzhuOnlineJudge",
-  "version": "5.6.0",
+  "version": "5.7.0",
   "scripts": {
     "start": "node app"
+  },
+  "description": "OnlineJudge System Of ACM",
+  "keywords": ["OnlineJudge", "OJ", "ACM", "ICPC", "Contest"],
+  "repository" : {
+    "type" : "git"
+  , "url" : "https://github.com/KIDx/GzhuOJ"
   },
   "dependencies": {
     "express": "*",

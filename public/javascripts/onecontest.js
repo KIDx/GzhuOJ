@@ -110,7 +110,7 @@ function buildRow(sol) {
 		html += ' class="bold"><a href="javascript:;" rid="'+sol.runID+'" class="CE special-text">Compilation Error</a>';
 	} else {
 		html += ' class="bold '+Col(sol.result);
-		if (sol.result == 0) html += ' unknow';
+		if (sol.result < 2) html += ' unknow';
 		html += '">'+Res(sol.result);
 	}
 	html += '</td>';
@@ -179,6 +179,7 @@ function Response(json) {
 	});
 	BindCE();
 	$status.fadeIn(100, function(){
+		flg = {};
 		getStatus();
 	});
 }

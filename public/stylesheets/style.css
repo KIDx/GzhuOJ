@@ -1098,11 +1098,11 @@ table.sort th a {
 }
 
 table.sort th a:hover {
-    background: #ddd;
+    background: #C7CDFF;
 }
 
 table.sort th a.current {
-    background: #ccc;
+    background: #C7CDFF;
 }
 
 table#problemset tr td div#dif_bg {

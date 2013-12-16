@@ -539,7 +539,7 @@ exports.getRanklist = function(req, res) {
         inDate: indate,
         runID: {$gt: contest.maxRunID}
       };
-      Solution.findMax(Q, function(err, docs){
+      Solution.findOne(Q, {runID: -1}, function(err, docs){
         if (err) {
           OE(err);
           return res.end();
@@ -547,17 +547,19 @@ exports.getRanklist = function(req, res) {
         if (!docs || docs.length == 0) {
           return RP(contest);
         }
-        Solution.watch({$and: [Q, {result: {$lt: 2}}]}, function(err, sol){
+        Solution.findOne({$and: [Q, {result: {$lt: 2}}]}, {runID: 1}, function(err, sol){
           if (err) {
             OE(err);
             return res.end();
           }
           var maxRunID;
-          if (sol) {
-            maxRunID = sol.runID - 1;
+          if (sol.length) {
+            maxRunID = sol[0].runID - 1;
           } else {
             maxRunID = docs[0].runID;
           }
+          console.log(sol[0]);
+          console.log(docs[0].runID);
           Solution.mapReduce({
             query: {$and: [Q, {runID: {$lte: maxRunID}}]},
             sort: {runID: -1},
@@ -1253,7 +1255,7 @@ exports.rejudge = function(req, res) {
         OE(err);
         return res.end();
       }
-      Solution.distinct('userName', {problemID:pid, result:2}, function(err, users){
+      Solution.distinct('userName', {problemID: pid, result: 2}, function(err, users){
         if (err) {
           OE(err);
           return res.end();
@@ -1263,16 +1265,41 @@ exports.rejudge = function(req, res) {
             OE(err);
             return res.end();
           }
-          Solution.update({problemID:pid}, {$set: {result:0}}, function(err){
+          Solution.update({problemID: pid}, {$set: {result:0}}, function(err){
             if (err) {
               OE(err);
               return res.end();
             }
-            if (!req.body.cid) {
-              req.session.msg = 'Problem '+pid+' has been Rejudged successfully!';
-              return res.end();
-            }
-            return res.end('1');
+            Solution.distinct('cID', {problemID: pid, cID: {$gt: -1}}, function(err, cids){
+              if (err) {
+                OE(err);
+                return res.end();
+              }
+              var RP = function() {
+                if (!req.body.cid) {
+                  req.session.msg = 'Problem '+pid+' has been Rejudged successfully!';
+                  return res.end();
+                }
+                return res.end('1');
+              };
+              if (!cids || cids.length == 0) {
+                return RP();
+              }
+              ContestRank.update({'_id.cid': {$in: cids}}, {$set: {value:{solved:0,penalty:0,status:{}}}}, function(err){
+                if (err) {
+                  OE(err);
+                  return res.end();
+                }
+                console.log(cids);
+                Contest.multiUpdate({contestID: {$in: cids}}, {$set: {maxRunID: 0, updateTime: 0}}, function(err){
+                  if (err) {
+                    OE(err);
+                    return res.end();
+                  }
+                  return RP();
+                });
+              });
+            });
           });
         });
       });
@@ -2317,25 +2344,14 @@ exports.doAddcontest = function(req, res) {
             if (!flg) {
               return res.end(tp);
             }
-            if (con.type == 2) {
-              ContestRank.update({'_id.cid':cid}, {$set:{value:{solved:0,penalty:0,status:{}}}}, function(err){
-                if (err) {
-                  OE(err);
-                  req.session.msg = '系统错误！';
-                  return res.end();
-                }
-                return res.end(tp);
-              });
-            } else {
-              ContestRank.remove({'_id.cid':cid}, function(err){
-                if (err) {
-                  OE(err);
-                  req.session.msg = '系统错误！';
-                  return res.end();
-                }
-                return res.end(tp);
-              });
-            }
+            ContestRank.update({'_id.cid':cid}, {$set:{value:{solved:0,penalty:0,status:{}}}}, function(err){
+              if (err) {
+                OE(err);
+                req.session.msg = '系统错误！';
+                return res.end();
+              }
+              return res.end(tp);
+            });
           });
         }, judge = function() {
           if (ary.length != con.probs.length) {

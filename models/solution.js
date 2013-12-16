@@ -76,8 +76,8 @@ Solution.find = function(Q, callback) {
   });
 };
 
-Solution.findMax = function(Q, callback) {
-  solutions.find(Q).sort({runID:-1}).limit(1).exec(function(err, docs){
+Solution.findOne = function(Q, sq, callback) {
+  solutions.find(Q).sort(sq).limit(1).exec(function(err, docs){
     if (err) {
       OE('Solution.findMax failed!');
     }

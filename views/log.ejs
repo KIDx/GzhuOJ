@@ -5,282 +5,292 @@
 		<link rel="shortcut icon" href="/favicon.ico" mce_href="/favicon.ico" type="image/x-icon">
 	</head>
 	<body>
-<pre style="margin-left:8px;">2013.12.14, Version 5.7.0
- 
+<pre style="margin-left:8px;"># 2013.12.16, Version 5.8.0
+
+* 再次重构statistic页面布局，兼容IE7
+
+* rejudge的同时重置所有影响到的contest排名
+
+* 解决contest不在status页时也会发送更新提交结果请求的问题
+
+
+2013.12.14, Version 5.7.0
+
 * 增加"更新日志"页面"/log"
- 
+
 * 重构statistic页面布局
- 
+
 * 修复contest的rank聚合会拿到pending与running导致排名不正确的bug
- 
+
 * 修复contest的status提交结果是running时不更新的bug
- 
+
 * 修复上次更新引入的status页面不会自动更新提交的bug
- 
- 
+
+
 2013.12.13, Version 5.6.0
- 
+
 * 新增highcharts统计图插件（statistic页面）
- 
+
 * 删除javascript插件中无用的文件
- 
+
 * 修改了部分图标及样式
- 
+
 * 新增socket.io模块
- 
+
 * contest新增消息广播功能（contest的主人或admin可用）
- 
+
 * 重写了updateStatute，消除了之前的各种bug
- 
+
 * 用AGG聚合查询优化了user页面的题目列表的查询
- 
+
 * 用AGG聚合查询优化了problemset页面的题目AC状态查询（AC：绿色，非AC：红色）
- 
- 
+
+
 2013.12.11, Version 5.5.0
- 
+
 * 上传数据时把所有’\r’去掉，避免gets会PE
- 
+
 * 增加404页面
- 
+
 * 修改了模态框的样式
- 
+
 * 去掉删除contest时的确认模态框，用js的window.confirm代替
- 
+
 * 修复了普通contest不能打星的bug
- 
+
 * 重构了弹窗message的逻辑
- 
+
 * 重构了addcontest的前端以及后台逻辑，并且增强用户体验
- 
+
 * contest新增把题目”显示到题库/隐藏”功能 (for admin)
- 
+
 * 修复因部分res.header没设置而导致firefox下不正确显示返回内容的bug
- 
+
 * 修复addcontest的alias部分 (post后数组中空的数据被忽略的bug)
- 
- 
+
+
 2013.12.09, Version 5.4.0
- 
+
 * 重构了Course系列页面
- 
+
 * 修改user页面题目列表的样式
- 
- 
+
+
 2013.12.05, Version 5.3.0
- 
+
 * 完善了错误日志（定位错误行号）
- 
+
 * 限制了problem的标签最多只能有5个
- 
+
 * 修复非VIP的private的contest输入正确密码进入不了contest的bug
- 
+
 * 修复user页面在低版本浏览器下点击"修改信息"无反应的bug
- 
- 
+
+
 2013.11.30, Version 5.2.0
- 
+
 * 为所有ajax增加abort，增强了健壮性(onecontest.js)
- 
+
 * 修复在一个标签页内可以显示两个标签内容的bug(运行ajax异步回调函数时检查所属标签页是否为当前用户看到的标签页)
- 
+
 * 修复regform页面的部分bug
- 
+
 * 删除regform页面无用的功能：修改班级（因为user页面可以修改_for admin）
- 
- 
+
+
 2013.11.24, Version 5.1.0
- 
+
 * 把数据进行html转义再显示到ckeditor，避免某些内容被解析为html代码
- 
+
 * ckeditor新增QQ表情功能
- 
+
 * 为onecontest页面增加Discuss页
- 
- 
+
+
 2013.11.18, Version 5.0.0
- 
+
 * 修复problemset函数里查询的一个bug（index.js）
- 
+
 * 在upload和doSubmit函数增加编码转换（针对GBK转为UTF8）
- 
+
 * 新增论坛功能
- 
+
 * 老师权限账号可以看所有人的源码
- 
+
 * 修复SyntaxHighlighter高亮插件右侧始终有滚动条的bug
- 
+
 * 所有post响应都检查req.body的所需属性是否为空，使得服务器更加健壮
- 
- 
+
+
 2013.11.12, Version 4.1.0
- 
+
 * 修复upload函数的一个bug（index.js）
- 
+
 * 增加错误日志系统
- 
- 
+
+
 2013.10.23, Version 4.0.0
- 
+
 * contest表新增字段：maxRunID (Number)，每10秒聚合一次用新的提交更新ranks表，优化了ranks的聚合查询
- 
+
 * contest的开始时间改变或者持续时间变短时才初始化ranks
- 
+
 * 重构submit页面
- 
+
 * 更新index.js（更加准确地输出error）
- 
+
 * 在editproblem页面，考虑到可能会列出太多文件，于是使用"overflow: auto"
- 
+
 * 修复onecontest页面的problem-link（for IE7）
- 
+
 * 修复submit-links（onecontest的overview页）
- 
+
 * contest表新增字段：stars (Array)
- 
+
 * onecontest的rank页可以为用户切换大星状态（for 管理员）
- 
+
 * onecontest的statue页，只有管理员才能看到自己的提交
- 
- 
+
+
 2013.10.18, Version 3.9.0
- 
+
 * 删除reg页面某些无用的功能
- 
+
 * user页面增加两个功能（for 管理员）
   1. 允许管理员修改用户认证信息
   2. 允许管理员清空用户认证信息
- 
+
 * 改变数据库ranks表的字段
   _id:'cid-name' ---> _id: { cid:cid, name:name }
- 
+
 * 删除一些查询时无用的"$and"
- 
+
 * 当改变contest的时间属性时，初始化ranks表，而不是删除它
- 
- 
-2013.10.15, Version 3.7.0
- 
-* 修复contest overview提交统计显示位置错乱的bug
- 
-* 修复contest problem中下面的提交按钮
- 
-* 修复statistic页面聚合结果不正确的bug
- 
-* 在contest overview增加show all problems按钮，点击将contest的题目在problemset中取消隐藏
- 
+
+
 2013.10.16, Version 3.8.0
- 
+
 * 修复onecourse翻页出错的bug
- 
+
 * user页面增加重新统计所有用户AC数以及提交数的按钮（需要管理员权限）
- 
+
 * layout增加显示当前用户头像的功能
- 
- 
+
+
+2013.10.15, Version 3.7.0
+
+* 修复contest overview提交统计显示位置错乱的bug
+
+* 修复contest problem中下面的提交按钮
+
+* 修复statistic页面聚合结果不正确的bug
+
+* 在contest overview增加show all problems按钮，点击将contest的题目在problemset中取消隐藏
+
+
 2013.10.04, Version 3.6.0
- 
+
 * 为'/user/admin'页面增加隐藏题目列表，方便管理
- 
+
 * 修复'/user'页面点击题号跳转网址不正确的bug
- 
- 
+
+
 2013.10.02, Version 3.5.0
- 
+
 * 为editproblem页面增加problem链接，方便回到所编辑题目页面
- 
+
 * node.js升级为v0.10.20，为了兼容，把所有相对路径改为绝对路径
- 
+
 * 修复了contest rank不能正确显示FB的bug（原因：查找数据库时没指定提交记录的结果-AC）
- 
- 
+
+
 2013.09.29, Version 3.4.0
- 
+
 * 修复contest overview的一个bug（当前用户的题目通过状态有误）
- 
+
 * 为contest rank增加FB功能
- 
- 
+
+
 2013.09.08, Version 3.3.0
- 
+
 * 修复加题者不能编辑题目tag的bug
- 
+
 * 改写addproblem上传图片功能(可以看到上传的图片共有几张，并列出文件名，而且可以删除某个图片)
- 
+
 * problemset增加source
- 
- 
+
+
 2013.09.03, Version 3.2.0
- 
+
 * 增加addstudent功能(导入csv批量注册、修改用户, 需要admin权限)
- 
+
 * 修复res未setheader导致的不兼容问题
- 
- 
+
+
 2013.09.02, Version 3.1.0
- 
+
 * 修复部分bug
- 
+
 * user页面增加修改用户学院的功能(需要admin权限)
- 
- 
+
+
 2013.09.01, Version 3.0.0
- 
+
 * 增加课程course功能(course页面，onecourse页面，ranklist/courseID/页面)
- 
+
 * 完善ranklist的mapReduce聚合查询
- 
+
 * 完善进入课程的权限问题
- 
- 
+
+
 2013.08.30, Version 2.5.0
- 
+
 * 修复updateStatus的兼容问题
- 
+
 * 改写addproblem上传数据功能(可以看到上传的文件共有几个，并列出文件名，而且可以删除某个文件)
- 
- 
+
+
 2013.08.29, Version 2.4.0
- 
+
 * 为status页面以及onecontest页面增加updateStatus.js，动态更新还没有结果的提交记录
- 
+
 * 修复problem页面题目不存在时抛出异常的bug
- 
- 
+
+
 2013.08.28, Version 2.3.0
- 
+
 * 取消v2.2中兼容IE7的布局
- 
+
 * 重构onecontest页面的排名布局
- 
- 
+
+
 2013.08.27, Version 2.2.0
- 
+
 * 完善contest的delete功能，当改contest存在提交记录时，不允许删除该contest
- 
+
 * 取消delete该contest的同时remove所有排名记录（因为没有提交才能删除contest，也就是说能删除contest的话必然不存在排名记录，也就不需remove排名记录）
- 
+
 * button改为a，兼容IE9+
- 
+
 * 为onecontest页面的排名布局增加jq实现min-width兼容IE7
- 
- 
+
+
 2013.08.26, Version 2.1.0
- 
+
 * 完善contest的delete功能，delete时同时remove其所有ranks(ContestRank)表中的排名记录，contest的时间被修改后也remove所有记录，保证排名的正确性
- 
- 
+
+
 2013.08.25, Version 2.0.0
- 
+
 * 所有页面重构
- 
+
 * 增加mapReduce 、aggregate聚合，优化了查询
- 
+
 * 增加ranks(ContestRank)表存放比赛排名(为了保证每分钟只用mapReduce聚合一次排名)
- 
- 
+
+
 2013.03.10, Version 1.0.0
- 
+
 * 完成ACM Online Judge的基本功能</pre>
 	</body>
 </html>

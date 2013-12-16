@@ -274,6 +274,8 @@ io.sockets.on('connection', function(socket){
 		});
 	}
 	socket.on('login', function(room){
-		socket.join(room.toString());
+		if (room) {
+			socket.join(room.toString());
+		}
 	});
 });

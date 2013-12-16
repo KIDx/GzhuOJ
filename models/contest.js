@@ -106,6 +106,15 @@ Contest.update = function(cid, H, callback) {
   });
 };
 
+Contest.multiUpdate = function(Q, H, callback) {
+  contests.update(Q, H, {multi: true}, function(err){
+    if (err) {
+      OE('Contest.multiUpdate failed!');
+    }
+    return callback(err);
+  });
+};
+
 Contest.remove = function(cid, callback) {
   contests.remove({contestID: cid}, function(err){
     if (err) {

@@ -1,7 +1,5 @@
-# Gzhu Online Judge v5.7.0
+# Gzhu Online Judge v5.8.0
 
-* 增加"更新日志"页面"/log"
-* 重构statistic页面布局
-* 修复contest的rank聚合会拿到pending与running导致排名不正确的bug
-* 修复contest的status提交结果是running时不更新的bug
-* 修复上次更新引入的status页面不会自动更新提交的bug
+* 再次重构statistic页面布局，兼容IE7
+* rejudge的同时重置所有影响到的contest排名
+* 解决contest不在status页时也会发送更新提交结果请求的问题

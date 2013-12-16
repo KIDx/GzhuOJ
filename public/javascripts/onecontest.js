@@ -367,6 +367,7 @@ function ProblemsResponse(prob) {
 				if (res == '0') ShowMessage('Failed! You have no permission to Rejudge.');
 				else if (res == '1') ShowMessage('Problem '+F.charAt(ID)+' has been Rejudged successfully!');
 				$tablink.eq(2).click();
+				$rejudge.removeClass('disabled');
 			});
 		});
 	}
@@ -629,6 +630,7 @@ function run(str, key) {
 	if (a != 'problem' || !PreTab) {
 		hideAll();
 	}
+	flg = {};	//important [update status]
 	for (var i = 0; i < 5; i++) {
 		noActive(i);
 	}

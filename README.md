@@ -1,5 +1,5 @@
-# Gzhu Online Judge v5.8.0
+# Gzhu Online Judge v5.9.0
 
-* 再次重构statistic页面布局，兼容IE7
-* rejudge的同时重置所有影响到的contest排名
-* 解决contest不在status页时也会发送更新提交结果请求的问题
+* contest广播由原来的只能给admin用，现在contest的主人也可以用
+* 修改了验证码的画法，更安全更美观
+* 发布话题时需要填写验证码

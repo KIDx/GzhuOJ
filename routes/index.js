@@ -1038,7 +1038,7 @@ exports.doReg = function(req, res) {
   var name = clearSpace(req.body.username)
   ,   nick = clearSpace(req.body.nick)
   ,   password = req.body.password
-  ,   vcode = req.body.vcode
+  ,   vcode = clearSpace(req.body.vcode)
   ,   school = clearSpace(req.body.school)
   ,   email = clearSpace(req.body.email)
   ,   sig = clearSpace(req.body.signature);
@@ -1051,7 +1051,7 @@ exports.doReg = function(req, res) {
   if (!pattern.test(name)) {
     return res.end();   //not allow
   }
-  if (vcode != req.session.verifycode) {
+  if (vcode.toLowerCase() != req.session.verifycode) {
     return res.end('1');
   }
 
@@ -1133,9 +1133,9 @@ exports.loginContest = function(req, res) {
 
 exports.createVerifycode = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  tCan.Can (function(vcode, html){
+  tCan.Can(function(vcode, img){
     req.session.verifycode = vcode;
-    return res.end(html);
+    return res.end(img);
   });
 };
 
@@ -4160,11 +4160,15 @@ exports.addtopic = function(req, res) {
     if (T) {
       T.content = escapeHtml(T.content);
     }
-    res.render('addtopic', {title: type+'Topic',
-                            user: req.session.user,
-                            time: (new Date()).getTime(),
-                            topic: T,
-                            key: 1004
+    tCan.Can(function(vcode, img){
+      req.session.verifycode = vcode;
+      res.render('addtopic', {title: type+'Topic',
+                              user: req.session.user,
+                              time: (new Date()).getTime(),
+                              topic: T,
+                              key: 1004,
+                              vcode: img
+      });
     });
   };
   var tid = parseInt(req.query.tid, 10);
@@ -4197,9 +4201,13 @@ exports.doAddtopic = function(req, res) {
   ,   title = clearSpace(req.body.title)
   ,   content = req.body.content        //can not do clearSpace because it is content
   ,   name = req.session.user.name
-  ,   cid = parseInt(req.body.cid, 10);
-  if (!title || !content || !name) {
-    return res.end();   //not allow!
+  ,   cid = parseInt(req.body.cid, 10)
+  ,   vcode = clearSpace(req.body.vcode);
+  if (!title || !content || !name || !vcode) {
+    return res.end();     //not allow!
+  }
+  if (vcode.toLowerCase() != req.session.verifycode) {
+    return res.end('1');
   }
   if (!cid) {
     cid = -1;
@@ -4213,8 +4221,7 @@ exports.doAddtopic = function(req, res) {
       }}, function(err){
         if (err) {
           OE(err);
-          req.session.msg = '系统错误！';
-          return res.end();
+          return res.end('2');    //not refresh for error
         }
         req.session.msg = '修改成功！';
         return res.end(tid.toString());
@@ -4226,8 +4233,7 @@ exports.doAddtopic = function(req, res) {
     Topic.watch(tid, function(err, topic){
       if (err) {
         OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
+        return res.end('2');
       }
       if (!topic) {
         return res.end();   //not allow
@@ -4242,8 +4248,7 @@ exports.doAddtopic = function(req, res) {
     IDs.get('topicID', function(err, id){
       if (err) {
         OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
+        return res.end('2');
       }
       (new Topic({
         id      : id,
@@ -4255,8 +4260,7 @@ exports.doAddtopic = function(req, res) {
       })).save(function(err){
         if (err) {
           OE(err);
-          req.session.msg = '系统错误！';
-          return res.end();
+          return res.end('2');
         }
         req.session.msg = '发布成功！';
         return res.end(id.toString());

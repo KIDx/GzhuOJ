@@ -278,6 +278,14 @@ a.user {
     border-radius: 2px;
 }
 
+.vcode {
+    width: 90px;
+    height: 30px;
+    margin-left: 30px;
+    padding: 0;
+    cursor: pointer;
+}
+
 .topic_img {
     border-radius: 3px;
     border: 1px solid #ddd;

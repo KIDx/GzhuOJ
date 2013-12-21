@@ -399,11 +399,10 @@ $(document).ready(function(){
 
     //register
     if ($regdialog.length > 0) {
-        var $vcode = $regdialog.find('a#getvcode');
-        var $regimg = $regdialog.find('div#vcode');
-        var $reginput = $regdialog.find('input');
-        var $regsubmit = $regdialog.find('a#reg_submit');
-        var $regerr = $regdialog.find('small#reg_error');
+        var $regimg = $regdialog.find('div#vcode')
+        ,   $reginput = $regdialog.find('input')
+        ,   $regsubmit = $regdialog.find('a#reg_submit')
+        ,   $regerr = $regdialog.find('small#reg_error');
 
         $('a#reg').click(function(){
             $regdialog.jqm({
@@ -425,7 +424,7 @@ $(document).ready(function(){
             });
         });
 
-        $vcode.click(function(){
+        $regimg.click(function(){
             $.post('/createVerifycode', function(res){
                 $regimg.html(res);
             });

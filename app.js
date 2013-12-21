@@ -15,7 +15,8 @@ var express = require('express')
 ,	fs = require('fs')
 ,	cookie = require('express/node_modules/cookie')
 ,	utils = require('express/node_modules/connect/lib/utils')
-,	sessionStore = new MongoStore({ db : settings.db });
+,	sessionStore = new MongoStore({ db : settings.db })
+,	Contest = require('./models/contest.js');
 
 //访问日志和错误日志
 //var accessLogfile = fs.createWriteStream('access.log', {flags: 'a'});
@@ -266,10 +267,28 @@ io.set('authorization', function(handshakeData, accept){
 //socket
 io.sockets.on('connection', function(socket){
 	var session = socket.handshake.session;
-	if (session && session.user && session.user.name == 'admin') {
+	if (session && session.user) {
 		socket.on('broadcast', function(data){
 			if (data) {
-				socket.broadcast.to(data.room).emit('broadcast', data.msg);
+				var cid = parseInt(data.room, 10);
+				if (!cid) {
+					return ;	//not allow
+				}
+				var RP = function() {
+					socket.broadcast.to(data.room).emit('broadcast', data.msg);
+				};
+				if (session.user.name == 'admin') {
+					return RP();
+				}
+				Contest.watch(cid, function(err, con){
+					if (err) {
+						OE(err);
+						return ;
+					}
+					if (con && con.userName == session.user.name) {
+						return RP();
+					}
+				});
 			}
 		});
 	}

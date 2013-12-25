@@ -1,14 +1,19 @@
 
-var $fil = $('#fil')
+var cid = $('#ranklist').attr('cid')
+,	$fil = $('#fil')
 ,	$search = $('#search')
 ,	$list = $('#list').find('a');
 
 function go(page){
 	var F = new Array(), G = new Array()
-	,	search = JudgeString($search.val());
 
 	if (page) F.push('page'), G.push(page);
-	if (search) F.push('search'), G.push(search);
+	if (cid) F.push('cid'), G.push(cid);
+
+	if ($search.length) {
+		var search = JudgeString($search.val());
+		if (search) F.push('search'), G.push(search);
+	}
 
 	var url = '/ranklist', flg = true;
 	for (var i = 0; i < F.length; i++) {
@@ -25,9 +30,7 @@ function go(page){
 }
 
 $(document).ready(function(){
-	$fil.click(function(){
-		go(null);
-	});
+	console.log(cid);
 	$.each($list, function(i, p){
 		$(p).click(function(){
 			var $li = $(this).parent();
@@ -37,8 +40,10 @@ $(document).ready(function(){
 			go($(this).attr('id'));
 		});
 	});
-	simulateClick($search, $fil);
-	$('#reset').click(function(){
-		window.location.href = '/ranklist';
-	});
+	if ($fil.length) {
+		$fil.click(function(){
+			go(null);
+		});
+		simulateClick($search, $fil);
+	}
 });

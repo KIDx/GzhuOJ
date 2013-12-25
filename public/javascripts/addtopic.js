@@ -35,18 +35,21 @@ $(document).ready(function(){
 			errAnimate($err, '内容不能为空！');
 			return false;
 		}
-		var vcode = $vcode.val();
-		if (!vcode) {
-			errAnimate($err, '验证码不能为空！');
-			return false;
+		if ($vcode.length) {
+			if (!$vcode.val()) {
+				errAnimate($err, '验证码不能为空！');
+				return false;
+			}
 		}
 		if ($submit.hasClass('disabled')) {
 			return false;
 		}
 		$submit.addClass('disabled');
-		var data = {title:title, content:content.getData(), vcode:vcode};
+		var data = {title:title, content:content.getData()};
 		if (tid) {
 			data.tid = tid;
+		} else {
+			data.vcode = $vcode.val();
 		}
 		$.post('/addtopic', data, function(res){
 			if (res == '1') {

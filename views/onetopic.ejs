@@ -31,10 +31,8 @@
 				<hr />
 				<%- topic.content %>
 				<hr />
-				<span class="fr user user-gray">by <a href="/user/<%= topic.user %>" title="<%= UT[topic.user] %>" class="user user-<%= UC[topic.user] %>"><%= topic.user %>.</a></span>
-				于
-				<span class="user-gray"><%= getDate(topic.inDate) %></span>
-				编辑
+				<span class="fr">Added by <a href="/user/<%= topic.user %>" title="<%= UT[topic.user] %>" class="user user-<%= UC[topic.user] %>"><%= topic.user %>.</a></span>
+				于 <span class="user-gray"><%= getDate(topic.inDate) %></span> 最后编辑
 			</div>
 		</div>
 	<% if (comments && comments.length) { %>
@@ -57,7 +55,7 @@
 				<div class="reply_right">
 					<div>
 						<a href="/user/<%= p.user %>" title="<%= UT[p.user] %>" class="user user-<%= UC[p.user] %>"><%= p.user %></a>
-						<span class="user user-gray fr"><%= i+1 %>F</span>
+						<span class="user-gray fr">#<%= i+1 %></span>
 					</div>
 					<div class="reply_content">
 						<%- p.content %>

@@ -73,20 +73,20 @@
       <div><span class="user-gray" title="nick name"><%= u.nick %></span></div>
       <ul class="user-info">
       <% if(u.signature) { %>
-        <li style="word-break:break-all;">Signature: <%= u.signature %></li>
+        <li style="word-break:break-all;"><img class="icon" src="/img/sig.png"/>Signature: <%= u.signature %></li>
       <% } %>
       <% if (u.name != 'admin') { %>
-        <li>Rank: <%= u.rank %></li>
+        <li><img class="icon" src="/img/rank.png"/>Rank: <span class="user user-green"><%= u.rank %></span></li>
       <% } %>
-        <li>Solved: <%= u.solved %></li>
-        <li>Submissions: <%= u.submit %></li>
+        <li><img class="icon" src="/img/yes.png"/>Solved: <span class="user user-green"><%= u.solved %></span></li>
+        <li><img class="icon" src="/img/submit.png"/>Submissions: <span class="user user-green"><%= u.submit %></span></li>
       <% if(u.email) { %>
-        <li>Email: <%= u.email %></li>
+        <li><img class="icon" src="/img/mail.png"/>Email: <%= u.email %></li>
       <% } %>
       <% if(u.school) { %>
-        <li>School: <%= u.school %></li>
+        <li><img class="icon" src="/img/school.png"/>School: <%= u.school %></li>
       <% } %>
-        <li>Register Time: <%= u.regTime %></li>
+        <li><img class="icon" src="/stylesheets/img/add.png"/>AddProblem: <% if(u.addprob) { %><span class="user user-green">YES</span><% } else { %><span class="error-text">NO</span><% } %></li>
       <% if(u.number) { %>
         <li>学号: <%= u.number %></li>
       <% } %>
@@ -102,7 +102,8 @@
       <% if(u.grade) { %>
         <li>班别: <%= u.grade %>班</li>
       <% } %>
-        <li>AddProblem: <% if(u.addprob) { %>YES<% } else { %>NO<% } %></li>
+        <li>Last Visit: <%= getTime(u.visTime) %></li>
+        <li>Registered: <%= getTime(u.regTime) %></li>
       </ul>
     </div>
     <div class="topic_box">

@@ -85,9 +85,45 @@ var $rejudge = $('#rejudge');
 $(document).ready(function(){
 	if ($rejudge.length) {
 		$rejudge.click(function(){
-			$.post('/rejudge', {pid:pid}, function(){
+			$.post('/rejudge', {pid: pid}, function(){
 				window.location.href = '/status?pid='+pid;
 			})
+		});
+	}
+});
+
+var $phide = $('#phide')
+,	$peasy = $('#peasy')
+,	$star = $('#easy_star')
+,	success_msg = 'Problem '+pid+' has been updated successfully!';
+
+$(document).ready(function(){
+	if ($phide.length) {
+		$phide.change(function(){
+			$.post('/toggleHide', {pid: pid}, function(res){
+				if (res == '1') {
+					ShowMessage('系统错误！');
+				} else if (res == '2') {
+					window.location.reload(true);
+				} else {
+					ShowMessage(success_msg);
+				}
+			});
+		});
+	}
+	if ($peasy.length) {
+		$peasy.change(function(){
+			var e = $(this).val();
+			$.post('/updateEasy', {pid: pid, easy: e}, function(res){
+				if (res == '1') {
+					ShowMessage('系统错误！');
+				} else if (res == '2') {
+					window.location.reload(true);
+				} else {
+					$star.css({width: e*16+'px'});
+					ShowMessage(success_msg);
+				}
+			});
 		});
 	}
 });

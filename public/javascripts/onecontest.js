@@ -1,15 +1,10 @@
-var $div = $('#thumbnail');
-
-//deal with overflow rank table
-$(document).ready(function(){
-    $div.width($('#xbody').width());
-});
 
 //截流响应
-var interceptorTime = 300
+var interceptorTime = 200
 ,	cnt;	//行号
 
-var $contest = $('#contest')
+var $div = $('#thumbnail')
+,	$contest = $('#contest')
 ,	$p_span = $('span.cpid')
 ,	pids = new Array()
 ,	alias = new Array()
@@ -31,31 +26,31 @@ var $progress = $('#progress')
 ,	$lefttime = $('#lefttime');
 
 function buildPager(page, n) {
-    var cp = 5, html = '<ul>';
-    var i = page - 2; if (i <= 0) i = 1;
+	var cp = 5, html = '<ul>';
+	var i = page - 2; if (i <= 0) i = 1;
 
-    html += '<li id="1"';
-    if (page == 1) html += ' class="disabled"';
-    html += '><a href="javascript:;">&lt&lt</a></li>';
-    if (i > 1) {
-    	html += '<li class="disabled"><a href="javascript:;">...</a></li>';
-    }
-    while (i < page)
-    {
-        html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
+	html += '<li id="1"';
+	if (page == 1) html += ' class="disabled"';
+	html += '><a href="javascript:;">&lt&lt</a></li>';
+	if (i > 1) {
+		html += '<li class="disabled"><a href="javascript:;">...</a></li>';
+	}
+	while (i < page)
+	{
+		html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
 		++i; --cp;
-    }
-    html += '<li class="active"><a href="javascript:;">'+i+'</a></li>';
-    while (i < n && cp > 1)
-    {
-    	++i; --cp;
-        html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
-    }
-    if (i < n) html += '<li class="disabled"><a href="javascript:;">...</a></li>';
-    html += '<li id="'+n+'"';
-    if (n == 0 || page == n) html += ' class="disabled"';
-    html += '><a href="javascript:;">&gt&gt</a></li></ul>';
-    return html;
+	}
+	html += '<li class="active"><a href="javascript:;">'+i+'</a></li>';
+	while (i < n && cp > 1)
+	{
+		++i; --cp;
+		html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
+	}
+	if (i < n) html += '<li class="disabled"><a href="javascript:;">...</a></li>';
+	html += '<li id="'+n+'"';
+	if (n == 0 || page == n) html += ' class="disabled"';
+	html += '><a href="javascript:;">&gt&gt</a></li></ul>';
+	return html;
 }
 
 var $status = $div.find('#statustab')
@@ -67,21 +62,12 @@ var $status = $div.find('#statustab')
 ,	$pid = $('#pid')
 ,	$result = $('#result')
 ,	$Filter = $('#fil')
-,	$plink
 ,	statusQ = { cid:cid, page:1 }
 ,	searchTimeout
 ,	Users
 ,	statusAjax;
 
-function bindstatusQ() {
-	var $af = $('a[res]');
-	$af.unbind('click');
-	$af.click(function(){
-		$pid.val(F.charAt($(this).attr('pid')));
-		$result.val($(this).attr('res'));
-		$tablink.eq(2).click();
-	});
-}
+var $loading = $('#loading');
 
 function lang(s) {
 	if (s == 1) return 'C';
@@ -103,7 +89,7 @@ function buildRow(sol) {
 	var pvl = parseInt(Users[sol.userName], 10);
 	html += '<td><a target="_blank" href="/user/'+sol.userName+'" class="user user-';
 	html += UserCol(pvl)+'" title="'+UserTitle(pvl)+'">'+sol.userName+'</a></td>';
-	html += '<td><a class="plink" href="#problem-'+pmap[sol.problemID]+'">'+pmap[sol.problemID]+'</a></td>';
+	html += '<td><a href="#problem-'+pmap[sol.problemID]+'">'+pmap[sol.problemID]+'</a></td>';
 
 	html += '<td rid="'+sol.runID+'"';
 	if (sol.result == 8 && (sol.userName == current_user || current_user == 'admin')) {
@@ -161,23 +147,15 @@ function Response(json) {
 	if ($list_a && $list_a.length) {
 		$list_a.unbind('click');
 	}
-	if ($plink && $plink.length) {
-		$plink.unbind('click');
-	}
 	$tbody.html( html );
 	$list_a = $list.find('a');
 	$list_a.click(function(){
 		if ($(this).parent().hasClass('active') || $(this).parent().hasClass('disabled'))
 			return false;
-		statusQ.page = $(this).parent().attr('id');
-		GetStatus();
-	});
-	$plink = $('a.plink');
-	$plink.click(function(){
-		$tablink.eq(1).attr('href', $(this).attr('href'));
-		$tablink.eq(1).click();
+		window.location.hash = '#status-'+$search.val()+'-'+$pid.val()+'-'+$result.val()+'-'+$(this).parent().attr('id');
 	});
 	BindCE();
+	$loading.hide();
 	$status.fadeIn(100, function(){
 		flg = {};
 		getStatus();
@@ -187,10 +165,7 @@ function Response(json) {
 function GetStatus() {
 	clearTimeout(searchTimeout);
 	searchTimeout = setTimeout(function(){
-		var ts = JudgeString($search.val()), tp = $pid.val(), tr = $result.val()
-		,	hash = '#status-' + ts + '-' + tp + '-' + tr;
-		if (statusQ.page) hash += '-' + statusQ.page;
-		window.location.hash = hash;
+		var ts = JudgeString($search.val()), tp = $pid.val(), tr = $result.val();
 		if (tp == 'nil') tp = '';
 		else tp = fmap[tp];
 		if (tr == 'nil') tr = '';
@@ -202,7 +177,12 @@ function GetStatus() {
 			url: '/getStatus',
 			dataType: 'json',
 			data: statusQ,
-			timeout: 5000
+			timeout: 5000,
+			error: function(){
+				if (statusAjax)
+					statusAjax.abort();
+				GetStatus();
+			}
 		})
 		.done(Response);
 	}, interceptorTime);
@@ -216,8 +196,7 @@ function index(pid) {
 }
 
 var $hid = $('div.hidden, li.hidden')
-,	$tablink = $div.find('a.tablink')
-,	WATCH = 0;
+,	$tablink = $div.find('a.tablink');
 
 function isActive(i) {
 	return $tablink.eq(i).parent().hasClass('active');
@@ -255,12 +234,11 @@ function OverviewResponse(json) {
 			}
 		});
 	}
-
 	if (res) {
 		$.each(res, function(i, p){
 			var $oi = $o_sol.eq(pmap[p._id].charCodeAt(0)-65), idx = index(p._id)
-			,	_ac = '<a href="javascript:;" res="2" pid="'+idx+'">'+p.value.AC+'</a>'
-			,	_all = '<a href="javascript:;" res="nil" pid="'+idx+'">'+p.value.all+'</a>';
+			,	_ac = '<a href="#status--'+F.charAt(idx)+'-'+2+'">'+p.value.AC+'</a>'
+			,	_all = '<a href="#status--'+F.charAt(idx)+'"'+'">'+p.value.all+'</a>';
 			$oi.html(_ac+'&nbsp/&nbsp'+_all);
 		});
 	}
@@ -275,7 +253,6 @@ function OverviewResponse(json) {
 			}
 		});
 	}
-	bindstatusQ();
 }
 
 function GetOverview() {
@@ -286,9 +263,15 @@ function GetOverview() {
 			url 		: '/getOverview',
 			dataType 	: 'json',
 			data 		: {cid: cid},
-			timeout 	: 5000
+			timeout 	: 5000,
+			error: function(){
+				if (overviewAjax)
+					overviewAjax.abort();
+				GetOverview();
+			}
 		})
 		.done(OverviewResponse);
+		$loading.hide();
 		$overview.fadeIn(100);
 	}, interceptorTime);
 }
@@ -302,7 +285,6 @@ var $problem = $div.find('#problemtab')
 ,	$problemlink = $problem.find("li.problemlink")
 ,	$title = $problem.find('h3#problem_title > span')
 ,	$limit = $problem.find('span.limit')
-,	$link = $('a.splink')
 ,	F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ,	ID, problemTimeout
 ,	ProblemAPI = {}
@@ -346,14 +328,10 @@ function ProblemsResponse(prob) {
 		tcon += '</div>';
 		$content.append(tcon);
 	}
-	$problemlink.each(function() {
-		$(this).removeClass('active');
-	});
 	$problemlink.eq(ID).addClass('active');
-
 	//增加题号,题目属性
 	$probsubmit.attr('pid', prob.problemID); $probsubmit2.attr('pid', prob.problemID);
-	$probsubmit.next().attr('pid', ID); $probsubmit2.next().attr('pid', ID);
+	$probsubmit.next().attr('href', '#status--'+F.charAt(ID)); $probsubmit2.next().attr('href', '#status--'+F.charAt(ID));
 	$probsubmit.attr('tname', getTitle(ID)); $probsubmit2.attr('tname', getTitle(ID));
 	if ($rejudge.length) {
 		$rejudge.unbind('click');
@@ -371,12 +349,14 @@ function ProblemsResponse(prob) {
 			});
 		});
 	}
+	$loading.hide();
 	if (PreTab == 1) {
 		$probcontain.fadeIn(200);
 	} else {
 		$problem.fadeIn(200);
 	}
 	PreTab = 1;
+	$tablink.eq(1).attr('href', '#problem-'+F.charAt(ID));
 }
 
 function GetProblem() {
@@ -395,7 +375,12 @@ function GetProblem() {
 					pid: pids[ID],
 					all: true
 				},
-				timeout: 5000
+				timeout: 5000,
+				error: function() {
+					if (problemAjax)
+						problemAjax.abort();
+					GetProblem();
+				}
 			})
 			.done(ProblemsResponse);
 		}
@@ -406,12 +391,16 @@ var $rank = $div.find('#ranktab')
 ,	$ranktbody = $rank.find('table tbody')
 ,	$ranklist = $('#ranklist')
 ,	$ranklist_a
-,	$rplink
 ,	rankQ = {cid:cid, page:1}
 ,	rank = 1
 ,	rankTimeout
 ,	FB = {}
 ,	rankAjax;
+
+//deal with overflow rank table
+$(document).ready(function(){
+	$rank.width($('#widthfix').width()-22);
+});
 
 function buildRank(U) {
 	var user = U.value, html = '<tr class="';
@@ -503,37 +492,31 @@ function RankResponse(json) {
 	if ($ranklist_a && $ranklist_a.length) {
 		$ranklist_a.unbind('click');
 	}
-	if ($rplink && $rplink.length) {
-		$rplink.unbind('click');
-	}
 	$ranktbody.html(html);
 	$ranklist_a = $ranklist.find('a');
 	$ranklist_a.click(function(){
 		if ($(this).parent().hasClass('active') || $(this).parent().hasClass('disabled'))
 			return false;
-		rankQ.page = $(this).parent().attr('id');
-		GetRanklist();
+		window.location.hash = '#rank-'+$(this).parent().attr('id');
 	});
-	$rplink = $('a.rplink');
-	$rplink.click(function(){
-		$tablink.eq(1).attr('href', $(this).attr('href'));
-		$tablink.eq(1).click();
-	});
+	$loading.hide();
 	$rank.fadeIn(100);
 }
 
 function GetRanklist() {
 	clearTimeout(rankTimeout);
 	rankTimeout = setTimeout(function(){
-		if (rankQ.page) {
-			window.location.hash = '#rank-'+rankQ.page;
-		}
 		rankAjax = $.ajax({
 			type: 'POST',
 			url: '/getRanklist',
 			dataType: 'json',
 			data: rankQ,
-			timeout: 5000
+			timeout: 5000,
+			error: function() {
+				if (rankAjax)
+					rankAjax.abort();
+				GetRanklist();
+			}
 		})
 		.done(RankResponse);
 	}, interceptorTime);
@@ -556,18 +539,14 @@ var $discuss = $div.find('#discusstab')
 ,	discussAjax;
 
 function buildDiscuss(p) {
-	var html = '<tr', img;
-	if (p.user == current_user) {
-		html += ' class="highlight"';
-	}
-	html += '><td>';
-	html += '<a target="_blank" title="'+p.user+'" href="/user/'+p.user+'">';
+	var html = '<tr><td>', img;
+	html += '<a target="_blank" href="/user/'+p.user+'">';
 	if (Imgtype[p.user]) {
 		img = '/img/avatar/'+p.user+'/4.'+Imgtype[p.user];
 	} else {
 		img = '/img/avatar/%3Ddefault%3D/4.jpeg';
 	}
-	html += '<img class="img_s topic_img" alt="avatar" src="'+img+'" />'
+	html += '<img class="img_s topic_img" title="'+p.user+'" alt="'+p.user+'" src="'+img+'" />'
 	html += '</a></td><td>';
 	html += '<span class="user-green">'+p.reviewsQty+'</span><span class="user-gray">/'+p.browseQty+'</span>';
 	html += '</td><td style="text-align:left;" class="ellipsis">';
@@ -596,38 +575,41 @@ function DiscussResponse(json) {
 	$dislist_a.click(function(){
 		if ($(this).parent().hasClass('active') || $(this).parent().hasClass('disabled'))
 			return false;
-		discussQ.page = $(this).parent().attr('id');
-		GetDiscuss();
+		window.location.href = '#discuss-'+$(this).parent().attr('id');
 	});
+	$loading.hide();
 	$discuss.fadeIn(100);
 }
 
 function GetDiscuss() {
 	clearTimeout(discussTimeout);
 	discussTimeout = setTimeout(function(){
-		if (discussQ.page) {
-			window.location.hash = '#discuss-'+discussQ.page;
-		}
 		discussAjax = $.ajax({
 			type: 'POST',
 			url: '/getTopic',
 			dataType: 'json',
 			data: discussQ,
-			timeout: 5000
+			timeout: 5000,
+			error: function() {
+				if (discussAjax)
+					discussAjax.abort();
+				GetDiscuss();
+			}
 		})
 		.done(DiscussResponse);
 	}, interceptorTime);
 }
 
-function run(str, key) {
+function run() {
+	$loading.show();
 	clearAjax();
-	if (!str) str = 'overview'
-	window.location.hash = '#'+str;
+	var str = window.location.hash;
+	if (!str) str = '#overview';
 	var sp = str.split('-');
 	var a = sp[0], b = sp[1], c = sp[2], d = sp[3], e = sp[4];
 	ID = 0;
 	clearTimer();
-	if (a != 'problem' || !PreTab) {
+	if (a != '#problem' || !PreTab) {
 		hideAll();
 	}
 	flg = {};	//important [update status]
@@ -635,62 +617,41 @@ function run(str, key) {
 		noActive(i);
 	}
 	switch(a) {
-		case 'problem': {
-			if (WATCH == 0) break;
+		case '#problem': {
 			if (b) ID = b.charCodeAt(0)-65;
-			if (key == 1) {
-				$overview.hide();
-			}
 			doActive(1);
 			if (PreTab == 1) $probcontain.hide();
 			GetProblem();
 			break;
 		}
-		case 'status': {
-			if (WATCH == 0) break;
-			if (key == 1) {
-				$overview.hide();
-			}
+		case '#status': {
 			doActive(2);
-			if (b) $search.val(b);
-			if (c) $pid.val(c);
-			if (d) $result.val(d);
-			if (e) statusQ.page = parseInt(e, 10);
+			$search.val(b ? b : '');
+			$pid.val(c ? c : 'nil');
+			$result.val(d ? d : 'nil');
+			statusQ.page = e ? parseInt(e, 10) : 1;
 			GetStatus();
 			PreTab = 0;
 			break;
 		}
-		case 'rank': {
-			if (WATCH == 0) break;
-			if (key == 1) {
-				$overview.hide();
-			}
+		case '#rank': {
 			doActive(3);
-			if (b) rankQ.page = parseInt(b, 10);
+			rankQ.page = b ? parseInt(b, 10) : 1;
 			GetRanklist();
 			PreTab = 0;
 			break;
 		}
-		case 'discuss': {
-			if (WATCH == 0) break;
-			if (key == 1) {
-				$overview.hide();
-			}
+		case '#discuss': {
 			doActive(4);
+			discussQ.page = b ? parseInt(b, 10) : 1;
 			GetDiscuss();
 			PreTab = 0;
 			break;
 		}
 		default: {
 			doActive(0);
-			$overview.hide();
-			if (key == 1 && WATCH == 0) {
-				$overview.fadeIn(100);
-				PreTab = -1;
-			} else {
-				GetOverview();
-				PreTab = 0;
-			}
+			GetOverview();
+			PreTab = 0;
 			break;
 		}
 	}
@@ -733,37 +694,35 @@ function runContest() {
 		fmap[F.charAt(i)] = pids[i];
 	});
 
-	$link.click(function(){
-		if ($(this).parent().hasClass('active')) {
-			return false;
-		}
-		$tablink.eq(1).attr('href', $(this).attr('href'));
-		$tablink.eq(1).click();
-		run($(this).attr('href').split('#')[1], 2);
-	});
-
-	$.each($tablink, function(i, p){
-		$(p).click(function(){
-			if ($(this).parent().hasClass('active')) {
-				return false;
-			}
-			var tmp = $(this).attr('href').split('#')[1]
-			,	href = tmp.split('-')[0];
-			run(tmp, 2);
-		});
-	});
-
 	if (status > 0 || $contest.attr('watch')) {
-		WATCH = 1;
 		$hid.removeClass('hidden');
-		run(window.location.hash.split('#')[1], 1);
+		run();
+		$(window).hashchange(function(){
+			run();
+		});
 	} else {
-		run('overview', 1);
+		doActive(0);
+		$overview.fadeIn(100);
+		PreTab = -1;
 	}
 }
 
-//run contest
+//bind links and run contest
 $(document).ready(function(){
+	$tablink.click(function(){
+		if ($(this).parent().hasClass('active')) {
+			return false;
+		}
+	});
+	$problemlink.click(function(){
+		if ($(this).hasClass('active')) {
+			return false;
+		}
+		$problemlink.each(function() {
+			$(this).removeClass('active');
+		});
+		$(this).addClass('active');
+	});
 	if (status == 0) {
 		pendingTimer();
 		setInterval(pendingTimer, 1000);
@@ -774,29 +733,16 @@ $(document).ready(function(){
 	runContest();
 });
 
-function statusInit() {
-	$search.val('');
-	$pid.val('nil');
-	$result.val('nil');
-	statusQ.page = 1;
-}
-
 //bind status
 $(document).ready(function(){
 	$Filter.click(function(){
-		statusQ.page = 1;
-		GetStatus();
-	});
-	$('#reset').click(function(){
-		statusInit();
-		GetStatus();
+		window.location.hash = '#status-'+$search.val()+'-'+$pid.val()+'-'+$result.val();
 	});
 	$search.keyup(function(e){
 		if (e.keyCode == 13) {
 			$Filter.click();
 		}
 	});
-	bindstatusQ();
 });
 
 //bind submit
@@ -854,19 +800,17 @@ $(document).ready(function(){
 				code: code,
 				lang: $dialog_sm.find('select').val()
 			}, function(err){
-				if (err == '1') {
-					window.location.reload(true);
-					return ;
-				}
 				$dialog_sm.jqmHide();
 				if (!err) {
 					ShowMessage('Your code for problem '+pmap[pid_index]+' has been submited successfully!');
-				} else if (err == '2'){
+				} else if (err == '1') {
+					window.location.reload(true);
+				} else if (err == '2') {
 					ShowMessage('You can not submit because you have not registered the contest yet!');
 				} else if (err == '3') {
 					ShowMessage('系统错误！');
 				}
-				$tablink.eq(2).click();
+				window.location.hash = '#status';
 			});
 		});
 	}

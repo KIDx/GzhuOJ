@@ -82,7 +82,8 @@ var settings = require('../settings')
 ,   UserTitle = settings.UT
 ,   College = settings.College
 ,   OE = settings.outputErr
-,   getDate = settings.getDate;
+,   getDate = settings.getDate
+,   easy_tips = settings.easy_tips;
 
 var data_path = settings.data_path
 ,   root_path = settings.root_path;
@@ -173,13 +174,52 @@ function doIconv(data) {
   return str;
 }
 
-function getTime(n) {
-  var m = parseInt(n, 10);
-  if (!m) return '';
-  var date = new Date(m), now = new Date();
-  var y = now.getFullYear() - date.getFullYear();
+function gao(n, type) {
+  if (n == 1) {
+    if (type == 'hour')
+      return 'an '+type+' ago';
+    return 'a '+type+' ago';
+  }
+  return n+' '+type+'s ago';
+}
+
+function getAboutTime(n) {
+  n = parseInt(n, 10);
+  if (!n) return '';
+  n = (new Date()).getTime() - n;
+  var y = Math.floor(n/31104000000);
   if (y > 0) {
-    var Y = date.getFullYear();
+    return gao(y, 'year');
+  }
+  var m = Math.floor(n/2592000000);
+  if (m > 0) {
+    return gao(m, 'month');
+  }
+  var dd = Math.floor(n/86400000);
+  if (dd > 0) {
+    if (dd >= 7) {
+      return gao(Math.floor(dd/7), 'week');
+    }
+    return gao(dd, 'day');
+  }
+  var hh = Math.floor(n/3600000);
+  if (hh > 0) {
+    return gao(hh, 'hour');
+  }
+  var mm = Math.floor(n/60000);
+  if (mm > 0) {
+    return gao(mm, 'minute')
+  }
+  return 'just now';
+}
+
+function getTime(n) {
+  n = parseInt(n, 10);
+  if (!n) return '';
+  var date = new Date(n);
+  n = (new Date()).getTime() - n
+  var y = (new Date()).getFullYear() - date.getFullYear();
+  if (y > 0) {
     var M = date.getMonth()+1;
     if (M < 10) M = '0' + M;
     var D = date.getDate();
@@ -188,11 +228,10 @@ function getTime(n) {
     if (h < 10) h = '0' + h;
     var m = date.getMinutes();
     if (m < 10) m = '0' + m;
-    return (Y+'-'+M+'-'+D+' '+h+':'+m);
+    return (date.getFullYear()+'-'+M+'-'+D+' '+h+':'+m);
   }
-  var m = now.getMonth() - date.getMonth()
-  ,   d = now.getDate() - date.getDate();
-  if (m > 0 || d > 0) {
+  var d = Math.floor(n/86400000);
+  if (d > 0) {
     var M = date.getMonth()+1;
     if (M < 10) M = '0' + M;
     var D = date.getDate();
@@ -203,11 +242,11 @@ function getTime(n) {
     if (m < 10) m = '0' + m;
     return (M+'-'+D+' '+h+':'+m);
   }
-  var h = now.getHours() - date.getHours();
+  var h = Math.floor(n/3600000);
   if (h > 0) {
     return (h+'小时前');
   }
-  m = now.getMinutes() - date.getMinutes();
+  var m = Math.floor(n/60000);
   if (m > 0) {
     return (m+'分钟前');
   }
@@ -260,11 +299,11 @@ exports.updateStatus = function(req, res) {
     if (sol.cID == -1) {
       return RP(0);
     }
-    if (!req.session.user) {
-      return RP(1);
+    var name = '';
+    if (req.session.user) {
+      name = req.session.user.name;
     }
-    var me = req.session.user.name;
-    if (me == sol.userName || me == 'admin') {
+    if (name == sol.userName || name == 'admin') {
       return RP(0);
     }
     Contest.watch(sol.cID, function(err, contest){
@@ -275,8 +314,8 @@ exports.updateStatus = function(req, res) {
       if (!contest) {
         return res.end();   //not allow
       }
-      if (calDate(contest.startTime, contest.len) < getDate(new Date()) ||
-          me == contest.userName) {
+      if (name == contest.userName ||
+        (new Date()).getTime() - (new Date(contest.startTime)).getTime() > contest.len*60000) {
         return RP(0);
       }
       return RP(1);
@@ -374,8 +413,11 @@ exports.getStatus = function(req, res) {
     if (lang) {
       Q.language = lang;
     }
-
-    if (!req.session.user || req.session.user.name != 'admin') {
+    var name = '';
+    if (req.session.user) {
+      name = req.session.user.name;
+    }
+    if (name != 'admin') {
       Q.$nor = [{userName: 'admin'}];
     }
     Solution.get(Q, page, function(err, solutions, n) {
@@ -390,9 +432,8 @@ exports.getStatus = function(req, res) {
       if (solutions) {
         solutions.forEach(function(p, i){
           var T = '', M = '', L = '';
-          if (req.session.user && (req.session.user.name == p.userName ||
-              req.session.user.name == contest.userName) ||
-              calDate(contest.startTime, contest.len) < getDate(new Date())) {
+          if (name == p.userName || name == contest.userName ||
+              (new Date()).getTime() - (new Date(contest.startTime)).getTime() > contest.len*60000) {
             T = p.time; M = p.memory; L = p.length;
           }
           sols.push({
@@ -897,6 +938,10 @@ exports.getProblem = function(req, res) {
   if (!pid) {
     return res.end();   //not allow!
   }
+  var name = '';
+  if (req.session.user) {
+    name = req.session.user.name;
+  }
   Problem.watch(pid, function(err, problem){
     if (err) {
       OE(err);
@@ -905,14 +950,24 @@ exports.getProblem = function(req, res) {
     if (!problem) {
       return res.end(); //not allow
     }
-    if (req.body.all) {
+    var cid = parseInt(req.body.cid, 10);
+    if (!cid) {
+      if (problem.hide == true && name != 'admin' && name != problem.manager) {
+        return res.end();
+      }
+      return res.end(problem.title);
+    }
+    Contest.watch(cid, function(err, con){
+      if (err) {
+        OE(err);
+        return res.end();
+      }
+      if (!con || (name != con.userName && name != 'admin' &&
+        (new Date()).getTime() < (new Date(con.startTime)).getTime())) {
+        return res.end();
+      }
       return res.json(problem);
-    }
-    if (problem.hide == true &&
-    (!req.session.user || (req.session.user.name != 'admin' && req.session.user.name != problem.manager))) {
-      return res.end();
-    }
-    return res.end(problem.title);
+    });
   });
 };
 
@@ -952,6 +1007,7 @@ exports.editTag = function(req, res) {
   Problem.watch(pid, function(err, problem){
     if (err) {
       OE(err);
+      req.session.msg = '系统错误！';
       return res.end();
     }
     if (!problem) {
@@ -967,6 +1023,7 @@ exports.editTag = function(req, res) {
     Solution.watch({problemID:pid, userName:name, result:2}, function(err, solution) {
       if (err) {
         OE(err);
+        req.session.msg = '系统错误！';
         return res.end();
       }
       if (!solution) {
@@ -1068,7 +1125,7 @@ exports.doReg = function(req, res) {
     (new User({
       name      : name,
       password  : psw,
-      regTime   : getDate(new Date()),
+      regTime   : (new Date()).getTime(),
       nick      : nick,
       school    : school,
       email     : email,
@@ -1087,22 +1144,35 @@ exports.doReg = function(req, res) {
 
 exports.doLogin = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  if (!req.body.password) {
+  var name = String(req.body.username)
+  ,   psw = String(req.body.password);
+  if (!name || !psw) {
     return res.end();   //not allow
   }
   //生成密码散列值
-  var md5 = crypto.createHash('md5');
-  var password = md5.update(req.body.password).digest('base64');
-  User.watch(req.body.username, function(err, user) {
-    if (!user)
+  var md5 = crypto.createHash('md5')
+  ,   password = md5.update(psw).digest('base64');
+  User.watch(name, function(err, user) {
+    if (err) {
+      OE(err);
+      return res.end('3');
+    }
+    if (!user) {
       return res.end('1');
-    if (user.password != password)
+    }
+    if (user.password != password) {
       return res.end('2');
-    if (!user.addprob) user.addprob = 0;
-    else user.addprob = 1;
-    req.session.user = user;
-    req.session.msg = 'Welcome, '+user.name+'. :)';
-    return res.end('3');
+    }
+    user.visTime = (new Date()).getTime();
+    user.save(function(err){
+      if (err) {
+        OE(err);
+        return res.end('3');
+      }
+      req.session.user = user;
+      req.session.msg = 'Welcome, '+user.name+'. :)';
+      return res.end();
+    });
   });
 };
 
@@ -1384,11 +1454,35 @@ exports.recal = function(req, res) {
 };
 
 exports.index = function(req, res){
-  //IDs.Init();
-  res.render('index', { title: 'Gzhu Online Judge',
-                        user: req.session.user,
-                        time: (new Date()).getTime(),
-                        key: -1
+  Topic.topFive({top: true, cid: -1}, function(err, A){
+    if (err) {
+      OE(err);
+      req.session.msg = '系统错误！';
+      return res.redirect('/404');
+    }
+    Contest.topFive({type: 2}, function(err, B){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/404');
+      }
+      Topic.topFive({top: false, cid: -1}, function(err, C){
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.redirect('/404');
+        }
+        res.render('index', { title: 'Gzhu Online Judge',
+                              user: req.session.user,
+                              time: (new Date()).getTime(),
+                              key: -1,
+                              A: A,
+                              B: B,
+                              C: C,
+                              getTime: getTime
+        });
+      });
+    });
   });
 };
 
@@ -1437,7 +1531,8 @@ exports.user = function(req, res) {
                             C: College,
                             H: H,
                             UC: UserCol,
-                            UT: UserTitle
+                            UT: UserTitle,
+                            getTime: getAboutTime
         });
       };
       if (user.name != 'admin') {
@@ -1697,6 +1792,8 @@ exports.doAddproblem = function(req, res) {
     var tc = false;
     if (req.body.TC == '1') tc = true;
     else tc = false;
+    var easy = parseInt(req.body.easy, 10);
+    if (!easy) easy = 0;
     Problem.update(pid, {$set: {
       title: title,
       description: req.body.Description,
@@ -1710,7 +1807,8 @@ exports.doAddproblem = function(req, res) {
       timeLimit: tle,
       memoryLimit: mle,
       hide: hide,
-      TC: tc
+      TC: tc,
+      easy: easy
     }}, function(err) {
       if (err) {
         OE(err);
@@ -1955,7 +2053,8 @@ exports.problem = function(req, res) {
                                   PT: ProTil,
                                   cid: cid,
                                   UT: UT,
-                                  UC: UC
+                                  UC: UC,
+                                  tips: easy_tips
           });
         };
         if (problem) {
@@ -2033,7 +2132,8 @@ exports.problemset = function(req, res) {
                                 search: search,
                                 Tag: Tag,
                                 Pt: ProTil,
-                                R: R
+                                R: R,
+                                tips: easy_tips
 
       });
     };
@@ -2211,7 +2311,7 @@ exports.addcontest = function(req, res) {
         return res.redirect('/onecontest/'+cid);
       }
       if (clone == 1 && name != contest.userName && name != 'admin') {
-        if (getDate(new Date()) <= calDate(contest.startTime, contest.len)) {
+        if ((new Date()).getTime() - (new Date(contest.startTime)).getTime() < contest.len*60000) {
           return res.end();   //not allow
         }
       }
@@ -3013,7 +3113,8 @@ exports.onecourse = function(req, res) {
                                 P: P,
                                 groups: G,
                                 course: course,
-                                n: n
+                                n: n,
+                                tips: easy_tips
       });
     };
     Group.find({id: {$in: course.groups}}, function(err, groups){
@@ -3277,41 +3378,61 @@ exports.ranklist = function(req, res) {
     return res.redirect('/ranklist');
   }
 
-  var q1 = {}, q2 = {};
-  var search = clearSpace(req.query.search);
-  if (search) {
-    q1.name = q2.nick = new RegExp("^.*"+toEscape(search)+".*$", 'i');
-  }
+  var cid = parseInt(req.query.cid, 10);
 
-  User.get({ $or:[q1, q2], $nor:[{name:'admin'}] }, page, function(err, users, n){
-    if (err) {
-      OE(err);
-      req.session.msg = '系统错误！';
-      return res.redirect('/');
-    }
-    if (n < 0) {
-      return res.redirect('/ranklist');
-    }
-    var UC = new Array(), UT = new Array();
-    if (users) {
-      users.forEach(function(p, i){
-        UC.push(UserCol(p.privilege));
-        UT.push(UserTitle(p.privilege));
+  var RP = function(Q) {
+    User.get(Q, page, function(err, users, n){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
+      }
+      if (n < 0) {
+        return res.redirect('/ranklist');
+      }
+      var UC = new Array(), UT = new Array();
+      if (users) {
+        users.forEach(function(p, i){
+          UC.push(UserCol(p.privilege));
+          UT.push(UserTitle(p.privilege));
+        });
+      }
+      res.render('ranklist', {title: 'Ranklist',
+                              user: req.session.user,
+                              time: (new Date()).getTime(),
+                              key: 5,
+                              n: n,
+                              users: users,
+                              page: page,
+                              pageNum: ranklist_pageNum,
+                              search: search,
+                              UC: UC,
+                              UT: UT,
+                              cid: cid
       });
-    }
-    res.render('ranklist', {title: 'Ranklist',
-                            user: req.session.user,
-                            time: (new Date()).getTime(),
-                            key: 5,
-                            n: n,
-                            users: users,
-                            page: page,
-                            pageNum: ranklist_pageNum,
-                            search: search,
-                            UC: UC,
-                            UT: UT
     });
-  });
+  };
+
+  if (cid) {
+    Contest.watch(cid, function(err, con){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.redirect('/');
+      }
+      if (!con || con.type != 2 || !con.contestants) {
+        return res.redirect('404');
+      }
+      return RP({name: {$in: con.contestants}});
+    });
+  } else {
+    var q1 = {}, q2 = {};
+    var search = clearSpace(req.query.search);
+    if (search) {
+      q1.name = q2.nick = new RegExp("^.*"+toEscape(search)+".*$", 'i');
+    }
+    return RP({ $or:[q1, q2], $nor:[{name:'admin'}] });
+  }
 };
 
 exports.submit = function(req, res) {
@@ -3700,34 +3821,30 @@ function regContestAndUpdate(cid, name, callback) {
 exports.contestReg = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user) {
-    req.session.msg = "Please login first!";
-    return res.end('1');
+    req.session.msg = 'Please login first!';
+    return res.end();
   }
   if (req.session.user.name == 'admin') {
-    req.session.msg = '管理员无需注册。';
-    return res.end();
+    return res.end('1');
   }
   var cid = parseInt(req.body.cid);
   Contest.watch(cid, function(err, contest){
     if (err) {
       OE(err);
-      req.session.msg = '系统错误！';
-      return res.end();
+      return res.end('2');
     }
     if (!contest || contest.type != 2 || contest.password) {
       return res.end();   //not allow
     }
-    if (getDate(new Date()) > calDate(contest.startTime, -5)) {
-      req.session.msg = "Register is closed.";
-      return res.end('1');
+    if ((new Date(contest.startTime)).getTime() - (new Date()).getTime() < 300000) {
+      return res.end('3');
     }
     regContestAndUpdate(cid, req.session.user.name, function(err){
       if (err) {
         OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
+        return res.end('2');
       }
-      req.session.msg = '注册成功！';
+      req.session.msg = 'Your Registeration has been submited successfully!';
       return res.end();
     });
   });
@@ -4201,13 +4318,9 @@ exports.doAddtopic = function(req, res) {
   ,   title = clearSpace(req.body.title)
   ,   content = req.body.content        //can not do clearSpace because it is content
   ,   name = req.session.user.name
-  ,   cid = parseInt(req.body.cid, 10)
-  ,   vcode = clearSpace(req.body.vcode);
-  if (!title || !content || !name || !vcode) {
+  ,   cid = parseInt(req.body.cid, 10);
+  if (!title || !content || !name) {
     return res.end();     //not allow!
-  }
-  if (vcode.toLowerCase() != req.session.verifycode) {
-    return res.end('1');
   }
   if (!cid) {
     cid = -1;
@@ -4245,6 +4358,13 @@ exports.doAddtopic = function(req, res) {
       return RP();
     });
   } else {
+    var vcode = clearSpace(req.body.vcode);
+    if (!vcode) {
+      return res.end();     //not allow
+    }
+    if (vcode.toLowerCase() != req.session.verifycode) {
+      return res.end('1');
+    }
     IDs.get('topicID', function(err, id){
       if (err) {
         OE(err);
@@ -4303,6 +4423,7 @@ exports.toggleTop = function(req, res) {
 exports.toggleHide = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user || req.session.user.name != 'admin') {
+    req.session.msg = 'You have no permission to do that!';
     return res.end('2');  //not allow
   }
   var pid = parseInt(req.body.pid, 10);
@@ -4325,6 +4446,42 @@ exports.toggleHide = function(req, res) {
       }
       if (problem.hide)
         return res.end('h');
+      return res.end();
+    });
+  });
+};
+
+exports.updateEasy = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = 'You have no permission to do that!';
+    return res.end('2');  //not allow
+  }
+  User.watch(req.session.user.name, function(err, user){
+    if (err) {
+      OE(err);
+      return res.end('1');
+    }
+    if (!user) {
+      return res.end();   //not allow
+    }
+    if (!user.addprob) {
+      req.session.msg = 'You have no permission to do that!';
+      return res.end('2');
+    }
+    var pid = parseInt(req.body.pid, 10)
+    ,   easy = parseInt(req.body.easy, 10);
+    if (!pid) {
+      return res.end();     //not allow
+    }
+    if (!easy) {
+      easy = 0;
+    }
+    Problem.update(pid, {$set: {easy: easy}}, function(err){
+      if (err) {
+        OE(err);
+        return res.end('1');
+      }
       return res.end();
     });
   });

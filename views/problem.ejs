@@ -12,10 +12,16 @@
       <div class="sidebox">
         <div class="side-header">→ Information</div>
         <ul class="info">
-          <li>Solved Number: 
+          <li><span class="user user-gray">How Easy ?</span></li>
+          <li>
+              <span id="easy_star" title="<%= tips[problem.easy] %>" class="fl star" style="width:<%= problem.easy*16 %>px;"></span>
+              <span title="<%= tips[problem.easy] %>" class="bgstar"></span></li>
+          <li>
+            <span class="user user-gray">Solved Number:</span>
             <a href="/status?pid=<%= problem.problemID %>&result=2"><%= problem.AC %></a>
           </li>
-          <li>Submit Number: 
+          <li>
+            <span class="user user-gray">Submit Number:</span>
             <a href="/status?pid=<%= problem.problemID %>"><%= problem.submit %></a>
           </li>
         </ul>
@@ -63,9 +69,9 @@
         </div>
       </div>
     <% } %>
-      <div id="activebox" class="sidebox">
+      <div class="sidebox">
         <div class="side-header">→ Problem tags</div>
-        <div id="#" style="padding:.5em;">
+        <div style="padding:.5em;">
         <% if (problem.tags && problem.tags.length) { %>
           <% problem.tags.sort().forEach(function(p){ %>
           <div class="tag-box" title="<%= PT[p] %>">
@@ -90,6 +96,26 @@
           </div>
         </div>
       </div>
+      <% if (user && user.addprob) { %>
+      <div class="sidebox">
+        <div class="side-header">→ Edit Problem</div>
+        <ul class="edit">
+          <% if (user.name == problem.manager || user.name == 'admin') { %>
+          <li>Hidden:
+            <select class="side-input" id="phide">
+              <option value="1">Yes</option>
+              <option value="" <% if (!problem.hide) { %>selected<% } %>>No</option>
+            </select>
+          </li>
+          <% } %>
+          <li>Difficulty:
+            <select class="side-input" id="peasy">
+              <%- partial('easy', {easy: problem.easy}) %>
+            </select>
+          </li>
+        </ul>
+      </div>
+      <% } %>
     </div>
     <div class="istyle" style="padding-left:1em;margin-left:20em;border-left:1px solid #ddd">
       <h3 class="problem-header"><%= problem.title %></h3>

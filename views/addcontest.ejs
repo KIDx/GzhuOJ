@@ -55,7 +55,7 @@
           <tr>
             <th>Password: </th>
             <td>
-              <input id="psw" type="password" class="input-large" <% if (contest && contest.password) { %>value="<%= contest.password %>"<% } %>><br/>
+              <input id="psw" type="password" class="input-large" <% if (contest && contest.password && clone == 0) { %>value="<%= contest.password %>"<% } %>><br/>
               <span class="text-info">&nbsp;Leave blank to make it Public.</span>
             </td>
           </tr>

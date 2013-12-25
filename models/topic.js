@@ -80,3 +80,12 @@ Topic.update = function(tid, H, callback) {
     return callback(err);
   });
 };
+
+Topic.topFive = function(Q, callback) {
+  topics.find(Q).sort({inDate: -1}).limit(5).exec(function(err, docs){
+    if (err) {
+      OE('Topic.topFive failed!');
+    }
+    return callback(err, docs);
+  });
+};

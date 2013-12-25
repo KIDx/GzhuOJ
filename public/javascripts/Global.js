@@ -4,6 +4,14 @@
 *
 */
 
+//使模态对话框居中
+$(document).ready(function(){
+    var w = document.body.clientWidth;
+    $.each($('.jqmSubmit,.CeWindow'), function(){
+        $(this).css({'left': (w-parseInt($(this).css('width')))/2});
+    });
+});
+
 //return status color class
 function Col (n) {
   switch(n) {
@@ -177,7 +185,8 @@ function deal(times) {
     var m = parseInt(times%3600/60, 10);
     if (m < 10) m = '0' + m;
     var key = arguments[1] ? arguments[1] : 0;
-    if (key == 1) return (h+':'+m);     //onecontest.js-standings
+    if (key == 1)   //onecontest.js-standings
+        return (h+':'+m);
     var s = parseInt(times%3600%60, 10);
     if (s < 10) s = '0' + s;
     var res;
@@ -335,18 +344,18 @@ $(document).ready(function(){
                 }, function(res){
                     if (res == '1') {
                         errAnimate($loginerr, 'the user is not exist!');
-                        return ;
-                    }
-                    if (res == '2') {
+                    } else if (res == '2') {
                         errAnimate($loginerr, 'username and password do not match!');
-                        return ;
-                    }
-                    $dialog_lg.jqmHide();
-                    if (!nextURL) {
-                        window.location.reload(true);
+                    } else if (res == '3') {
+                        errAnimate($loginerr, '系统错误！');
                     } else {
-                        window.location.href = nextURL;
-                        nextURL = '';
+                        $dialog_lg.jqmHide();
+                        if (!nextURL) {
+                            window.location.reload(true);
+                        } else {
+                            window.location.href = nextURL;
+                            nextURL = '';
+                        }
                     }
             });
         });

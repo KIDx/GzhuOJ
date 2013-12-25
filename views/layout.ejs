@@ -1,4 +1,6 @@
 <!DOCTYPE HTML>
+<% var nvgurl = ['/', '/problemset', '/status', '/ranklist', '/contest/1', '/contest/2', '/contest/3', '/course', '/topic/100', '/topic'], nvgname = ['Home', 'Problemset', 'Status', 'Ranklist', 'DIY Contest', 'VIP Contest', 'Exam', 'Course', 'Help', 'Forum']; %>
+<% var stc = ['an AC a day keeps the WA away', '桃花潭水三千尺，不及AC送我情', '防火-防盗-防师兄', '爱国-爱家-爱师妹', '为了爱和梦想而努力着', '早起一水', '做一道难题，总比切一百道水题来的方便', '没有AC不了的题，只有不努力的ACMer']; %>
 <html>
   <head>
     <title id="title"><%= title %></title>
@@ -17,8 +19,8 @@
   <body id="wrapper">
     <div class="w">
       <div class="fl"><a target="_blank" href="/log">Change Log</a></div>
-      <marquee style="margin-left:20px;float:left;width:50%;" id="marquee" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="scroll">
-        <span class="user user-red">有新的比赛（第三场）：详情请访问DIY Contest（无需报名）</span>
+      <marquee style="margin-left:20px;float:left;width:50%;" id="marquee" onmouseout="this.start()" onmouseover="this.stop()" scrollamount="2" scrolldelay="1" behavior="alternate">
+        <span class="user user-green"><%= stc[Math.round(Math.random()*(stc.length - 1))] %>～</span>
       </marquee>
       <ul class="navigation">
     <% if (!user) { %>
@@ -52,33 +54,26 @@
           <img class="img_m topic_img" title="change picture" alt="change picture" src="<%= img %>" />
         </a>
     <% } %>
-      <a href="/" title="Gzhu Online Judge">
+      <a class="logo" href="/" title="Gzhu Online Judge">
         <img src="/img/logo.png" alt="Gzhu Online Judge" />
       </a>
     </div>
     <div class="w">
-      <ul class="navigation menu">
-        <li><a href="/">Home</a></li>
-        <li><a href="/problemset">Problemset</a></li>
-        <li><a href="/status">Status</a></li>
-        <li><a href="/ranklist">Ranklist</a></li>
-        <li><a href="/contest/1">DIY Contest</a></li>
-        <li><a href="/contest/2">VIP Contest</a></li>
-        <li><a href="/contest/3">Exam</a></li>
-        <li><a href="/course">Course</a></li>
-        <li><a href="/topic/1014" class="user user-red">Help</a></li>
-        <li><a href="/topic" class="user user-red">Forum</a></li>
-      </ul>
       <div class="fr">
         <input type="text" style="padding:2px;margin:0;font-size:12px;" class="input-small" placeholder=" Problem ID" title="Problem ID">
         <a id="Go" class="uibtn" href="javascript:;">Go</a>
       </div>
+      <ul class="navigation menu">
+        <% for (var i = 0; i < nvgurl.length; i++) { %>
+        <li><a href="<%= nvgurl[i] %>"><%= nvgname[i] %></a></li>
+        <% } %>
+      </ul>
     </div>
     <div class="w"  id="xbody">
       <%- body %>
     </div>
     <div class="w" id="footer">
-      <div><a href="#">GzhuOnlineJudge</a> (c) Copyright 2012-2014 KIDx, TT_last</div>
+      <div><a href="/">GzhuOnlineJudge v6.0</a> (c) Copyright 2012-2014 KIDx, TT_last</div>
       <div>Any bug please contect 972169909@qq.com</div>
       <div>Server time: <span <% if(key == 6) { %>type="<%= type %>"<% } %> <% if (user) { %>user="<%= user.name %>"<% } %> time="<%= time %>" id="timer"></span></div>
     </div>
@@ -142,7 +137,7 @@
     <script src="/javascripts/fileUpload.js"></script>
     <script src="/javascripts/problem.js"></script>
   <% } else if (key == 9) { %>
-    <!--<script src="/javascripts/bootstrap.js"></script>-->
+    <script src="/javascripts/jquery.hashchange.js"></script>
     <script src="/javascripts/updatestatus.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/javascripts/onecontest.js"></script>

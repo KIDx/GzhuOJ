@@ -1,5 +1,5 @@
 <!--<html>-->
-<fieldset>
+<fieldset id="widthfix">
 <% if (!contest) { %>
   <div><legend>比赛</legend></div>
   <div class="alert alert-error" style="display:none;padding:100px;">
@@ -49,7 +49,7 @@
   <div id="progress" class="contest_progress progress progress-striped active <%= ps %>">
     <div class="bar"></div>
   </div>
-  <div id="thumbnail" class="tabbable thumbnail" style="width:960px;">
+  <div  id="thumbnail" class="tabbable thumbnail">
     <ul class="nav nav-tabs">
       <li style="padding-left:10px;">
         <a href="#overview" class="tablink">
@@ -57,7 +57,7 @@
         </a>
       </li>
       <li class="hidden">
-        <a href="#problem-A" class="tablink">
+        <a href="#problem" class="tablink">
           <span>Problem</span>
         </a>
       </li>
@@ -133,10 +133,10 @@
               <table class="table table-cf" id="problems">
                 <thead>
                   <tr>
-                    <th style="width:10%;">#</th>
+                    <th style="width:70px;">#</th>
                     <th>Name</th>
-                    <th style="width:10%;">OP</th>
-                    <th style="width:13%;">Solved</th>
+                    <th style="width:70px;"></th>
+                    <th style="width:90px;">Solved</th>
                   </tr>
                 </thead>
               <% contest.probs.forEach(function(p, i) { %>
@@ -148,7 +148,7 @@
                     <% if (user && user.name == 'admin') { %>
                     <a class="fr uibtn uibtn-mini toggleHide" href="javascript:;" pid="<%= p[0] %>"><% if (Pt[p[0]].hide) { %>显示到题库<% } else { %>隐藏<% } %></a>
                     <% } %>
-                    <a class="splink" href="#problem-<%= F[i] %>"><%= p[1] ? p[1] : Pt[p[0]].title %></a>
+                    <a href="#problem-<%= F[i] %>"><%= p[1] ? p[1] : Pt[p[0]].title %></a>
                   </td>
                   <td>
                     <span class="act-item">
@@ -174,7 +174,7 @@
           <ul>
           <% contest.probs.forEach(function(prob, i) { %>
             <li class="problemlink">
-              <a class="splink" href="#problem-<%= F[i] %>"><%= F[i] %></a>
+              <a href="#problem-<%= F[i] %>"><%= F[i] %></a>
             </li>
           <% }); %>
           </ul>
@@ -189,7 +189,7 @@
             </div>
             <div id="pids">
               <a id="probsubmit" class="uibtn consubmit" href="javascript:;">Submit</a>
-              <a class="uibtn" href="javascript:;" res="-1">Status</a>
+              <a class="uibtn" href="javascript:;">Status</a>
             <% if (user && user.name == 'admin') { %>
               <a id="rejudge" class="uibtn" href="javascript:;">Rejudge</a>
             <% } %>
@@ -199,7 +199,7 @@
           </div>
           <div align="center" style="padding-bottom:20px;">
             <a id="probsubmit2" class="uibtn consubmit" href="javascript:;">Submit</a>
-            <a class="uibtn" href="javascript:;" res="-1">Status</a>
+            <a class="uibtn" href="javascript:;">Status</a>
           </div>
         </div>
       </div>
@@ -242,7 +242,7 @@
                 <a class="uibtn uibtn-mini" href="javascript:;" id="fil">Filter</a>
               </div>
               <div>
-                <a class="uibtn uibtn-mini" href="javascript:;" id="reset">Reset</a>
+                <a class="uibtn uibtn-mini" href="#status">Reset</a>
               </div>
             </div>
           </div>
@@ -311,7 +311,7 @@
                   <th class="penalty" title="penalty(罚时)"><span class="user-red">P</span></th>
                   <% for(var i = 0; i < probNum; i++) { %>
                   <th class="standing_status">
-                    <a class="rplink" href="#problem-<%= F[i] %>"><%= F[i] %></a>
+                    <a href="#problem-<%= F[i] %>"><%= F[i] %></a>
                   </th>
                   <% } %>
                 </tr>
@@ -351,7 +351,7 @@
         <div class="topic_box form-horizontal">
           <div class="header">
             <span class="user user-gray">发表疑问</span>
-            <span class="user user-green">（只能提问关于题目描述不清的问题，如："n的范围是多少？"，"x是整数吗？"等等，严禁讨论题目答案）</span>
+            <span class="user user-green">（用于提问关于题目描述不清的问题，如："n的范围是多少？"，"x是整数吗？"等等）</span>
           </div>
           <div class="inner_topic">
             <div class="control-group">
@@ -385,6 +385,9 @@
           </div>
         </div>
       <% } %>
+      </div>
+      <div id="loading" class="mc hide" style="width:287px;">
+        <img src="/img/Loading.gif" alt="Loading..." />
       </div>
     </div>
 <!---->

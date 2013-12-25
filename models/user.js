@@ -26,7 +26,8 @@ module.exports = User;
 var userObj = new Schema({
   name: {type: String, index: {unique: true}},
   password: String,
-  regTime: String,
+  visTime: Number,
+  regTime: Number,
   nick: String,
   school: String,
   email: String,
@@ -52,7 +53,7 @@ User.prototype.save = function(callback) {
   user = new users();
   user.name = this.name;
   user.password = this.password;
-  user.regTime = this.regTime;
+  user.visTime = user.regTime = this.regTime;
   user.nick = this.nick;
   user.school = this.school;
   user.email = this.email;

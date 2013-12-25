@@ -1,43 +1,106 @@
 <!--<html>-->
+<% var now = (new Date()).getTime(), oj = ['HDU （杭电，经典，新手必上）', 'POJ （北大，不少经典题，高手必刷）', 'ZOJ （浙大，每个月都有高档次的月赛）', 'Codeforces （人称CF，几乎每周都有国际性比赛，打排位上分）', 'Virtual Judge （虚拟系统，拥有所有主流OJ的题库）'], url = ['http://acm.hdu.edu.cn/', 'http://poj.org/', 'http://acm.zju.edu.cn/onlinejudge/', 'http://codeforces.com/', 'http://acm.hust.edu.cn/vjudge/toIndex.action']; %>
+<% var get = function(x) { return (new Date(x)).getTime(); } %>
 <fieldset>
-  <div><legend>主页</legend></div>
-  <div class="container-fluid">
-    <div class="row-fluid">
-      <div class="span2">
-        <div>
-          <p></p>
-        </div>
-      </div>
-      <div class="span10" style="font-size:16px;">
-        <h2 class="user-green">温馨提示：新手请多留意论坛(forum), 遇到问题就多发贴求助~</h2>
-  <!--      <h3 class="user-green">重要提示：请点击<a href="/contest/3">Exam</a>进入测试~</h3> -->
-        <div style="margin:30px 0;">
-          <h4 class="user-green">一、13级登录（账号已经帮你们注册好了）</h4>
-          1、点击右上角的Enter
-          <br />
-          2、"User Name"输入你的学号
-          <br />
-          3、"password"输入密码，默认"123456"
-        </div>
-        <div style="margin:30px 0;">
-          <h4 class="user-green">二、新手注意事项</h4>
-          1、多组数据一般来说要读到文件末尾为止（所谓的EOF, "end of file"），例如while(cin>>n)、while(scanf("%d", &n) != EOF)等均可，详情请参考<a href="/problem?pid=1000">1000: A + B problem</a>
-          <br />
-          2、题目给出的数据范围是指后台数据（用于测试你的代码是否正确）的范围，所以请不要在代码中判断输入数据是否符合范围！（后台数据已经保证符合范围了！）
-          <br />
-          3、请不要输出与题目无关的信息，因为后台是严格进行匹配的，如果有一个字符不对都是判别为不正确！
-          <br />
-          4、更多帮助信息请参考“<a href="/topic/1014">Help</a>”。
-        </div>
-        <div style="margin:30px 0;">
-          <h4 class="user-green">三、写出具有良好风格的代码</h4>
-          详情参考<a href="/topic/1043">《高质量程序设计》中的代码风格</a>
-        </div>
-        <div style="margin:30px 0;">
-          <p><abbr title="ACM International Collegiate ProgrammingContest">ACM-ICPC</abbr></p>
-          <p>ACM国际大学生程序设计竞赛是由美国计算机协会（ACM）主办的，一项旨在展示大学生创新能力、团队精神和在压力下编写程序、分析和解决问题能力的年度竞赛。经过近30多年的发展，ACM国际大学生程序设计竞赛已经发展成为最具影响力的大学生计算机竞赛。</p>
-        </div>
-      </div>
-    </div>
-  </div>
+	<div><legend>主页</legend></div>
+	<div class="row-fluid">
+		<div class="span6 publish_box">
+			<div class="publish_header">
+				<a href="/topic" title="更多" class="fr more"></a>
+				<div>公告</div>
+			</div>
+			<div class="inner_topic">
+				<ul class="publish_list">
+					<% for (var i = 0; i < 5; i++) { %>
+					<li>
+						<img class="icon" src="/img/arrow.png"/>
+					<% if (i < A.length) { %>
+						<span class="fr user-gray"><%= getTime(A[i].inDate) %></span>
+						<a href="/topic/<%= A[i].id %>"><%= A[i].title %></a>
+						<% if (now - get(A[i].inDate) < 86400000) { %>
+						<img class="top" src="/img/new.gif" />
+						<% } %>
+					<% } else { %>
+						<span class="user-gray">暂无</span>
+					<% } %>
+					</li>
+					<% } %>
+				</ul>
+			</div>
+		</div>
+		<div class="span6 publish_box">
+			<div class="publish_header">
+				<a href="/contest/2" title="更多" class="fr more"></a>
+				<div>最近比赛</div>
+			</div>
+			<div class="inner_topic">
+				<ul class="publish_list">
+					<% for (var i = 0; i < 5; i++) { %>
+					<li>
+						<img class="icon" src="/img/arrow.png"/>
+					<% if (i < B.length) { %>
+						<% var pass = now - get(B[i].startTime); %>
+						<% if (pass < 0) { %>
+						<span class="fr text-info">即将开始，敬请期待</span>
+						<a href="/onecontest/<%= B[i].contestID %>"><%= B[i].title %></a>
+						<img class="top" src="/img/new.gif" />
+						<% } else if (pass < B[i].len*60000) { %>
+						<span class="fr user-red">火热进行中</span>
+						<a href="/onecontest/<%= B[i].contestID %>"><%= B[i].title %></a>
+						<img class="top" src="/img/hot.gif" />
+						<% } else { %>
+						<span class="fr user-gray">已结束</span>
+						<a href="/onecontest/<%= B[i].contestID %>"><%= B[i].title %></a>
+						<% } %>
+					<% } else { %>
+						<span class="user-gray">暂无</span>
+					<% } %>
+					</li>
+					<% } %>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="row-fluid">
+		<div class="span6 publish_box">
+			<div class="publish_header">
+				<a href="/topic" title="更多" class="fr more"></a>
+				<div>最新话题</div>
+			</div>
+			<div class="inner_topic">
+				<ul class="publish_list">
+					<% for (var i = 0; i < 5; i++) { %>
+					<li>
+						<img class="icon" src="/img/arrow.png"/>
+					<% if (i < C.length) { %>
+						<span class="fr user-gray"><%= getTime(C[i].inDate) %></span>
+						<a href="/topic/<%= C[i].id %>"><%= C[i].title %></a>
+						<% if ((new Date()).getTime() - (new Date(C[i].inDate)).getTime() < 86400000) { %>
+						<img class="top" src="/img/new.gif" />
+						<% } %>
+					<% } else { %>
+						<span class="user-gray">暂无</span>
+					<% } %>
+					</li>
+					<% } %>
+				</ul>
+			</div>
+		</div>
+		<div class="span6 publish_box">
+			<div class="publish_header">
+				<a href="/topic/101" title="更多" class="fr more"></a>
+				<div>推荐 Online Judge</div>
+			</div>
+			<div class="inner_topic">
+				<ul class="publish_list">
+					<% for (var i = 0; i < 5; i++) { %>
+					<li>
+						<img class="icon" src="/img/arrow.png"/>
+						<a target="_blank" href="<%= url[i] %>"><%= oj[i] %></a>
+					</li>
+					<% } %>
+				</ul>
+			</div>
+		</div>
+	</div>
 </fieldset>

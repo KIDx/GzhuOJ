@@ -40,12 +40,14 @@
       <table class="table table-cf" id="contest">
         <thead>
           <tr>
-            <th style="width:7%;">CID</th>
+            <th style="width:65px;">#</th>
             <th>Title</th>
-            <th style="width:16%;">Start Time</th>
-            <th style="width:11%;">Duration</th>
-            <th style="width:11%;">Type</th>
-            <th style="width:11%;">Manager</th>
+            <th style="width:180px;">Start Time</th>
+            <th style="width:100px;">Duration</th>
+            <th style="width:100px;">Type</th>
+            <th style="width:100px;">
+            <% if (type != 2) { %>Manager<% } %>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -125,7 +127,11 @@
               <% } %>
             </td>
             <td>
+              <% if (type == 2) { %>
+              <img src="/img/user.png" /><a href="/ranklist?cid=<%= p.contestID %>">×<%= p.contestants.length %></a>
+              <% } else { %>
               <a class="user user-<%= UC[p.userName] %>" title="<%= UT[p.userName] %>" href="/user/<%= p.userName %>"><%= p.userName %></a>
+              <% } %>
             </td>
           </tr>
           <% }); %>

@@ -30,7 +30,8 @@ var problemObj = new Schema({
   hide: Boolean,
   tags: Array,
   manager: String,
-  TC: Boolean
+  TC: Boolean,
+  easy: Number
 });
 
 mongoose.model('problems', problemObj);
@@ -55,6 +56,7 @@ Problem.prototype.save = function(callback) {
   problem.memoryLimit = 64000;
   problem.hide = false;
   problem.TC = false;
+  problem.easy = 0;
   if (this.manager) problem.manager = this.manager;
   problem.tags = new Array();
 

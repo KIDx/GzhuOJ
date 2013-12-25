@@ -43,7 +43,7 @@ exports.Can = function (callback) {
 
     ctx.beginPath();
     ctx.strokeStyle = color;
-    var A = getRandom(1, H/2)
+    var A = getRandom(10, H/2)
     ,   b = getRandom(H/4, 3*H/4)
     ,   f = getRandom(H/4, 3*H/4)
     ,   T = getRandom(H*1.5, W)

@@ -65,6 +65,15 @@ Contest.prototype.save = function(callback) {
   });
 };
 
+Contest.find = function(Q, callback) {
+  contests.find(Q, function(err, docs){
+    if (err) {
+      OE('Contest.find failed!');
+    }
+    return callback(err, docs);
+  });
+};
+
 Contest.get = function(Q, page, callback) {
   contests.count(Q, function(err, count){
     if ((page-1)*pageNum > count) {
@@ -118,8 +127,17 @@ Contest.multiUpdate = function(Q, H, callback) {
 Contest.remove = function(cid, callback) {
   contests.remove({contestID: cid}, function(err){
     if (err) {
-      OE('Contest.remove failed');
+      OE('Contest.remove failed!');
     }
     return callback(err);
+  });
+};
+
+Contest.topFive = function(Q, callback) {
+  contests.find(Q).sort({contestID: -1}).limit(5).exec(function(err, docs){
+    if (err) {
+      OE('Contest.topFive failed!');
+    }
+    return callback(err, docs);
   });
 };

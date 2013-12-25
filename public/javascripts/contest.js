@@ -53,7 +53,7 @@ function Timer() {
 		var tp = $(this).attr('left') - passTime;
 		if (tp <= 0) {
 			clearInterval(interval);
-			$(this).parent().html('<span class="user-gray">Register Closed</span>');
+			$(this).parent().html('<span class="user-gray">Registration Closed</span>');
 		} else {
 			var $pre = $(this).prev();
 			if ($pre.text() != deal(tp))
@@ -78,12 +78,15 @@ $(document).ready(function(){
 					var $clickreg = $(this);
 					var cid = parseInt($clickreg.attr('id'));
 					$.post('/contestReg', {cid:cid}, function(res){
-						if (res) {
+						if (!res) {
 							window.location.reload(true);
-							return ;
+						} else if (res == '1') {
+							ShowMessage('管理员无需注册！');
+						} else if (res == '2') {
+							ShowMessage('系统错误！');
+						} else {
+							ShowMessage('Registration Closed.');
 						}
-						$clickreg.parent().html('<span class="user user-green">Registeration Complete</span>');
-						ShowMessage('Your Registeration has been submited successfully!');
 					});
 				}
 			});

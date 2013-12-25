@@ -25,17 +25,18 @@
       <table class="table table-cf" style="table-layout:fixed;" id="problemset">
         <thead>
           <tr>
-            <th width="80">prob#</th>
+            <th style="width:65px;">#</th>
+            <th style="width:90px;">easy?</th>
             <th>Title</th>
-            <th width="230">Source</th>
-            <th width="80"></th>
-            <th width="160">Ratio(AC/submit)</th>
+            <th style="width:70px;"></th>
+            <th style="width:150px;">Source</th>
+            <th style="width:150px;">Ratio(AC/submit)</th>
           </tr>
         </thead>
         <tbody>
       <% groups.forEach(function(p){ %>
           <tr class="info">
-            <td colspan="5"><%= p.name %></td>
+            <td colspan="6"><%= p.name %></td>
           </tr>
       <% if (!p.pids || p.pids.length == 0) { %>
           <tr class="odd">
@@ -57,6 +58,10 @@
           <tr class="<%= c %>">
             <td class="center <%= s %>"><%= pid %></td>
             <td>
+              <span title="<%= tips[P[pid].easy] %>" class="fl star" style="width:<%= P[pid].easy*80/5 %>px;"></span>
+              <span title="<%= tips[P[pid].easy] %>" class="bgstar"></span>
+            </td>
+            <td>
               <a target="_blank" href="/problem?pid=<%= pid %>&cid=<%= course.courseID %>"><%= P[pid].title %></a>
             <% if (P[pid].tags && P[pid].tags.length > 0) { %>
               <div class="table-tab prob-tag">
@@ -69,15 +74,15 @@
               </div>
             <% } %>
             </td>
-            <td class="ellipsis">
-              <small class="user-gray" title="<%= P[pid].source %>"><%= P[pid].source %></small>
-            </td>
             <td <% if (s) { %>class="<%= s %>-fill"<% } %>>
               <span class="act-item">
                 <a id="gotosubmit" class="checklogin" href="javascript:;" pid="<%= pid %>">
                   <img src="/img/submit.png" title="Submit" alt="Submit"/>
                 </a>
               </span>
+            </td>
+            <td class="ellipsis">
+              <small class="user-gray" title="<%= P[pid].source %>"><%= P[pid].source %></small>
             </td>
           <% var res = '0.00'; %>
           <% if (P[pid].submit > 0) res = (P[pid].AC/P[pid].submit*100).toFixed(2); %>

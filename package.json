@@ -1,11 +1,11 @@
 {
   "name": "GzhuOnlineJudge",
-  "version": "5.9.0",
+  "version": "6.0.0",
   "scripts": {
     "start": "node app"
   },
   "description": "OnlineJudge System Of ACM",
-  "keywords": ["OnlineJudge", "OJ", "ACM", "ICPC", "Contest"],
+  "keywords": ["OnlineJudge", "OJ", "ACM", "ICPC", "Contest", "online judge"],
   "repository" : {
     "type" : "git"
   , "url" : "https://github.com/KIDx/GzhuOJ"

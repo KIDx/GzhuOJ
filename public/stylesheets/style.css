@@ -376,6 +376,7 @@ ul.publish_list > li {
 ul.publish_list > li > img.icon {
     width: 16px;
     height: 16px;
+    float: left;
 }
 
 ul.publish_list > li > img.top {

@@ -22,7 +22,7 @@
         <thead>
           <tr>
             <th style="width:65px;">#</th>
-            <th style="width:90px;">easy?</th>
+            <th style="width:100px;">easy?</th>
             <th>Title</th>
             <th style="width:70px;"></th>
             <th style="width:150px;">Source</th>
@@ -50,11 +50,12 @@
           <tr class="<%= c %>">
             <td class="center <%= s %>"><%= p.problemID %></td>
             <td>
-              <span title="<%= tips[p.easy] %>" class="fl star" style="width:<%= p.easy*80/5 %>px;"></span>
-              <span title="<%= tips[p.easy] %>" class="bgstar"></span>
+              <div title="<%= tips[p.easy] %>" class="bgstar mc">
+                <span title="<%= tips[p.easy] %>" class="star" style="width:<%= p.easy*80/5 %>px;">
+                </span>
+              </div>
             </td>
             <td>
-              <a href="/problem?pid=<%= p.problemID %>"><%= p.title %></a>
             <% if (p.tags && p.tags.length > 0) { %>
               <div class="table-tab prob-tag">
               <% p.tags.sort().forEach(function(t, i){ %>
@@ -65,6 +66,7 @@
               <% }); %>
               </div>
             <% } %>
+              <a href="/problem?pid=<%= p.problemID %>"><%= p.title %></a>
             </td>
             <td <% if (s) { %>class="<%= s %>-fill"<% } %>>
               <span class="act-item">

@@ -328,6 +328,7 @@ function ProblemsResponse(prob) {
 		tcon += '</div>';
 		$content.append(tcon);
 	}
+	$problemlink.removeClass('active');
 	$problemlink.eq(ID).addClass('active');
 	//增加题号,题目属性
 	$probsubmit.attr('pid', prob.problemID); $probsubmit2.attr('pid', prob.problemID);
@@ -718,10 +719,7 @@ $(document).ready(function(){
 		if ($(this).hasClass('active')) {
 			return false;
 		}
-		$problemlink.each(function() {
-			$(this).removeClass('active');
-		});
-		$(this).addClass('active');
+		$problemlink.removeClass('active');
 	});
 	if (status == 0) {
 		pendingTimer();

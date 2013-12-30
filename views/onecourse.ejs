@@ -26,7 +26,7 @@
         <thead>
           <tr>
             <th style="width:65px;">#</th>
-            <th style="width:90px;">easy?</th>
+            <th style="width:100px;">easy?</th>
             <th>Title</th>
             <th style="width:70px;"></th>
             <th style="width:150px;">Source</th>
@@ -58,11 +58,11 @@
           <tr class="<%= c %>">
             <td class="center <%= s %>"><%= pid %></td>
             <td>
-              <span title="<%= tips[P[pid].easy] %>" class="fl star" style="width:<%= P[pid].easy*80/5 %>px;"></span>
-              <span title="<%= tips[P[pid].easy] %>" class="bgstar"></span>
+              <span title="<%= tips[P[pid].easy] %>" class="mc bgstar">
+                <span title="<%= tips[P[pid].easy] %>" class="star" style="width:<%= P[pid].easy*80/5 %>px;"></span>
+              </span>
             </td>
             <td>
-              <a target="_blank" href="/problem?pid=<%= pid %>&cid=<%= course.courseID %>"><%= P[pid].title %></a>
             <% if (P[pid].tags && P[pid].tags.length > 0) { %>
               <div class="table-tab prob-tag">
               <% P[pid].tags.forEach(function(t, i){ %>
@@ -73,6 +73,7 @@
               <% }); %>
               </div>
             <% } %>
+              <a target="_blank" href="/problem?pid=<%= pid %>&cid=<%= course.courseID %>"><%= P[pid].title %></a>
             </td>
             <td <% if (s) { %>class="<%= s %>-fill"<% } %>>
               <span class="act-item">

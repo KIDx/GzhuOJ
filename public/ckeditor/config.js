@@ -1,52 +1,39 @@
-﻿/*
-Copyright (c) 2003-2012, CKSource - Frederico Knabben. All rights reserved.
-For licensing, see LICENSE.html or http://ckeditor.com/license
-*/
+/**
+ * @license Copyright (c) 2003-2013, CKSource - Frederico Knabben. All rights reserved.
+ * For licensing, see LICENSE.md or http://ckeditor.com/license
+ */
 
-CKEDITOR.editorConfig = function( config )
-{
-	// Define changes to default configuration here. For example:
-	// config.language = 'fr';
-	// config.uiColor = '#AADC6E';
+CKEDITOR.editorConfig = function( config ) {
+	// Define changes to default configuration here.
+	// For the complete reference:
+	// http://docs.ckeditor.com/#!/api/CKEDITOR.config
+
+	// The toolbar groups arrangement, optimized for two toolbar rows.
 	config.language = 'zh-cn';
 	config.forcePasteAsPlainText = true;
-	config.toolbar = 'Full';
-	config.toolbar_Full = [{
-		name: 'document',
-		items : ['Source','-','Templates' ]
-	}, {
-		name: 'paragraph',
-		items : [ 'NumberedList','BulletedList','-','Outdent','Indent','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']
-	}, {
-		name: 'insert',
-		items: [ 'Image','Table','HorizontalRule' ]
-	}, {
-		name: 'about',
-		items: [ 'About' ]
-	}, '/', {
-		name: 'basicstyles',
-		items : [ 'Bold', 'Italic','Underline','Strike','Subscript','Superscript' ]
-	}, {
-		name: 'styles',
-		items : [ 'Format','FontSize' ]
-	}, {
-		name:'colors',
-		items : [ 'TextColor' ]
-	}, {
-		name: 'links',
-		items : [ 'Link','Unlink' ]
-	}, '/', {
-		name: 'insertcode',
-		items: [ 'insertcode' ]
-	}, {
-		names: 'smiley',
-		items: [ 'Smiley' ]
-	}];
-	config.extraPlugins += (config.extraPlugins ? ',insertcode' : 'insertcode');
-	//去掉左下角的body和p标签  
-	config.removePlugins = 'elementspath';
+	config.allowedContent = true;
+	config.autoParagraph = false;
+	config.contentsCss = ['../stylesheets/bootstrap.css', CKEDITOR.basePath+'contents.css'];
+
+	config.toolbar = [
+		{ name: 'document', items: [ 'Source' ] },
+		{ name: 'clipboard', items : [ 'Undo','-','Redo' ] },
+		{ name: 'paragraph', items : [ 'NumberedList','BulletedList','-','Outdent','Indent','-','Blockquote','-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock']},
+		{ name: 'insert', items: [ 'Image','Table','HorizontalRule','SpecialChar' ] },
+		'/',
+		{ name: 'styles', items : [ 'Styles','Format','FontSize' ] },
+		{ name:'colors', items : [ 'TextColor' ] },
+		{ name: 'links', items : [ 'Link','Unlink','Anchor' ] },
+		{ name: 'about', items: [ 'About' ] },
+		'/',
+		{ name: 'basicstyles', items : [ 'Bold','-','Italic','-','RemoveFormat' ] },
+		{ name: 'tools', items: [ 'InsertCode','-','Smiley','-','Maximize' ] }
+	];
+
+	config.extraPlugins = 'insertcode,smiley';
+
 	//表情显示每行个数
-	config.smiley_columns =10;
+	config.smiley_columns = 10;
 	//表情自定义
 	config.smiley_descriptions = [];
 	var imgs = new Array();
@@ -54,4 +41,14 @@ CKEDITOR.editorConfig = function( config )
 		imgs.push(i+'.gif');
 	}
 	config.smiley_images = imgs;
+
+	// Remove some buttons, provided by the standard plugins, which we don't
+	// need to have in the Standard(s) toolbar.
+	config.removeButtons = 'Underline,Subscript,Superscript';
+
+	// Se the most common block elements.
+	config.format_tags = 'p;h1;h2;h3;pre';
+
+	// Make dialogs simpler.
+	config.removeDialogTabs = 'image:advanced;link:advanced';
 };

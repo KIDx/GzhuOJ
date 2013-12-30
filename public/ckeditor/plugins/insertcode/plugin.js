@@ -1,9 +1,9 @@
 
 CKEDITOR.plugins.add('insertcode', {
-    requires: ['dialog'],
+    requires: 'dialog',
     init: function(a){
         var b = a.addCommand('insertcode', new CKEDITOR.dialogCommand('insertcode'));
-        a.ui.addButton('insertcode', {
+        a.ui.addButton && a.ui.addButton('InsertCode', {
             label: a.lang.insertcode,
             command: 'insertcode',
             icon: this.path + 'images/code.png'

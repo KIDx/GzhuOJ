@@ -1,8 +1,5 @@
 
 CKEDITOR.dialog.add('insertcode', function(editor){
-    var escape = function(value){
-        return value;
-    };
     return {
         title: editor.lang.insertcode,
         resizable: CKEDITOR.DIALOG_RESIZE_BOTH,
@@ -38,9 +35,10 @@ CKEDITOR.dialog.add('insertcode', function(editor){
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#39;');
-            editor.insertHtml('<pre class=\"brush:' + lang + ';\">' + html + '</pre>');
-        },
-        onLoad: function(){
+            var element = new CKEDITOR.dom.element( 'pre' );
+            element.setText(code);
+            element.setAttribute('class', 'brush:'+lang+';');
+            editor.insertElement(element);
         }
     };
 });

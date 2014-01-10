@@ -7,3 +7,4 @@
 * 压缩某些不改动的js文件
 * 修复admin不能为别人的contest打星的bug(index.js)
 * 修复ckeditor插入表情路径太绝对导致服务器一旦改变地址就显示不了的bug
+* 修复nginx+websocket出错的bug(app.js: io.set('transports', ...))

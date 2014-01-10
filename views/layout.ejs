@@ -4,7 +4,6 @@
 <html>
   <head>
     <title id="title"><%= title %></title>
-    <link rel="shortcut icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon">
     <link href="/stylesheets/bootstrap.css" rel="stylesheet" type="text/css"/>
     <link href="/stylesheets/style.css" rel="stylesheet" type="text/css"/>
   <% if (key == 8 || key == 11 || key == 18) { %>
@@ -77,7 +76,7 @@
       <div>Any bug please contect 972169909@qq.com</div>
       <div>Server time: <span <% if(key == 6) { %>type="<%= type %>"<% } %> <% if (user) { %>user="<%= user.name %>"<% } %> time="<%= time %>" id="timer"></span></div>
     </div>
-<!--****************Dialogs****************-->
+  <!--****************Dialogs****************-->
     <% if (!user) { %>
       <%- partial('D_login') %>
       <%- partial('D_register') %>
@@ -106,18 +105,11 @@
       <%- partial('D_addtogroup') %>
       <% } %>
     <% } %>
-<!--****************Dialogs****************-->
+  <!--****************Dialogs****************-->
   <!-- js Placed at the end of the document so the pages load faster -->
-    <script src="/javascripts/jquery.js"></script>
-    <script src="/javascripts/jquery-ui-EffectsCore-1.10.3.js"></script>
-  <!--[if lt IE 9]>
-    <script type="text/javascript" src="/javascripts/html5.js"></script>
-    <script src="/javascripts/mediaquerie.js"></script>
-  <![endif]-->
-    <script src="/jqModal/jqDnR.js"></script>
-    <script src="/jqModal/jqModal.js"></script>
+    <script src="/javascripts/jquery_uieffect_jqdnr.js"></script>
     <script src="/javascripts/Global.js"></script>
-  <% var highlight = '<script src="/highlighter/scripts/shCore.js"></script><script src="/highlighter/scripts/shBrushCpp.js"></script><script src="/highlighter/scripts/shBrushJava.js"></script><script type="text/javascript">SyntaxHighlighter.defaults[\'toolbar\'] = false;SyntaxHighlighter.all();</script>'; %>
+  <% var highlight = '<script src="/highlighter/scripts/shCore_brushCpp_brushJava.js"></script><script type="text/javascript">SyntaxHighlighter.defaults[\'toolbar\'] = false;SyntaxHighlighter.all();</script>'; %>
   <% if (key == 0) { %>
     <script src="/javascripts/user.js"></script>
   <% } else if (key == 1) { %>

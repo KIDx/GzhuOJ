@@ -1071,7 +1071,7 @@ exports.reg = function(req, res) {
       (new User({
         name      : name,
         password  : psw,
-        regTime   : getDate(new Date()),
+        regTime   : (new Date()).getTime(),
         nick      : realname,
         number    : name,
         realname  : realname,
@@ -4096,7 +4096,8 @@ exports.toggleStar = function(req, res) {
       req.session.msg = '系统错误！';
       return res.end();
     }
-    if (req.session.user.name != con.userName) {
+    var name = req.session.user.name;
+    if (name != con.userName && name != 'admin') {
       req.session.msg = 'You have no permission to do that!';
       return res.end();
     }

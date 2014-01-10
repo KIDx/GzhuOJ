@@ -18,41 +18,29 @@ var express = require('express')
 ,	sessionStore = new MongoStore({ db : settings.db })
 ,	Contest = require('./models/contest.js');
 
-//访问日志和错误日志
-//var accessLogfile = fs.createWriteStream('access.log', {flags: 'a'});
-
 //服务器配置
-app.configure(function(){
-	
-	app.set('port', process.env.PORT || 3000);
-	app.set('views', __dirname + '/views');
-	app.set('view engine', 'ejs');
+app.set('port', process.env.PORT || 3000);
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
 
-	app.use(partials());
+app.use(partials());
 
-	app.use(express.logger('dev'));
-	//app.use(express.logger({stream: accessLogfile}));
+app.use(express.logger('dev'));
 
-	app.use(express.compress());		//使用gzip进行压缩传输
-	app.use(express.bodyParser());
-	app.use(express.methodOverride());
+app.use(express.compress()); //使用gzip进行压缩传输
+app.use(express.bodyParser());
+app.use(express.methodOverride());
 
-	app.use(express.cookieParser());
-	
-	app.use(express.session({
-		secret: settings.cookie_secret,
-		store: sessionStore
-	}));
-	//使用静态资源服务以及设置缓存
-	app.use(express.static(path.join(__dirname, 'public')));
-	app.use(app.router);
-});
+app.use(express.cookieParser());
 
-//设置环境: production, development
-app.configure('development', function(){
-	//app.use(express.static(path.join(__dirname, 'public'), {maxAge:86400000}));//, {maxAge:31557600000}));
-	app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-});
+app.use(express.session({
+	secret: settings.cookie_secret,
+	store: sessionStore
+}));
+
+app.use(express.static(__dirname + '/public', {maxAge: 259200000}));	//使用静态资源服务以及设置缓存(三天)
+app.use(express.favicon(__dirname + '/public/favicon.ico', { maxAge: 2592000000 }));
+app.use(app.router);
 
 //#####server response
 //主页
@@ -248,6 +236,11 @@ app.on('close', function(err){
 server.listen(app.get('port'), function(){
 	console.log("Server running at http://localhost:3000");
 });
+
+io.set('transports', [ 
+  'xhr-polling',
+  'jsonp-polling'
+]);
 
 //websocket设置session
 io.set('authorization', function(handshakeData, accept){

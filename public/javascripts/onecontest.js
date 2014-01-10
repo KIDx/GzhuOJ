@@ -287,7 +287,6 @@ var $problem = $div.find('#problemtab')
 ,	$limit = $problem.find('span.limit')
 ,	F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ,	ID, problemTimeout
-,	ProblemAPI = {}
 ,	problemAjax;
 
 var $content = $('#content');
@@ -302,7 +301,6 @@ function ProblemsResponse(prob) {
 	function getTitle(i) {
 		return alias[i] ? alias[i] : prob.title;
 	}
-	if (!ProblemAPI[ID]) ProblemAPI[ID] = prob;
 	$title.eq(0).text( F.charAt(ID) );
 	$title.eq(1).text( getTitle(ID) );
 	$limit.eq(0).text( 2*prob.timeLimit+'/'+prob.timeLimit );
@@ -363,28 +361,25 @@ function ProblemsResponse(prob) {
 function GetProblem() {
 	clearTimeout(problemTimeout);
 	problemTimeout = setTimeout(function(){
-		if (!ID || ID < 0) ID = 0;
-		if (ProblemAPI[ID]) {
-			ProblemsResponse(ProblemAPI[ID]);
-		} else {
-			problemAjax = $.ajax({
-				type: 'POST',
-				url: '/getProblem',
-				dataType: 'json',
-				data: {
-					cid: cid,
-					pid: pids[ID],
-					all: true
-				},
-				timeout: 5000,
-				error: function() {
-					if (problemAjax)
-						problemAjax.abort();
-					GetProblem();
-				}
-			})
-			.done(ProblemsResponse);
-		}
+		if (!ID || ID < 0)
+			ID = 0;
+		problemAjax = $.ajax({
+			type: 'POST',
+			url: '/getProblem',
+			dataType: 'json',
+			data: {
+				cid: cid,
+				pid: pids[ID],
+				all: true
+			},
+			timeout: 5000,
+			error: function() {
+				if (problemAjax)
+					problemAjax.abort();
+				GetProblem();
+			}
+		})
+		.done(ProblemsResponse);
 	}, interceptorTime);
 }
 

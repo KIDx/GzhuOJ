@@ -146,15 +146,6 @@ div#wrapper {
     min-height: 101%;
 }
 
-@media screen and (max-width: 1024px) {
-    body {
-        width: 950px;
-    }
-    div#wrapper {
-        min-height: 700px;
-    }
-}
-
 span.myhover {
     cursor: pointer;
 }

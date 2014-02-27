@@ -63,7 +63,7 @@ module.exports = {
   topic_pageNum       : 15,
   comment_pageNum     : 20,
   root_path           : __dirname+'/',
-  data_path           : '/home/kidx/OJ/judge/data/',
+  data_path           : '/home/kidx/Data/',
   College             : College,
   T: Tag,
   P: ProTil,

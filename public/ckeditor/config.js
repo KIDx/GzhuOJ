@@ -37,6 +37,9 @@ CKEDITOR.editorConfig = function( config ) {
 	//表情自定义
 	config.smiley_descriptions = [];
 	var imgs = new Array();
+	for (var i = 1; i <= 10; i++) {
+		imgs.push('n'+i+'.gif');
+	}
 	for (var i = 1; i <= 67; i++) {
 		imgs.push(i+'.gif');
 	}

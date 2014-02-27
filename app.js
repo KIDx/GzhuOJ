@@ -37,9 +37,9 @@ app.use(express.session({
 	secret: settings.cookie_secret,
 	store: sessionStore
 }));
-
-app.use(express.static(__dirname + '/public', {maxAge: 259200000}));	//使用静态资源服务以及设置缓存(三天)
-app.use(express.favicon(__dirname + '/public/favicon.ico', { maxAge: 2592000000 }));
+//使用静态资源服务以及设置缓存(三天)
+app.use(express.static(__dirname+'/public', {maxAge: 259200000}));
+app.use(express.favicon(__dirname+'/public/favicon.ico', {maxAge: 2592000000}));
 app.use(app.router);
 
 //#####server response
@@ -231,12 +231,12 @@ app.on('close', function(err){
 	routes.disconnectMongodb();
 });
 
-
 //running server
 server.listen(app.get('port'), function(){
 	console.log("Server running at http://localhost:3000");
 });
 
+//normal when use nginx
 io.set('transports', [ 
   'xhr-polling',
   'jsonp-polling'

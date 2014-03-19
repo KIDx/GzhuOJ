@@ -75,6 +75,26 @@ $(document).ready(function(){
     }
 });
 
+var $restore = $('#restore');
+
+$(document).ready(function(){
+    if ($restore.length) {
+        $restore.click(function(){
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
+            $(this).addClass('disabled');
+            if (!confirm('确认要把'+name+'的密码恢复为"123456"吗？')) {
+                $(this).removeClass('disabled');
+                return false;
+            }
+            $.post('/restorePsw', {name: name}, function(){
+                window.location.reload(true);
+            });
+        });
+    }
+});
+
 var $dialog_st = $('div#dialog_st');
 
 $(document).ready(function(){

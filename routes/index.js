@@ -872,6 +872,30 @@ exports.changeAddprob = function(req, res) {
   });
 };
 
+exports.restorePsw = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = 'Please login first!';
+    return res.end();
+  }
+  if (req.session.user.name != 'admin') {
+    req.session.msg = 'Failed! You have no permission to do that!';
+    return res.end();
+  }
+  var name = String(req.body.name);
+  if (!name)
+    return res.end();   //not allow
+  User.update({name: name}, {$set: {password: crypto.createHash('md5').update('123456').digest('base64')}}, function(err){
+    if (err) {
+      OE(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    req.session.msg = '已成功将'+name+'的密码恢复为"123456"！';
+    return res.end();
+  });
+};
+
 exports.changeInfo = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.session.user) {

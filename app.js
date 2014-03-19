@@ -37,9 +37,9 @@ app.use(express.session({
 	secret: settings.cookie_secret,
 	store: sessionStore
 }));
-
-app.use(express.static(__dirname + '/public', {maxAge: 259200000}));	//使用静态资源服务以及设置缓存(三天)
-app.use(express.favicon(__dirname + '/public/favicon.ico', { maxAge: 2592000000 }));
+//使用静态资源服务以及设置缓存(三天)
+app.use(express.static(__dirname+'/public', {maxAge: 259200000}));
+app.use(express.favicon(__dirname+'/public/favicon.ico', {maxAge: 2592000000}));
 app.use(app.router);
 
 //#####server response
@@ -156,12 +156,14 @@ app.post('/getRanklist', routes.getRanklist);
 app.post('/getTopic', routes.getTopic);
 //add a discuss to contest Discuss
 app.post('/addDiscuss', routes.addDiscuss);
-//user页面，修改用户称号等重要信息(admin)
+//user页面，修改他人称号等重要信息(for admin)
 app.post('/changePvl', routes.changePvl);
-//user页面的修改用户加题权限功能(admin)
+//user页面的修改他人加题权限功能(for admin)
 app.post('/changeAddprob', routes.changeAddprob);
 //user页面的修改信息功能(setting)
 app.post('/changeInfo', routes.changeInfo);
+//user页面将他人密码恢复默认, 即123456(for admin)
+app.post('/restorePsw', routes.restorePsw);
 //编辑题目分类标签
 app.post('/editTag', routes.editTag);
 //单题重判
@@ -231,12 +233,12 @@ app.on('close', function(err){
 	routes.disconnectMongodb();
 });
 
-
 //running server
 server.listen(app.get('port'), function(){
 	console.log("Server running at http://localhost:3000");
 });
 
+//normal when use nginx
 io.set('transports', [ 
   'xhr-polling',
   'jsonp-polling'

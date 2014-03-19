@@ -74,6 +74,8 @@ function lang(s) {
 	if (s == 2) return 'C++';
 	if (s == 3) return 'Java';
 	if (s == 4) return 'C++11';
+	if (s == 5) return 'C#';
+	if (s == 6) return 'VB.Net';
 	return 'unknow';
 }
 

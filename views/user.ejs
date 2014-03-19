@@ -57,17 +57,20 @@
       <% if (user && user.name == 'admin') { %>
       <div style="margin:10px 0;">
         <a style="margin:0;" href="javascript:;" class="uibtn" id="addprob">
-          <% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %>&nbsp;<%= u.name %>&nbsp;加题权限
+          <% if(u.addprob == 1) { %>回收<% } else { %>赋予<% } %> <%= u.name %> 加题权限
         </a>
         <% if (u.name != 'admin') { %>
         <a style="margin:0 10px;" href="javascript:;" class="uibtn" id="clear">
-          清空&nbsp;<%= u.name %>&nbsp;的认证信息
+          清空 <%= u.name %> 的认证信息
         </a>
         <% } else { %>
           <a style="margin:0 10px;" href="javascript:;" class="uibtn" id="recal">
             重新统计所有用户提交数和AC数
           </a>
         <% } %>
+        <a style="margin:0;" href="javascript:;" class="uibtn" id="restore">
+          将 <%= u.name %> 的密码恢复默认
+        </a>
       </div>
       <% } %>
       <div><span class="user-gray" title="nick name"><%= u.nick %></span></div>

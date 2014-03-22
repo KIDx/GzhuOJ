@@ -168,8 +168,10 @@ app.post('/restorePsw', routes.restorePsw);
 app.post('/editTag', routes.editTag);
 //单题重判
 app.post('/rejudge', routes.rejudge);
-//VIPContest增加指定用户
+//VIPContest增加指定用户(for admin)
 app.post('/regContestAdd', routes.regContestAdd);
+//将指定用户从比赛中移除(for admin)
+app.post('/regContestRemove', routes.regContestRemove);
 //上传图片
 app.post('/imgUpload', routes.imgUpload);
 //上传头像

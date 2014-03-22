@@ -108,7 +108,11 @@ function drim(s) {
 
 //delete unuseful ' ', '\t', '\n' ect...
 function clearSpace(s) {
-    return drim(trim(s));
+  return drim(trim(s));
+}
+
+function isUsername(s) {
+  return (new RegExp("^[a-zA-Z0-9_]{2,15}$")).test(s);
 }
 
 function deal(str) {
@@ -1063,8 +1067,11 @@ exports.reg = function(req, res) {
   if (!req.session.user || req.session.user.name != 'admin') {
     return res.end('4');
   }
-  var name = clearSpace(req.body.name)
-  ,   realname = clearSpace(req.body.realname)
+  var name = clearSpace(req.body.name);
+  if (!isUsername(name)) {
+    return res.end();   //not allow
+  }
+  var realname = clearSpace(req.body.realname)
   ,   sex = clearSpace(req.body.sex)
   ,   gde = clearSpace(req.body.gde)
   ,   college = clearSpace(req.body.college);
@@ -1128,8 +1135,7 @@ exports.doReg = function(req, res) {
     return res.end();   //not allow
   }
 
-  var pattern = new RegExp("^[a-zA-Z0-9_]{2,15}$");
-  if (!pattern.test(name)) {
+  if (!isUsername(name)) {
     return res.end();   //not allow
   }
   if (vcode.toLowerCase() != req.session.verifycode) {
@@ -3827,16 +3833,15 @@ function regContestAndUpdate(cid, name, callback) {
     if (err) {
       return callback(err);   //no need to output err, because of callback
     }
-    ContestRank.findOne({_id: {cid:cid, name:name}}, function(err, doc){
+    ContestRank.findOne({'_id.cid': cid, '_id.name': name}, function(err, doc){
       if (err) {
         return callback(err);
       }
       if (doc) {
         return callback();
       }
-      var rank = new ContestRank(cid, name);
-      rank.save(function(){
-        return callback();
+      (new ContestRank(cid, name)).save(function(err){
+        return callback(err);
       });
     });
   });
@@ -4096,6 +4101,53 @@ exports.regContestAdd = function(req, res) {
           return res.end();
         }
         req.session.msg = '添加完成！';
+        return res.end();
+      });
+    });
+  });
+};
+
+exports.regContestRemove = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = 'Please login first!';
+    return res.end();
+  }
+  if (req.session.user.name != 'admin') {
+    req.session.msg = 'You have no permission to do that!';
+    return res.end();
+  }
+  var name = clearSpace(req.body.name);
+  if (!name) {
+    return res.end();   //not allow
+  }
+  var cid = parseInt(req.body.cid, 10);
+  if (!cid) {
+    return res.end();   //not allow
+  }
+  Solution.watch({userName: name, cID: cid}, function(err, sol){
+    if (err) {
+      OE(err);
+      req.session.msg = '系统错误！';
+      return res.end();
+    }
+    if (sol) {
+      req.session.msg = '该用户有提交记录，无法移除！';
+      return res.end();
+    }
+    Contest.update(cid, {$pull: {contestants: name}}, function(err){
+      if (err) {
+        OE(err);
+        req.session.msg = '系统错误！';
+        return res.end();
+      }
+      ContestRank.remove({'_id.cid': cid, '_id.name': name}, function(err){
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.end();
+        }
+        req.session.msg = name+'已成功从该比赛中移除！';
         return res.end();
       });
     });

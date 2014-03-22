@@ -35,14 +35,12 @@ function buildPager(page, n) {
 	if (i > 1) {
 		html += '<li class="disabled"><a href="javascript:;">...</a></li>';
 	}
-	while (i < page)
-	{
+	while (i < page) {
 		html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
 		++i; --cp;
 	}
 	html += '<li class="active"><a href="javascript:;">'+i+'</a></li>';
-	while (i < n && cp > 1)
-	{
+	while (i < n && cp > 1) {
 		++i; --cp;
 		html += '<li id="'+i+'"><a href="javascript:;">'+i+'</a></li>';
 	}
@@ -389,6 +387,7 @@ var $rank = $div.find('#ranktab')
 ,	$ranktbody = $rank.find('table tbody')
 ,	$ranklist = $('#ranklist')
 ,	$ranklist_a
+,	$removebtn
 ,	rankQ = {cid:cid, page:1}
 ,	rank = 1
 ,	rankTimeout
@@ -430,6 +429,9 @@ function buildRank(U) {
 	html += '<td><a target="_blank" href="/user/'+U.name+'" class="user user-'+UserCol(pvl);
 	html += '" title="'+UserTitle(pvl)+'">';
 	html += U.name+'</a>';
+	if (current_user == 'admin') {
+		html += '<button class="close" style="margin-right:5px;" user="'+U.name+'" title="移除">&times;</button>';
+	}
 	html += '</div></td><td>';
 	if (display == '1') {
 		if (I[U.name] && I[U.name].gde && I[U.name].name) {
@@ -490,6 +492,9 @@ function RankResponse(json) {
 	if ($ranklist_a && $ranklist_a.length) {
 		$ranklist_a.unbind('click');
 	}
+	if ($removebtn && $removebtn.length) {
+		$removebtn.unbind();
+	}
 	$ranktbody.html(html);
 	$ranklist_a = $ranklist.find('a');
 	$ranklist_a.click(function(){
@@ -497,6 +502,17 @@ function RankResponse(json) {
 			return false;
 		window.location.hash = '#rank-'+$(this).parent().attr('id');
 	});
+	if (current_user == 'admin') {
+		$removebtn = $('button.close');
+		$removebtn.click(function(){
+			if (!confirm('确定要将该参赛者从比赛中移除吗？')) {
+				return false;
+			}
+			$.post('/regContestRemove', {cid: cid, name: $(this).attr('user')}, function(){
+				window.location.reload(true);
+			});
+		});
+	}
 	$loading.hide();
 	$rank.fadeIn(100);
 }

@@ -1,20 +1,22 @@
-# Gzhu Online Judge v6.0.6
+# Gzhu Online Judge
 
+## 2014-03-22, Version 6.0.7
+* VIP Contest中的Rank页增加移除参赛者功能(for admin)
+* Add Student页面(for admin)增加csv文件内容说明
+
+## 2014-03-19, Version 6.0.6
 * user页面增加恢复默认密码"123456"功能(for admin)
 * 删除了public文件夹中无用的socket.io文件夹
 
-# Gzhu Online Judge v6.0.5
-
+## 2014-01-26, Version 6.0.5
 * 提供对C#的支持
 * 修改评测数据目录的位置
 
-# Gzhu Online Judge v6.0.4
-
+## 2014-01-12, Version 6.0.4
 * contest进度条增加clear:both，兼容IE7
 * 增加10个方形QQ表情
 
-# Gzhu Online Judge v6.0.3
-
+## 2014.01.10, Version 6.0.3
 * 修复批量注册会出现系统错误的bug(index.js)
 * contest的题目不再缓存，每次都去服务器拿最新的(onecontest.js)
 * 对网站增加静态资源缓存(app.js)
@@ -24,20 +26,17 @@
 * 修复ckeditor插入表情路径太绝对导致服务器一旦改变地址就显示不了的bug
 * 修复nginx+websocket出错的bug(app.js: io.set('transports', ...))
 
-# Gzhu Online Judge v6.0.2
-
+## 2013.12.30, Version 6.0.2
 * 修改了onecourse页面样式，兼容IE7
 * 修复contest页面problemlink可以同时多个active的bug
 * 将ckeditor从v3.6.x更新到v4.3.1
 
-# Gzhu Online Judge v6.0.1
-
+## 2013.12.26, Version 6.0.1
 * 主页样式兼容IE7
 * 修改了难度列表
 * problemset，problem页面的star兼容IE7
 
-# Gzhu Online Judge v6.0.0
-
+## 2013.12.25, Version 6.0.0
 * 编辑话题时不需要验证码
 * 修改user页面的样式
 * 将users表的regTime字段数据类型修改为Number

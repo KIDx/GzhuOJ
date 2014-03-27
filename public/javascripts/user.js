@@ -62,12 +62,7 @@ $(document).ready(function(){
             }
             $(this).addClass('disabled');
             $.post('/changePvl', {
-                name        : name,
-                pvl         : '',
-                realname    : '',
-                sex         : '',
-                college     : '',
-                grade       : ''
+                name        : name
             }, function(){
                 window.location.reload(true);
             });

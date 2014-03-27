@@ -81,6 +81,7 @@ var settings = require('../settings')
 ,   UserCol = settings.UC
 ,   UserTitle = settings.UT
 ,   College = settings.College
+,   CollegeShort = settings.CollegeShort
 ,   OE = settings.outputErr
 ,   getDate = settings.getDate
 ,   easy_tips = settings.easy_tips;
@@ -554,6 +555,9 @@ exports.getRanklist = function(req, res) {
               U.forEach(function(p){
                 pvl[p.name] = p.privilege;
                 if (con.type == 3 || (con.type == 2 && con.password)) {
+                  if (p.college != 1) {
+                    p.grade = CollegeShort[p.college];
+                  }
                   I[p.name] = { gde: p.grade, name: p.realname };
                 } else {
                   I[p.name] = p.nick;
@@ -603,8 +607,6 @@ exports.getRanklist = function(req, res) {
           } else {
             maxRunID = docs[0].runID;
           }
-          console.log(sol[0]);
-          console.log(docs[0].runID);
           Solution.mapReduce({
             query: {$and: [Q, {runID: {$lte: maxRunID}}]},
             sort: {runID: -1},
@@ -660,7 +662,7 @@ exports.getRanklist = function(req, res) {
                 inDate: indate,
                 result: 2
               }
-            }, { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
+            }, {$sort: {runID: 1}}, { $group: { _id: '$problemID', userName: {$first: '$userName'} } }
             ], function(err, results){
               if (err) {
                 OE(err);
@@ -823,9 +825,12 @@ exports.changePvl = function(req, res) {
   ,   realname = clearSpace(req.body.realname)
   ,   sex = clearSpace(req.body.sex)
   ,   gde = clearSpace(req.body.grade);
-  if (!name || !pvl || !college || !sex) {
-    return res.end();   //not allow
+  if (!name) {
+    return res.end();  //not allow
   }
+  if (!pvl) pvl = '';
+  if (!college) college = '';
+  if (!sex) sex = '';
   User.update({name: name}, {$set: {
     privilege   : pvl,
     college     : college,

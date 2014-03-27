@@ -37,8 +37,8 @@ app.use(express.session({
 	secret: settings.cookie_secret,
 	store: sessionStore
 }));
-//使用静态资源服务以及设置缓存(三天)
-app.use(express.static(__dirname+'/public', {maxAge: 259200000}));
+
+app.use(express.static(__dirname+'/public', {maxAge: 259200000}));	//使用静态资源服务以及设置缓存(三天)
 app.use(express.favicon(__dirname+'/public/favicon.ico', {maxAge: 2592000000}));
 app.use(app.router);
 

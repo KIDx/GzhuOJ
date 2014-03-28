@@ -14,7 +14,7 @@
     "express": "*",
     "ejs": "*",
     "mongodb": "*",
-    "canvas": "1.0.4",
+    "canvas": "*",
     "express-partials": "*",
     "connect-mongo": "*",
     "mongoose": "*",

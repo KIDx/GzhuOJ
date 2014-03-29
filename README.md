@@ -26,7 +26,7 @@ $ cd GzhuOJ
 $ sudo npm i
 ```
 
-### 如果上面的"sudo npm i"等很久都没反应，安装并使用nrm切换到其他registry
+### 如果上面的"sudo npm i"等很久都没反应，安装并使用nrm切换到其他registry，然后重试
 ```
 $ sudo npm i -g nrm
 $ nrm ls

@@ -7,20 +7,20 @@
   "description": "OnlineJudge System Of ACM",
   "keywords": ["OnlineJudge", "OJ", "ACM", "ICPC", "Contest", "online judge"],
   "repository" : {
-    "type" : "git"
-  , "url" : "https://github.com/KIDx/GzhuOJ"
+    "type" : "git",
+	"url" : "https://github.com/KIDx/GzhuOJ"
   },
   "dependencies": {
     "express": "*",
-    "ejs": "*",
     "mongodb": "*",
-    "canvas": "*",
-    "express-partials": "*",
     "connect-mongo": "*",
     "mongoose": "*",
+    "ejs": "*",
+    "express-partials": "*",
+    "canvas": "*",
+    "socket.io": "*",
     "gm": "*",
     "csv": "*",
-    "iconv": "*",
-    "socket.io": "*"
+    "iconv": "*"
   }
 }

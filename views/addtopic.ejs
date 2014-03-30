@@ -28,7 +28,7 @@
 				<label class="control-label">内容：</label>
 				<div class="controls" style="width:800px;">
 					<textarea id="content">
-						<% if (topic) { %><%= topic.content %><% } %>
+						<% if (topic) { %><%- topic.content %><% } %>
 					</textarea>
 				</div>
 			</div>

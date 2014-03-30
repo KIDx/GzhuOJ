@@ -103,7 +103,7 @@
         <li>学院: <%= C[u.college] %></li>
       <% } %>
       <% if(u.grade) { %>
-        <li>班别: <%= u.grade %>班</li>
+        <li>班别: <%= u.grade %><% if (parseInt(u.grade)) { %>班<% } %></li>
       <% } %>
         <li>Last Visit: <%= getTime(u.visTime) %></li>
         <li>Registered: <%= getTime(u.regTime) %></li>

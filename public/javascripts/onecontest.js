@@ -297,14 +297,8 @@ var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Outpu
 ,	$rejudge = $('#rejudge')
 ,	ProblemCache = {};
 
-function ProblemsResponse(prob) {
-	if (!problemAjax || !isActive(1)) return ;
-	if (prob) {
-		ProblemCache[ID] = prob;
-	} else {
-		if (!ProblemCache[ID]) return ;
-		prob = ProblemCache[ID];
-	}
+function ShowProblem(prob) {
+	if (!prob) return ;
 	function getTitle(i) {
 		return alias[i] ? alias[i] : prob.title;
 	}
@@ -321,18 +315,18 @@ function ProblemsResponse(prob) {
 	}
 	var q = [prob.description, prob.input, prob.output, prob.sampleInput,
 	prob.sampleOutput, prob.hint];
-	$content.html('');
+	var tcon = '';
 	for (i = 0; i < 7; i++) {
 		if (!q[i]) continue;
-		var tcon = '<h4>'+S[i]+'</h4><div class="accordion-inner">';
+		tcon += '<h4>'+S[i]+'</h4><div class="accordion-inner">';
 		if (i === 3 || i === 4) {
 			tcon += '<pre class="sample">'+q[i]+'</pre>';
 		} else {
 			tcon += q[i];
 		}
 		tcon += '</div>';
-		$content.append(tcon);
 	}
+	$content.html(tcon);
 	$problemlink.removeClass('active');
 	$problemlink.eq(ID).addClass('active');
 	//增加题号,题目属性
@@ -365,11 +359,17 @@ function ProblemsResponse(prob) {
 	$tablink.eq(1).attr('href', '#problem-'+F.charAt(ID));
 }
 
+function ProblemResponse(prob) {
+	if (!problemAjax || !prob || !isActive(1)) return ;
+	ShowProblem(ProblemCache[ID] = prob);
+}
+
 function GetProblem() {
+	if (!ID || ID < 0)
+		ID = 0;
+	ShowProblem(ProblemCache[ID]);
 	clearTimeout(problemTimeout);
 	problemTimeout = setTimeout(function(){
-		if (!ID || ID < 0)
-			ID = 0;
 		problemAjax = $.ajax({
 			type: 'POST',
 			url: '/getProblem',
@@ -386,7 +386,7 @@ function GetProblem() {
 				GetProblem();
 			}
 		})
-		.done(ProblemsResponse);
+		.done(ProblemResponse);
 	}, interceptorTime);
 }
 
@@ -740,6 +740,7 @@ $(document).ready(function(){
 			return false;
 		}
 		$problemlink.removeClass('active');
+		$(this).addClass('active');
 	});
 	if (status == 0) {
 		pendingTimer();

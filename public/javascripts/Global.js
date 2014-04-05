@@ -238,26 +238,22 @@ function JudgeString(s) {
     return drim(trim(s));
 }
 
+function addZero(n) {
+    return (n < 10 ? '0' : '')+n;
+}
+
 function getDate(date) {
-  var Y = date.getFullYear();
-  var M = date.getMonth()+1;
-  if (M < 10) M = '0' + M;
-  var D = date.getDate();
-  if (D < 10) D = '0' + D;
-  var h = date.getHours();
-  if (h < 10) h = '0' + h;
-  var m = date.getMinutes();
-  if (m < 10) m = '0' + m;
-  return (Y+'-'+M+'-'+D+' '+h+':'+m);
+  return date.getFullYear()+'-'+addZero(date.getMonth()+1)+'-'+addZero(date.getDate())+' '+addZero(date.getHours())+':'+addZero(date.getMinutes());
+}
+
+function getDateEx(date) {
+    return getDate(date)+':'+addZero(date.getSeconds());
 }
 
 function SetCurrentTime() {
     var date = new Date();
     date.setTime(curren_second);
-    current_time = getDate(date);
-    var s = date.getSeconds();
-    if (s < 10) s = '0' + s;
-    current_time += ':' + s;
+    current_time = getDateEx(date);
     $footTime.text(current_time);
     if ($contest_current.length) {
         $contest_current.text(current_time);

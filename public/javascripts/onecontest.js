@@ -392,9 +392,10 @@ function GetProblem() {
 
 var $rank = $div.find('#ranktab')
 ,	$ranktbody = $rank.find('table tbody')
-,	$ranklist = $('#ranklist')
+,	$ranklist = $rank.find('#ranklist')
 ,	$ranklist_a
 ,	$removebtn
+,	$refresh = $rank.find('#refresh')
 ,	rankQ = {cid:cid, page:1}
 ,	rank = 1
 ,	rankTimeout
@@ -622,7 +623,6 @@ function GetDiscuss() {
 }
 
 function run() {
-	$loading.show();
 	clearAjax();
 	var str = window.location.hash;
 	if (!str) str = '#overview';
@@ -633,6 +633,7 @@ function run() {
 	if (a != '#problem' || !PreTab) {
 		hideAll();
 	}
+	$loading.show();
 	flg = {};	//important [update status]
 	for (var i = 0; i < 5; i++) {
 		noActive(i);
@@ -752,7 +753,7 @@ $(document).ready(function(){
 	runContest();
 });
 
-//bind status
+//bind status and rank refresh
 $(document).ready(function(){
 	$Filter.click(function(){
 		window.location.hash = '#status-'+$search.val()+'-'+$pid.val()+'-'+$result.val();
@@ -761,6 +762,11 @@ $(document).ready(function(){
 		if (e.keyCode == 13) {
 			$Filter.click();
 		}
+	});
+	$refresh.click(function(){
+		hideAll();
+		$loading.show();
+		GetRanklist();
 	});
 });
 

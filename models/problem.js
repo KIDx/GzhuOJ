@@ -31,7 +31,8 @@ var problemObj = new Schema({
   tags: Array,
   manager: String,
   TC: Boolean,
-  easy: Number
+  easy: Number,
+  lastmodified: Number
 });
 
 mongoose.model('problems', problemObj);
@@ -57,6 +58,7 @@ Problem.prototype.save = function(callback) {
   problem.hide = false;
   problem.TC = false;
   problem.easy = 0;
+  problem.lastmodified = (new Date()).getTime();
   if (this.manager) problem.manager = this.manager;
   problem.tags = new Array();
 

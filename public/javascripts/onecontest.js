@@ -294,10 +294,17 @@ var $content = $('#content');
 var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Output', 'Hint', 'Source']
 ,	$probsubmit = $('#probsubmit')
 ,	$probsubmit2 = $('#probsubmit2')
-,	$rejudge = $('#rejudge');
+,	$rejudge = $('#rejudge')
+,	ProblemCache = {};
 
 function ProblemsResponse(prob) {
-	if (!problemAjax || !prob || !isActive(1)) return ;
+	if (!problemAjax || !isActive(1)) return ;
+	if (prob) {
+		ProblemCache[ID] = prob;
+	} else {
+		if (!ProblemCache[ID]) return ;
+		prob = ProblemCache[ID];
+	}
 	function getTitle(i) {
 		return alias[i] ? alias[i] : prob.title;
 	}
@@ -370,7 +377,8 @@ function GetProblem() {
 			data: {
 				cid: cid,
 				pid: pids[ID],
-				all: true
+				all: true,
+				lastmodified: ProblemCache[ID] ? ProblemCache[ID].lastmodified : null
 			},
 			timeout: 5000,
 			error: function() {

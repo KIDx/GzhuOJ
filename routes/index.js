@@ -999,6 +999,10 @@ exports.getProblem = function(req, res) {
         (new Date()).getTime() < (new Date(con.startTime)).getTime())) {
         return res.end();
       }
+      var lm = parseInt(req.body.lastmodified, 10);
+      if (lm && lm == problem.lastmodified) {   //problem cache is ok.
+        return res.end();
+      }
       return res.json(problem);
     });
   });
@@ -1831,19 +1835,20 @@ exports.doAddproblem = function(req, res) {
     if (!easy) easy = 0;
     Problem.update(pid, {$set: {
       title: title,
-      description: req.body.Description,
-      input: req.body.Input,
-      output: req.body.Output,
-      sampleInput: req.body.sInput,
-      sampleOutput: req.body.sOutput,
-      hint: req.body.Hint,
+      description: String(req.body.Description),
+      input: String(req.body.Input),
+      output: String(req.body.Output),
+      sampleInput: String(req.body.sInput),
+      sampleOutput: String(req.body.sOutput),
+      hint: String(req.body.Hint),
       source: clearSpace(req.body.Source),
       spj: spj,
       timeLimit: tle,
       memoryLimit: mle,
       hide: hide,
       TC: tc,
-      easy: easy
+      easy: easy,
+      lastmodified: (new Date()).getTime()
     }}, function(err) {
       if (err) {
         OE(err);

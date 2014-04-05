@@ -1,3 +1,8 @@
+## 6.0.10 / 2014-04-05
+* problem增加lastmodified字段，onecontest缓存problem
+* onecontest的rank增加刷新按钮
+* 改善部分细节
+
 ## 6.0.9 / 2014-03-30
 * 修复了addtopic编辑内容显示源码的bug (addtopic.ejs, editproblem.ejs)
 

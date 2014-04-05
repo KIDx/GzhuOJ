@@ -64,7 +64,7 @@ module.exports = {
   topic_pageNum       : 15,
   comment_pageNum     : 20,
   root_path           : __dirname+'/',
-  data_path           : __dirname+'/Data/',
+  data_path           : __dirname+'/data/',
   College             : College,
   CollegeShort        : CollegeShort,
   T: Tag,

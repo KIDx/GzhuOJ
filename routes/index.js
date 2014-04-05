@@ -984,12 +984,16 @@ exports.getProblem = function(req, res) {
       return res.end(); //not allow
     }
     var cid = parseInt(req.body.cid, 10);
+
+    //get problem title for addcontest page
     if (!cid) {
       if (problem.hide == true && name != 'admin' && name != problem.manager) {
         return res.end();
       }
       return res.end(problem.title);
     }
+
+    //get a problem for onecontest page
     Contest.watch(cid, function(err, con){
       if (err) {
         OE(err);

@@ -377,7 +377,6 @@ function GetProblem() {
 			data: {
 				cid: cid,
 				pid: pids[ID],
-				all: true,
 				lastmodified: ProblemCache[ID] ? ProblemCache[ID].lastmodified : null
 			},
 			timeout: 5000,

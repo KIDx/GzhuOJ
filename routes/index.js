@@ -2668,7 +2668,9 @@ exports.onecontest = function(req, res) {
                                   pageNum: contestRank_pageNum,
                                   MC: UserCol(user.privilege),
                                   MT: UserTitle(user.privilege),
-                                  Pt: Pt
+                                  Pt: Pt,
+                                  Col: Col,
+                                  Res: Res
         });
       });
     });

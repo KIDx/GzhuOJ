@@ -1,4 +1,5 @@
 <!--<html>-->
+<% var _id = [0, 1, 2, 6, 3, 4, 5, 7, 8, 9, 13, 14]; %>
 <fieldset id="widthfix">
 <% if (!contest) { %>
   <div><legend>比赛</legend></div>
@@ -226,15 +227,9 @@
                 <span class="add-on">Verdict</span>
                 <select id="result" style="width:160px;">
                   <option value="nil" selected>All</option>
-                  <option value="0">Pending</option>
-                  <option value="2">Accepted</option>
-                  <option value="6">Wrong Answer</option>
-                  <option value="4">Time Limit Exceeded</option>
-                  <option value="9">Runtime Error</option>
-                  <option value="3">Presentation Error</option>
-                  <option value="8">Compilation Error</option>
-                  <option value="5">Memory Limit Exceeded</option>
-                  <option value="7">Output Limit Exceeded</option>
+                <% _id.forEach(function(p) { %>
+                  <option class="<%= Col(p) %>" value="<%= p %>"><%= Res(p) %></option>
+                <% }); %>
                 </select>
               </div>
               <div>

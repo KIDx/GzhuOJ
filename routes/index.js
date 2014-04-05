@@ -1007,7 +1007,21 @@ exports.getProblem = function(req, res) {
       if (lm && lm == problem.lastmodified) {   //problem cache is ok.
         return res.end();
       }
-      return res.json(problem);
+      return res.json({
+        problemID: problem.problemID,
+        title: problem.title,
+        timeLimit: problem.timeLimit,
+        memoryLimit: problem.memoryLimit,
+        description: problem.description,
+        input: problem.input,
+        output: problem.output,
+        sampleInput: problem.sampleInput,
+        sampleOutput: problem.sampleOutput,
+        hint: problem.hint,
+        spj: problem.spj,
+        TC: problem.TC,
+        lastmodified: problem.lastmodified
+      });
     });
   });
 };

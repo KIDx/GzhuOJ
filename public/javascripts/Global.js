@@ -176,7 +176,6 @@ var $tablebg = $('div.tablebg');
 var $sverdict = $('span#verdict');
 
 function calTime(startTime, endTime) {
-    startTime = startTime.replace(/-/g, '/');
     endTime = endTime.replace(/-/g, '/');
     var st = new Date(startTime), et = new Date(endTime);
     var res = (et.getTime()-st.getTime())/1000;

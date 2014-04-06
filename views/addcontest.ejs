@@ -1,7 +1,7 @@
 <!--<html>-->
 <% var F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", ProbNum = 1; %>
 <% var str, time, cday, chour, cmin, name, tp; %>
-<% if (contest && clone == 0) { str = contest.startTime.split(' '); cday = parseInt(contest.len/1440); chour = parseInt(contest.len%1440/60); cmin = contest.len%1440%60; } %>
+<% if (contest && clone == 0) { str = startTime.split(' '); cday = parseInt(contest.len/1440); chour = parseInt(contest.len%1440/60); cmin = contest.len%1440%60; } %>
 <% if (str && str[1]) time = str[1].split(':'); %>
 
 <% if (contest && clone == 0) { name = 'Edit'; } else { name = 'Add'; } %>

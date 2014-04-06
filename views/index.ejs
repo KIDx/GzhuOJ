@@ -39,7 +39,7 @@
 					<li>
 						<img class="icon" src="/img/arrow.png"/>
 					<% if (i < B.length) { %>
-						<% var pass = now - get(B[i].startTime); %>
+						<% var pass = now - B[i].startTime; %>
 						<% if (pass < 0) { %>
 						<span class="fr text-info">即将开始，敬请期待</span>
 						<a href="/onecontest/<%= B[i].contestID %>"><%= B[i].title %></a>

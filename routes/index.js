@@ -123,16 +123,7 @@ function deal(str) {
 }
 
 function calDate(startTime, len) {
-  var str = startTime.split(' ');
-  var date = str[0].split('-');
-  var time = str[1].split(':');
-  var Y = date[0], M = date[1], D = date[2];
-  var h = time[0], m = time[1];
-  var newdate = new Date();
-  newdate.setFullYear(Y); newdate.setMonth(M-1); newdate.setDate(D);
-  newdate.setHours(h); newdate.setMinutes(m); newdate.setSeconds(0); newdate.setMilliseconds(0);
-  newdate.setTime(newdate.getTime() + len*60000);
-  return getDate(newdate);
+  return getDate(new Date((new Date(startTime)).getTime()+len*60000));
 }
 
 function CheckEscape(ch) {
@@ -320,7 +311,7 @@ exports.updateStatus = function(req, res) {
         return res.end();   //not allow
       }
       if (name == contest.userName ||
-        (new Date()).getTime() - (new Date(contest.startTime)).getTime() > contest.len*60000) {
+        (new Date()).getTime() - contest.startTime > contest.len*60000) {
         return RP(0);
       }
       return RP(1);
@@ -438,7 +429,7 @@ exports.getStatus = function(req, res) {
         solutions.forEach(function(p, i){
           var T = '', M = '', L = '';
           if (name == p.userName || name == contest.userName ||
-              (new Date()).getTime() - (new Date(contest.startTime)).getTime() > contest.len*60000) {
+              (new Date()).getTime() - contest.startTime > contest.len*60000) {
             T = p.time; M = p.memory; L = p.length;
           }
           sols.push({
@@ -581,7 +572,7 @@ exports.getRanklist = function(req, res) {
         return RP(con);
       });
     } else {
-      var indate = {$gte: (new Date(contest.startTime)).getTime(), $lte: (new Date(contest.startTime)).getTime()+contest.len*60000};
+      var indate = {$gte: contest.startTime, $lte: contest.startTime+contest.len*60000};
       var Q = {
         cID: cid,
         $nor: [{userName:'admin'}],
@@ -1000,7 +991,7 @@ exports.getProblem = function(req, res) {
         return res.end();
       }
       if (!con || (name != con.userName && name != 'admin' &&
-        (new Date()).getTime() < (new Date(con.startTime)).getTime())) {
+        (new Date()).getTime() < con.startTime)) {
         return res.end();
       }
       var lm = parseInt(req.body.lastmodified, 10);
@@ -2331,6 +2322,7 @@ exports.addcontest = function(req, res) {
                               contest: C,
                               key: 1002,
                               date: getDate(new Date()).split(' ')[0],
+                              startTime: getDate(new Date(C.startTime)),
                               clone: clone,
                               type: type,
                               edit: E,
@@ -2370,7 +2362,7 @@ exports.addcontest = function(req, res) {
         return res.redirect('/onecontest/'+cid);
       }
       if (clone == 1 && name != contest.userName && name != 'admin') {
-        if ((new Date()).getTime() - (new Date(contest.startTime)).getTime() < contest.len*60000) {
+        if ((new Date()).getTime() - contest.startTime < contest.len*60000) {
           return res.end();   //not allow
         }
       }
@@ -2462,7 +2454,7 @@ exports.doAddcontest = function(req, res) {
   }
   var alias = req.body.alias ? req.body.alias : {}
   , RP = function(ary) {
-    var startTime = date+' '+hour+':'+min
+    var startTime = (new Date(date+' '+hour+':'+min)).getTime()
     ,   len = dd*1440 + hh*60 + mm
     ,   cid = parseInt(req.body.cid, 10);
     if (cid) {
@@ -2758,7 +2750,7 @@ exports.contest = function(req, res) {
       }
       contests.forEach(function(p, i){
         names.push(p.userName);
-        T.push((new Date(p.startTime)).getTime()-now);
+        T.push(p.startTime-now);
         if (req.session.user && IsRegCon(p.contestants, req.session.user.name))
           R[i] = true;
       });
@@ -2782,6 +2774,7 @@ exports.contest = function(req, res) {
                               key: 6,
                               type: type,
                               contests: contests,
+                              getDate: getDate,
                               n: n,
                               search: search,
                               page: page,
@@ -3824,7 +3817,7 @@ exports.regCon = function(req, res) {
           });
         }
         var left, now = (new Date()).getTime();
-        left = (new Date(C.startTime)).getTime() - now - 300000;
+        left = C.startTime - now - 300000;
         res.render('regform', { title: 'Register Form',
                                 user: req.session.user,
                                 time: now,
@@ -3898,7 +3891,7 @@ exports.contestReg = function(req, res) {
     if (!contest || contest.type != 2 || contest.password) {
       return res.end();   //not allow
     }
-    if ((new Date(contest.startTime)).getTime() - (new Date()).getTime() < 300000) {
+    if (contest.startTime - (new Date()).getTime() < 300000) {
       return res.end('3');
     }
     regContestAndUpdate(cid, req.session.user.name, function(err){

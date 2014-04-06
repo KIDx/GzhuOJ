@@ -24,7 +24,7 @@ var contestObj = new Schema({
   contestID: {type: Number, index: {unique: true}},
   userName: String,
   title: String,
-  startTime: String,
+  startTime: Number,
   len: Number,
   description: String,
   msg: String,

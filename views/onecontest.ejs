@@ -8,7 +8,7 @@
   </div>
 <% } else { %>
   <% var F = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", probNum = 0; %>
-  <% var startTime = (new Date(contest.startTime)).getTime() %>
+  <% var startTime = contest.startTime %>
   <% var pending = parseInt((startTime - time)/1000, 10); %>
   <% var c = '', s = '', ts, ps = '', display = '0'; %>
   <% if (pending > 0) { %>
@@ -96,7 +96,7 @@
             </tr>
             <tr>
               <th>Start Time:</th>
-              <td class="bold user-gray"><%= contest.startTime %>:00</td>
+              <td class="bold user-gray"><%= getDate(new Date(startTime)) %></td>
               <th>Contest Status:</th>
               <td class="bold <%= c %>-text"><%= s %></td>
             </tr>

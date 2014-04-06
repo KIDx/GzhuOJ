@@ -175,13 +175,6 @@ var $tablebg = $('div.tablebg');
 
 var $sverdict = $('span#verdict');
 
-function calTime(startTime, endTime) {
-    endTime = endTime.replace(/-/g, '/');
-    var st = new Date(startTime), et = new Date(endTime);
-    var res = (et.getTime()-st.getTime())/1000;
-    return parseInt(res, 10);
-}
-
 function deal(times) {
     var n = parseInt(times, 10);
     if (n != n) return '';

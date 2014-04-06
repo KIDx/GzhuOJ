@@ -1,3 +1,8 @@
+## 6.0.11 / 2014-04-06
+* solution字段inDate数据类型改为Number
+* contest字段startTime数据类型改为Number
+* 修改getDate函数，增加其易用性
+
 ## 6.0.10 / 2014-04-05
 * problem增加lastmodified字段，onecontest缓存problem
 * onecontest的rank增加刷新按钮

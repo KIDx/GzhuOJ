@@ -1,10 +1,14 @@
 
 function addZero(n) {
+    n = parseInt(n, 10);
+    if (n != n) return '';
     return (n < 10 ? '0' : '')+n;
 }
 
-var getDate = function(date) {
-  return date.getFullYear()+'-'+addZero(date.getMonth()+1)+'-'+addZero(date.getDate())+' '+addZero(date.getHours())+':'+addZero(date.getMinutes())+':'+addZero(date.getSeconds());
+function getDate(s) {
+    var date = s ? new Date(s) : new Date();
+    if (!date) return '';
+    return date.getFullYear()+'-'+addZero(date.getMonth()+1)+'-'+addZero(date.getDate())+' '+addZero(date.getHours())+':'+addZero(date.getMinutes())+':'+addZero(date.getSeconds());
 }
 
 var Tag = ['','beginner','brute force','binary search','ternary search','constructive',
@@ -40,8 +44,9 @@ function getpos() {
 module.exports = {
   outputErr: function(err) {
     console.log(err);
-    errlog.write(getDate(new Date())+' ['+getpos()+']\n'+err+'\n\n');
+    errlog.write(getDate()+' ['+getpos()+']\n'+err+'\n\n');
   },
+  addZero: addZero,
   getDate: getDate,
   cookie_secret: 'gzhu',
   db: 'gzhu_db',

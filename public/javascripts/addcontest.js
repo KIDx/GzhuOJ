@@ -6,7 +6,7 @@ var $addcontest = $('#addcontest')
 
 $(document).ready(function() {
 	var date = $date.val();
-	if (!date) date = getDate(new Date()).split(' ')[0];
+	if (!date) date = getDate().split(' ')[0];
 	$date.Zebra_DatePicker({
 		show_icon	: false,
 		offset		: [-20,270]

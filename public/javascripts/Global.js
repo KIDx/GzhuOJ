@@ -234,18 +234,16 @@ function JudgeString(s) {
     return drim(trim(s));
 }
 
-function getDate(date) {
-  return date.getFullYear()+'-'+addZero(date.getMonth()+1)+'-'+addZero(date.getDate())+' '+addZero(date.getHours())+':'+addZero(date.getMinutes());
-}
-
-function getDateEx(date) {
-    return getDate(date)+':'+addZero(date.getSeconds());
+function getDate(s, hasSec) {
+    var date = s ? new Date(s) : new Date();
+    if (!date) return '';
+    var res = date.getFullYear()+'-'+addZero(date.getMonth()+1)+'-'+addZero(date.getDate())+' '+addZero(date.getHours())+':'+addZero(date.getMinutes());
+    if (hasSec) res += ':'+addZero(date.getSeconds());
+    return res;
 }
 
 function SetCurrentTime() {
-    var date = new Date();
-    date.setTime(curren_second);
-    current_time = getDateEx(date);
+    current_time = getDate(curren_second, true);
     $footTime.text(current_time);
     if ($contest_current.length) {
         $contest_current.text(current_time);

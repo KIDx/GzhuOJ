@@ -96,13 +96,13 @@
             </tr>
             <tr>
               <th>Start Time:</th>
-              <td class="bold user-gray"><%= getDate(new Date(startTime)) %></td>
+              <td class="bold user-gray"><%= getDate(startTime) %></td>
               <th>Contest Status:</th>
               <td class="bold <%= c %>-text"><%= s %></td>
             </tr>
             <tr>
               <th>End Time:</th>
-              <td class="bold user-gray"><%= getDate(new Date(startTime+contest.len*60000)) %></td>
+              <td class="bold user-gray"><%= getDate(startTime+contest.len*60000) %></td>
               <th>Manager:</th>
               <td>
                 <a class="user user-<%= MC %>" title="<%= MT %>" href="/user/<%= contest.userName %>">

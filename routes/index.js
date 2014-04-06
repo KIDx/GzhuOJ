@@ -83,6 +83,7 @@ var settings = require('../settings')
 ,   College = settings.College
 ,   CollegeShort = settings.CollegeShort
 ,   OE = settings.outputErr
+,   addZero = settings.addZero
 ,   getDate = settings.getDate
 ,   easy_tips = settings.easy_tips;
 
@@ -116,14 +117,8 @@ function isUsername(s) {
   return (new RegExp("^[a-zA-Z0-9_]{2,15}$")).test(s);
 }
 
-function deal(str) {
-  var n = parseInt(str, 10);
-  if (n < 10) return '0'+n;
-  return n;
-}
-
 function calDate(startTime, len) {
-  return getDate(new Date((new Date(startTime)).getTime()+len*60000));
+  return getDate((new Date(startTime)).getTime()+len*60000);
 }
 
 function CheckEscape(ch) {
@@ -212,31 +207,16 @@ function getAboutTime(n) {
 function getTime(n) {
   n = parseInt(n, 10);
   if (!n) return '';
-  var date = new Date(n);
+  var date = new Date(n)
+  ,   RP = addZero(date.getMonth()+1)+'-'+addZero(date.getDate())+' '+addZero(date.getHours())+':'+addZero(date.getMinutes());
   n = (new Date()).getTime() - n
   var y = (new Date()).getFullYear() - date.getFullYear();
   if (y > 0) {
-    var M = date.getMonth()+1;
-    if (M < 10) M = '0' + M;
-    var D = date.getDate();
-    if (D < 10) D = '0' + D;
-    var h = date.getHours();
-    if (h < 10) h = '0' + h;
-    var m = date.getMinutes();
-    if (m < 10) m = '0' + m;
-    return (date.getFullYear()+'-'+M+'-'+D+' '+h+':'+m);
+    return date.getFullYear()+'-'+RP;
   }
   var d = Math.floor(n/86400000);
   if (d > 0) {
-    var M = date.getMonth()+1;
-    if (M < 10) M = '0' + M;
-    var D = date.getDate();
-    if (D < 10) D = '0' + D;
-    var h = date.getHours();
-    if (h < 10) h = '0' + h;
-    var m = date.getMinutes();
-    if (m < 10) m = '0' + m;
-    return (M+'-'+D+' '+h+':'+m);
+    return RP;
   }
   var h = Math.floor(n/3600000);
   if (h > 0) {
@@ -2320,9 +2300,9 @@ exports.addcontest = function(req, res) {
                               user: req.session.user,
                               time: (new Date()).getTime(),
                               contest: C,
+                              getDate: getDate,
                               key: 1002,
-                              date: getDate(new Date()).split(' ')[0],
-                              startTime: getDate(new Date(C.startTime)),
+                              date: getDate().split(' ')[0],
                               clone: clone,
                               type: type,
                               edit: E,
@@ -2411,8 +2391,8 @@ exports.doAddcontest = function(req, res) {
   var psw = ''
   ,   title = clearSpace(req.body.title)
   ,   date = clearSpace(req.body.date)
-  ,   hour = deal(req.body.hour)
-  ,   min = deal(req.body.min)
+  ,   hour = addZero(req.body.hour)
+  ,   min = addZero(req.body.min)
   ,   dd = parseInt(req.body.dd, 10)
   ,   hh = parseInt(req.body.hh, 10)
   ,   mm = parseInt(req.body.mm, 10)
@@ -3818,6 +3798,7 @@ exports.regCon = function(req, res) {
         }
         var left, now = (new Date()).getTime();
         left = C.startTime - now - 300000;
+        console.log(left);
         res.render('regform', { title: 'Register Form',
                                 user: req.session.user,
                                 time: now,
@@ -3936,7 +3917,7 @@ exports.doRegCon = function(req, res) {
         req.session.msg = '您已通过审核，无需修改。';
         return res.end();
       }
-      reg.regTime = getDate(new Date());
+      reg.regTime = getDate();
       reg.number = number;
       reg.realname = realname;
       reg.sex = sex;
@@ -3958,7 +3939,7 @@ exports.doRegCon = function(req, res) {
           regID: id,
           cid: cid,
           user: name,
-          regTime: getDate(new Date()),
+          regTime: getDate(),
           number: number,
           realname: realname,
           sex: sex,

@@ -1,6 +1,6 @@
 <!--<html>-->
 <% var pvl = false; %>
-<% if (user && user.privilege && parseInt(user.privilege) > 80) { pvl = true; } %>
+<% if (user && user.privilege && parseInt(user.privilege, 10) > 80) { pvl = true; } %>
 <fieldset>
   <div>
     <legend id="regform" type="<%= type %>">报名列表</legend>

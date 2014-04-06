@@ -112,7 +112,7 @@
               <a href="/sourcecode/<%= p.runID %>"><%= lan[p.language] %></a>
             </td>
             <td><%- len %></td>
-            <td><%= getDate(new Date(p.inDate)) %></td>
+            <td><%= getDate(p.inDate) %></td>
           </tr>
           <% }); %>
         <% } %>

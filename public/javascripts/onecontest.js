@@ -127,7 +127,7 @@ function buildRow(sol) {
 		tpstr = tmp;
 	}
 	html += '<td>'+tpstr+'</td>';
-	html += '<td>'+getDateEx(new Date(sol.inDate))+'</td>';
+	html += '<td>'+getDate(sol.inDate, true)+'</td>';
 	html += '</tr>';
 	return html;
 }

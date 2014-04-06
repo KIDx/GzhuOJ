@@ -27,7 +27,7 @@ app.use(partials());
 
 app.use(express.logger('dev'));
 
-app.use(express.compress()); //使用gzip进行压缩传输
+app.use(express.compress()); 		//gzip压缩传输
 app.use(express.bodyParser());
 app.use(express.methodOverride());
 

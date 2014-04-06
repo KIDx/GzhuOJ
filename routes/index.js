@@ -2302,7 +2302,6 @@ exports.addcontest = function(req, res) {
                               contest: C,
                               getDate: getDate,
                               key: 1002,
-                              date: getDate().split(' ')[0],
                               clone: clone,
                               type: type,
                               edit: E,

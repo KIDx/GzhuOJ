@@ -95,6 +95,10 @@ function simulateClick($input, $btn) {
     });
 }
 
+function addZero(n) {
+    return (n < 10 ? '0' : '')+n;
+}
+
 var CE = {};
 var $CE;
 
@@ -180,15 +184,15 @@ function calTime(startTime, endTime) {
 }
 
 function deal(times) {
-    var h = parseInt(times/3600, 10);
-    if (h < 10) h = '0' + h;
-    var m = parseInt(times%3600/60, 10);
-    if (m < 10) m = '0' + m;
+    var n = parseInt(times, 10);
+    if (n != n) return '';
+    var h = addZero(parseInt(n/3600, 10))
+    ,   m = addZero(parseInt(n%3600/60, 10))
+    ,   s = addZero(parseInt(n%3600%60, 10));
     var key = arguments[1] ? arguments[1] : 0;
-    if (key == 1)   //onecontest.js-standings
+    if (key == 1) {   //onecontest.js-standings
         return (h+':'+m);
-    var s = parseInt(times%3600%60, 10);
-    if (s < 10) s = '0' + s;
+    }
     var res;
     if (h >= 24) {
         var day = parseInt(h/24, 10);
@@ -236,10 +240,6 @@ function drim(s) {
 //return a string without no unuseful space
 function JudgeString(s) {
     return drim(trim(s));
-}
-
-function addZero(n) {
-    return (n < 10 ? '0' : '')+n;
 }
 
 function getDate(date) {

@@ -116,7 +116,7 @@
                   <td><%= p.memory %> KB</td>
                   <td><%= p.length %> B</td>
                   <td><a href="/sourcecode/<%= p.runID %>"><%= lan[p.language] %></a></td>
-                  <td><%= p.inDate %></td>
+                  <td><%= getDate(new Date(p.inDate)) %></td>
                 </tr>
                 <% }); %>
               <% } %>

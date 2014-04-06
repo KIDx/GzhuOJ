@@ -581,7 +581,7 @@ exports.getRanklist = function(req, res) {
         return RP(con);
       });
     } else {
-      var indate = {$gte: contest.startTime+':00', $lte: calDate(contest.startTime, contest.len)};
+      var indate = {$gte: (new Date(contest.startTime)).getTime(), $lte: (new Date(contest.startTime)).getTime()+contest.len*60000};
       var Q = {
         cID: cid,
         $nor: [{userName:'admin'}],
@@ -614,7 +614,7 @@ exports.getRanklist = function(req, res) {
               var val = { solved:0, penalty:0, status:{} };
               if (this.result == 2) {
                 val.solved = 1;
-                val.penalty = parseInt((new Date(this.inDate)).getTime()/60000, 10);
+                val.penalty = this.inDate;
                 val.status[this.problemID] = {wa: 0, inDate: val.penalty};
               } else {
                 val.status[this.problemID] = {wa: -1};
@@ -631,7 +631,7 @@ exports.getRanklist = function(req, res) {
                     if (!val.status[i]) {
                       if (o.wa >= 0) {
                         val.solved++;
-                        val.penalty += o.wa*20 + o.inDate;
+                        val.penalty += o.wa*1200000 + o.inDate;
                       }
                       val.status[i] = o;
                     } else if (val.status[i].wa < 0) {
@@ -639,7 +639,7 @@ exports.getRanklist = function(req, res) {
                         val.solved++;
                         val.status[i].wa = o.wa - val.status[i].wa;
                         val.status[i].inDate = o.inDate;
-                        val.penalty += val.status[i].wa*20 + o.inDate;
+                        val.penalty += val.status[i].wa*1200000 + o.inDate;
                       } else {
                         val.status[i].wa += o.wa;
                       }
@@ -1318,7 +1318,7 @@ exports.upload = function(req, res) {
               runID: id,
               problemID: pid,
               userName: name,
-              inDate: getDate(new Date()),
+              inDate: (new Date()).getTime(),
               language: req.body.lang,
               length: str.length,
               cID: -1,
@@ -2298,6 +2298,7 @@ exports.status = function(req, res) {
                             key: 4,
                             n: n,
                             sols: sols,
+                            getDate: getDate,
                             name: name,
                             pid: pid,
                             result: result,
@@ -3532,7 +3533,7 @@ exports.doSubmit = function(req, res) {
         runID: id,
         problemID: pid,
         userName: name,
-        inDate: getDate(new Date()),
+        inDate: (new Date()).getTime(),
         language: parseInt(lang, 10),
         length: Str.length,
         cID: cid,
@@ -3613,6 +3614,7 @@ exports.sourcecode = function(req, res) {
                                 time: (new Date()).getTime(),
                                 key: 11,
                                 solution: solution,
+                                getDate: getDate,
                                 flg: flg,
                                 Res: Res
       });
@@ -3758,6 +3760,7 @@ exports.statistic = function(req, res) {
                                       key: 1,
                                       pid: pid,
                                       sols: sols,
+                                      getDate: getDate,
                                       N: N,
                                       Res: Res,
                                       page: page,

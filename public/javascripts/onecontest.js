@@ -127,7 +127,7 @@ function buildRow(sol) {
 		tpstr = tmp;
 	}
 	html += '<td>'+tpstr+'</td>';
-	html += '<td>'+sol.inDate+'</td>';
+	html += '<td>'+getDateEx(new Date(sol.inDate))+'</td>';
 	html += '</tr>';
 	return html;
 }
@@ -449,7 +449,7 @@ function buildRank(U) {
 		html += '<span title="'+I[U.name]+'" class="u-info user-gray ellipsis">'+I[U.name]+'</span>';
 	}
 	html += '</td><td>'+user.solved+'</td>';
-	html += '<td>'+(user.penalty-user.solved*startTime)+'</td>';
+	html += '<td>'+parseInt((user.penalty-user.solved*startTime)/60000, 10)+'</td>';
 	
 	for (i = 0; i < prob_num; i++) {
 		var pid = fmap[F.charAt(i)];
@@ -467,7 +467,7 @@ function buildRank(U) {
 				html += '<span class="'+style+'">+';
 				if (WA > 0) html += WA;
 				html += '</span>';
-				html += '<span class="'+pt+'">'+deal((user.status[pid].inDate-startTime)*60, 1)+'</span>';
+				html += '<span class="'+pt+'">'+deal((user.status[pid].inDate-startTime)/1000, 1)+'</span>';
 			} else if (WA < 0) {
 				html += '><span class="failed">'+WA+'</span>';
 			}

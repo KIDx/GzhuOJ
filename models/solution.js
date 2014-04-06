@@ -31,7 +31,7 @@ var solutionObj = new Schema({
   runID: {type: Number, index: {unique: true}},
   problemID: Number,
   userName: String,
-  inDate: String,
+  inDate: Number,
   result: Number,
   language: Number,
   length: Number,

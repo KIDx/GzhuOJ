@@ -6,7 +6,8 @@ var express = require('express')
 ,	http = require('http')
 ,	path = require('path')
 ,	partials = require('express-partials')
-,	MongoStore = require('connect-mongo')(express)
+,	session = require('express-session')
+,	MongoStore = require('connect-mongo')(session)
 ,	settings = require('./settings')
 ,	OE = settings.outputErr
 ,	app = express()
@@ -14,7 +15,7 @@ var express = require('express')
 ,	io = require('socket.io').listen(server)
 ,	fs = require('fs')
 ,	cookie = require('express/node_modules/cookie')
-,	utils = require('express/node_modules/connect/lib/utils')
+,	utils = require('connect/lib/utils')
 ,	sessionStore = new MongoStore({ db : settings.db })
 ,	Contest = require('./models/contest.js');
 
@@ -25,22 +26,20 @@ app.set('view engine', 'ejs');
 
 app.use(partials());
 
-app.use(express.logger('dev'));
+app.use(require('morgan')('dev'));
 
-app.use(express.compress()); 		//gzip压缩传输
-app.use(express.bodyParser());
-app.use(express.methodOverride());
+app.use(require('body-parser')());
+app.use(require('compression')()); 		//gzip压缩传输
+app.use(require('method-override')());
 
-app.use(express.cookieParser());
-
-app.use(express.session({
+app.use(require('cookie-parser')());
+app.use(session({
 	secret: settings.cookie_secret,
 	store: sessionStore
 }));
 
 app.use(express.static(__dirname+'/public', {maxAge: 259200000}));	//使用静态资源服务以及设置缓存(三天)
-app.use(express.favicon(__dirname+'/public/favicon.ico', {maxAge: 2592000000}));
-app.use(app.router);
+app.use(require('static-favicon')(__dirname+'/public/favicon.ico', {maxAge: 2592000000}));
 
 //#####server response
 //主页

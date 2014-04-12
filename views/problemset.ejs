@@ -58,7 +58,7 @@
             <td>
             <% if (p.tags && p.tags.length > 0) { %>
               <div class="table-tab prob-tag">
-              <% p.tags.sort().forEach(function(t, i){ %>
+              <% p.tags.sort(function(a, b){return a-b;}).forEach(function(t, i){ %>
                 <% if (i > 0) { %>,<% } %>
                 <a class="tag" href="javascript:;" title="<%= Pt[t] %>">
                   <%= Tag[t] %>

@@ -75,7 +75,7 @@
         <div class="side-header">→ Problem tags</div>
         <div style="padding:.5em;">
         <% if (problem.tags && problem.tags.length) { %>
-          <% problem.tags.sort().forEach(function(p){ %>
+          <% problem.tags.sort(function(a, b){return a-b;}).forEach(function(p){ %>
           <div class="tag-box" title="<%= PT[p] %>">
             <%= Tag[p] %>
             <% if(pvl == 1) { %><span class="del" tag="<%= p %>">×</span><% } %>

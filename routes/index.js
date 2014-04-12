@@ -156,15 +156,6 @@ function IsRegCon(s, name) {
   return false;
 }
 
-function doIconv(data) {
-  var str = data.toString();
-  if(str.indexOf('�') != -1){
-    var gbk_to_utf8 = new Iconv('GBK', 'UTF8');
-    str = gbk_to_utf8.convert(data).toString();
-  }
-  return str;
-}
-
 function gao(n, type) {
   if (n == 1) {
     if (type == 'hour')
@@ -1284,7 +1275,7 @@ exports.upload = function(req, res) {
               OE(err);
               return res.end('3');
             }
-            var str = doIconv(data);
+            var str = String(data);
             var newSolution = new Solution({
               runID: id,
               problemID: pid,
@@ -1388,7 +1379,6 @@ exports.rejudge = function(req, res) {
                   OE(err);
                   return res.end();
                 }
-                console.log(cids);
                 Contest.multiUpdate({contestID: {$in: cids}}, {$set: {maxRunID: 0, updateTime: 0}}, function(err){
                   if (err) {
                     OE(err);
@@ -1690,7 +1680,6 @@ exports.avatarUpload = function(req, res) {
 
 exports.csvUpload = function(req, res) {
   res.header('Content-Type', 'text/plain');
-  console.log(req);
   if (!req.files || !req.files.csv) {
     return res.end();   //not allow
   }
@@ -3501,7 +3490,6 @@ exports.doSubmit = function(req, res) {
         OE(err);
         return res.end('3');
       }
-      Str = doIconv(Str);
       var newSolution = new Solution({
         runID: id,
         problemID: pid,
@@ -3798,7 +3786,6 @@ exports.regCon = function(req, res) {
         }
         var left, now = (new Date()).getTime();
         left = C.startTime - now - 300000;
-        console.log(left);
         res.render('regform', { title: 'Register Form',
                                 user: req.session.user,
                                 time: now,

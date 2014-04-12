@@ -15,6 +15,7 @@
     "compression": "*",
     "morgan": "*",
     "body-parser": "*",
+    "multer": "*",
     "cookie-parser": "*",
     "method-override": "*",
     "static-favicon": "*",

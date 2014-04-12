@@ -29,6 +29,9 @@ app.use(partials());
 app.use(require('morgan')('dev'));
 
 app.use(require('body-parser')());
+app.use(require('multer')({
+	dest: './uploads/'
+}));
 app.use(require('compression')()); 		//gzip压缩传输
 app.use(require('method-override')());
 

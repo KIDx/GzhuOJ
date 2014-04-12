@@ -1611,9 +1611,10 @@ exports.avatarUpload = function(req, res) {
   if (!req.files || !req.files.img) {
     return res.end();   //not allow
   }
+  console.log(req.files.img);
   var path = req.files.img.path
   ,   sz = req.files.img.size
-  ,   tmp = req.files.img.type.split('/')
+  ,   tmp = req.files.img.mimetype.split('/')
   ,   imgType = tmp[1];
   if (sz > 2*1024*1024) {
     fs.unlink(path, function(){  //fs.unlink 删除用户上传的文件
@@ -1690,6 +1691,7 @@ exports.avatarUpload = function(req, res) {
 
 exports.csvUpload = function(req, res) {
   res.header('Content-Type', 'text/plain');
+  console.log(req);
   if (!req.files || !req.files.csv) {
     return res.end();   //not allow
   }
@@ -1887,7 +1889,7 @@ exports.imgUpload = function(req, res) {
     fs.unlink(path, function() {
       return res.end('1');
     });
-  } else if (req.files.info.type.split('/')[0] != 'image') {
+  } else if (req.files.info.mimetype.split('/')[0] != 'image') {
     fs.unlink(path, function() {
       return res.end('2');
     });

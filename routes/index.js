@@ -1611,7 +1611,6 @@ exports.avatarUpload = function(req, res) {
   if (!req.files || !req.files.img) {
     return res.end();   //not allow
   }
-  console.log(req.files.img);
   var path = req.files.img.path
   ,   sz = req.files.img.size
   ,   tmp = req.files.img.mimetype.split('/')

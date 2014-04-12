@@ -1,3 +1,9 @@
+## 6.0.12 / 2014-04-12
+* 修复contest那边rejudge后不能跳转的bug
+* problem和problemset页面的标签先按大小sort一下再显示
+* 为了可靠性和性能，提交代码后不使用iconv转码
+* 所有相关模块更新至"express 4.x"
+
 ## 6.0.11 / 2014-04-06
 * solution字段inDate数据类型改为Number
 * contest字段startTime数据类型改为Number

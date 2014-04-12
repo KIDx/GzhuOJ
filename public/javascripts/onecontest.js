@@ -341,10 +341,11 @@ function ShowProblem(prob) {
 			}
 			$(this).addClass('disabled');
 			$.post('/rejudge', {pid:prob.problemID, cid:'1'}, function(res){
-				$pid.val(F.charAt(ID));
 				if (res == '0') ShowMessage('Failed! You have no permission to Rejudge.');
-				else if (res == '1') ShowMessage('Problem '+F.charAt(ID)+' has been Rejudged successfully!');
-				$tablink.eq(2).click();
+				else if (res == '1') {
+					ShowMessage('Problem '+F.charAt(ID)+' has been Rejudged successfully!');
+					window.location.hash = '#status--'+F.charAt(ID);
+				}
 				$rejudge.removeClass('disabled');
 			});
 		});

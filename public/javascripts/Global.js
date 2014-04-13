@@ -6,9 +6,8 @@
 
 //使模态对话框居中
 $(document).ready(function(){
-    var w = document.body.clientWidth;
     $.each($('.jqmSubmit,.CeWindow'), function(){
-        $(this).css({'left': (w-parseInt($(this).css('width')))/2});
+        $(this).css({'margin-left': -parseFloat($(this).css('width'))/2});
     });
 });
 

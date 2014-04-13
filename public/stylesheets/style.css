@@ -1355,6 +1355,7 @@ table th img {
     display: none;
     width: 40%;
     top: 10%;
+    left: 50%;
     position: fixed;
     font-size: 13px;
     padding: 0;
@@ -1401,6 +1402,7 @@ table th img {
 }
 
 .jqmSubmit {
+    left: 50%;
     display: none;
     position: fixed;
     color: #333;

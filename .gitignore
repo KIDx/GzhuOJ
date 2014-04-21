@@ -1,7 +1,16 @@
 /node_modules/
+/uploads/
+
+/data/*
+
+/public/img/prob/*
+
+/public/img/avatar/*
+!/public/img/avatar/=default=
 
 ~*
 
+*.swp
 *.log
 
 !.gitignore

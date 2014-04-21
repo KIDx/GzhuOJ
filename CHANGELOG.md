@@ -1,3 +1,9 @@
+## 6.0.13 / 2014-04-21
+* 修改默认头像
+* 模态对话框居中
+* 修复上传文件自动重命名的bug
+* update gitignore
+
 ## 6.0.12 / 2014-04-12
 * 修复contest那边rejudge后不能跳转的bug
 * problem和problemset页面的标签先按大小sort一下再显示

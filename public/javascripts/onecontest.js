@@ -401,7 +401,8 @@ var $rank = $div.find('#ranktab')
 ,	rank = 1
 ,	rankTimeout
 ,	FB = {}
-,	rankAjax;
+,	rankAjax
+,	rankInterval;
 
 //deal with overflow rank table
 $(document).ready(function(){
@@ -624,6 +625,7 @@ function GetDiscuss() {
 }
 
 function run() {
+	clearInterval(rankInterval);
 	clearAjax();
 	var str = window.location.hash;
 	if (!str) str = '#overview';
@@ -659,6 +661,9 @@ function run() {
 		}
 		case '#rank': {
 			doActive(3);
+			rankInterval = setInterval(function(){
+				GetRanklist();
+			}, 10000);
 			rankQ.page = b ? parseInt(b, 10) : 1;
 			GetRanklist();
 			PreTab = 0;

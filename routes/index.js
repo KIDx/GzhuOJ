@@ -369,8 +369,8 @@ exports.getStatus = function(req, res) {
 
     result = parseInt(req.body.result, 10);
     if (result >= 0) {
-      if (result > 8 && result < 13) {
-        Q.result = {$gt:8, $lt:13};
+      if (result == 9) {
+        Q.result = { $in : [9, 10, 11, 12, 15] };
       } else {
         Q.result = result;
       }
@@ -2207,9 +2207,12 @@ exports.status = function(req, res) {
   if (pid) Q.problemID = pid;
 
   result = parseInt(req.query.result, 10);
+  if (result < 0 || result > 15) {
+    return res.redirect('/status');
+  }
   if (result >= 0) {
-    if (result > 8 && result < 13) {
-      Q.result = {$gt:8, $lt:13};
+    if (result == 9) {
+      Q.result = { $in : [9, 10, 11, 12, 15] };
     } else {
       Q.result = result;
     }

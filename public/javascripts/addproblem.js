@@ -119,9 +119,7 @@ $(document).ready(function(){
 						F.push(i.toString());
 					}
 				}
-				F.sort(function(a, b){
-					return a > b;
-				});
+				F.sort();
 				$imgcbs.remove();
 				var html = '';
 				$.each(F, function(i, p){
@@ -171,9 +169,7 @@ $(document).ready(function(){
 						F.push(i.toString());
 					}
 				}
-				F.sort(function(a, b){
-					return a > b;
-				});
+				F.sort();
 				$datacbs.remove();
 				var html = '';
 				$.each(F, function(i, p){

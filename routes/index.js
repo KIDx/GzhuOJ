@@ -1231,86 +1231,83 @@ exports.createVerifycode = function(req, res) {
 exports.upload = function(req, res) {
   res.header('Content-Type', 'text/plain');
   if (!req.files || !req.files.info) {
-    return res.end();   //not allow
+    return res.end();  //not allow
   }
-  var path = req.files.info.path;
-  var sz = req.files.info.size;
-  if (sz < 50 || sz > 65535) {
-    fs.unlink(path, function() {
-      if (sz < 50) {
-        return res.end('1');
-      } else {
-        return res.end('2');
-      }
+  var path = req.files.info.path
+  ,   sz = req.files.info.size;
+  var RP = function(s) {
+    fs.unlink(path, function(){
+      return res.end(s);
     });
-  } else {
-    fs.readFile(path, function(err, data){
+  };
+  if (!req.session.user) {
+    req.session.msg = 'Failed! Please login first!';
+    return RP('4');   //refresh!
+  }
+  var pid = parseInt(req.query.pid, 10)
+  ,   lang = parseInt(req.body.lang, 10);
+  if (!pid || !lang) {
+    return RP();      //not allow!
+  }
+  if (sz < 50) {
+    return RP('1');
+  }
+  if (sz > 65535){
+    return RP('2');
+  }
+  fs.readFile(path, function(err, data){
+    if (err) {
+      OE(err);
+      return RP('3');
+    }
+    var code = String(data);
+    Problem.watch(pid, function(err, problem){
       if (err) {
         OE(err);
-        return res.end('3');
+        return RP('3');
       }
-      fs.unlink(path, function() {
-        if (!req.body.lang) {
-          return res.end();   //not allow!
+      if (!problem) {
+        return RP();  //not allow!
+      }
+      var name = req.session.user.name;
+      IDs.get ('runID', function(err, id){
+        if (err) {
+          OE(err);
+          return RP('3');
         }
-        var pid = parseInt(req.query.pid, 10);
-        if (!pid) {
-          return res.end();   //not allow!
-        }
-        Problem.watch(pid, function(err, problem){
+        var newSolution = new Solution({
+          runID: id,
+          problemID: pid,
+          userName: name,
+          inDate: (new Date()).getTime(),
+          language: lang,
+          length: code.length,
+          cID: -1,
+          code: code
+        });
+        newSolution.save(function(err){
           if (err) {
             OE(err);
-            return res.end('3');
+            return RP('3');
           }
-          if (!problem) {
-            return res.end(); //not allow!
-          }
-          if (!req.session.user) {
-            req.session.msg = 'Failed! Please login first!';
-            return res.end('4');    //refresh!
-          }
-          var name = req.session.user.name;
-          IDs.get ('runID', function(err, id){
+          Problem.update(pid, {$inc: {submit: 1}}, function(err){
             if (err) {
               OE(err);
-              return res.end('3');
+              return RP('3');
             }
-            var str = String(data);
-            var newSolution = new Solution({
-              runID: id,
-              problemID: pid,
-              userName: name,
-              inDate: (new Date()).getTime(),
-              language: req.body.lang,
-              length: str.length,
-              cID: -1,
-              code: str
-            });
-            newSolution.save(function(err){
+            User.update({name: name}, {$inc: {submit: 1}}, function(err){
               if (err) {
                 OE(err);
-                return res.end('3');
+                return RP('3');
               }
-              Problem.update(pid, {$inc: {submit: 1}}, function(err){
-                if (err) {
-                  OE(err);
-                  return res.end('3');
-                }
-                User.update({name: name}, {$inc: {submit: 1}}, function(err){
-                  if (err) {
-                    OE(err);
-                    return res.end('3');
-                  }
-                  req.session.msg = 'The code for problem '+pid+' has been submited successfully!';
-                  return res.end();
-                });
-              });
+              req.session.msg = 'The code for problem '+pid+' has been submited successfully!';
+              return RP();
             });
           });
         });
       });
     });
-  }
+  });
 };
 
 exports.rejudge = function(req, res) {

@@ -13,7 +13,7 @@
 		<div class="topic_box">
 			<div class="header">
 				<% if (user && (user.name == 'admin' || user.name == topic.user)) { %>
-				<a style="margin-left:10px;" class="fr uibtn uibtn-mini" href="/addtopic?tid=<%= topic.id %>">&nbsp;编辑&nbsp;</a>
+				<a style="margin-left:10px;" title="编辑" class="img_link edit fr" href="/addtopic?tid=<%= topic.id %>"></a>
 				<% } %>
 				<span class="fr user user-black">浏览次数：<%= topic.browseQty %></span>
 				<a href="/topic">论坛主页</a>
@@ -32,7 +32,7 @@
 				<%- topic.content %>
 				<hr />
 				<span class="fr">Added by <a href="/user/<%= topic.user %>" title="<%= UT[topic.user] %>" class="user user-<%= UC[topic.user] %>"><%= topic.user %>.</a></span>
-				于 <span class="user-gray"><%= getDate(topic.inDate) %></span> 最后编辑
+				<span class="user-gray">最后一次编辑是 <%= getDate(topic.inDate) %></span> 
 			</div>
 		</div>
 	<% if (comments && comments.length) { %>
@@ -46,27 +46,8 @@
 			<% } else { %>
 			<% img = '/img/avatar/%3Ddefault%3D/4.jpeg'; %>
 			<% } %>
-			<div class="reply_area">
-				<div class="reply_avatar">
-					<a href="/user/<%= p.user %>">
-						<img class="img_s topic_img" title="<%= p.user %>" alt="<%= p.user %>" src="<%= img %>" />
-					</a>
-				</div>
-				<div class="reply_right">
-					<div>
-						<a href="/user/<%= p.user %>" title="<%= UT[p.user] %>" class="user user-<%= UC[p.user] %>"><%= p.user %></a>
-						<span class="user-gray fr">#<%= i+1 %></span>
-					</div>
-					<div class="reply_content">
-						<%- p.content %>
-					</div>
-					<div class="reply_foot">
-						<span class="user-gray"><%= getDate(p.inDate) %></span>
-					<% if (user && user.name != p.user) { %>
-						<a class="fr uibtn reply" fa="<%= p.id %>" at="<%= p.user %>" href="javascript:;">回复</a>
-					<% } %>
-					</div>
-				</div>
+			<div id="<%= p.id %>" class="reply_area">
+				<%- partial('comment', {isParent: true, user: user, p: p, img: img, num: i+1, getDate: getDate, UT: UT, UC: UC, cid: topic.cid}) %>
 		<% var fa = p.id; %>
 		<% if (sub[p.id] && sub[p.id].length) { %>
 			<% sub[p.id].forEach(function(p){ %>
@@ -75,29 +56,8 @@
 				<% } else { %>
 				<% img = '/img/avatar/%3Ddefault%3D/4.jpeg'; %>
 				<% } %>
-				<div class="reply_sub">
-					<div style="margin-top:5px;">
-						<div class="reply_avatar">
-							<a href="/user/<%= p.user %>">
-								<img class="img_s topic_img" title="<%= p.user %>" alt="<%= p.user %>" src="<%= img %>" />
-							</a>
-						</div>
-						<div class="reply_right">
-							<div>
-								<a href="/user/<%= p.user %>" title="<%= UT[p.user] %>" class="user user-<%= UC[p.user] %>"><%= p.user %></a>
-								<span class="user user-gray">@<%= p.at %></span>
-							</div>
-							<div class="reply_content">
-								<%- p.content %>
-							</div>
-							<div class="reply_foot">
-								<span class="user-gray"><%= getDate(p.inDate) %></span>
-							<% if (user && user.name != p.user) { %>
-								<a class="fr uibtn reply" fa="<%= fa %>" at="<%= p.user %>" href="javascript:;">回复</a>
-							<% } %>
-							</div>
-						</div>
-					</div>
+				<div id="<%= p.id %>" class="reply_sub">
+					<%- partial('comment', {isParent: false, fa: fa, user: user, p: p, img: img, num: i+1, getDate: getDate, UT: UT, UC: UC, cid: topic.cid}) %>
 				</div>
 			<% }); %>
 		<% } %>
@@ -106,7 +66,7 @@
 		</div>
 	<% } %>
 	<% if (user) { %>
-		<div class="topic_box form-horizontal">
+		<div class="topic_box form-horizontal" style="min-height:400px;">
 			<div class="header">添加回复</div>
 			<div class="inner_topic">
 				<textarea id="content"></textarea>

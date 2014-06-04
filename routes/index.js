@@ -4297,10 +4297,17 @@ exports.topic = function(req, res) {
     if (n < 0) {
       return res.redirect('/topic');
     }
-    var names = new Array(), I = {};
+    var names = new Array(), I = {}, has = {};
     if (topics) {
       topics.forEach(function(p){
-        names.push(p.user);
+        if (!has[p.user]) {
+          names.push(p.user);
+          has[p.user] = true;
+        }
+        if (p.lastReviewer && !has[p.lastReviewer]) {
+          names.push(p.lastReviewer);
+          has[p.lastReviewer] = true;
+        }
       });
     }
     User.find({name: {$in: names}}, function(err, users){
@@ -4456,22 +4463,25 @@ exports.doAddtopic = function(req, res) {
     return res.end();
   }
   var tid = parseInt(req.body.tid, 10)
-  ,   title = clearSpace(req.body.title)
-  ,   content = req.body.content        //can not do clearSpace because it is content
-  ,   name = req.session.user.name
-  ,   cid = parseInt(req.body.cid, 10);
+  ,  title = clearSpace(req.body.title)
+  ,  content = req.body.content        //can not do clearSpace because it is content
+  ,  name = req.session.user.name
+  ,  cid = parseInt(req.body.cid, 10);
   if (!title || !content || !name) {
-    return res.end();     //not allow!
+    return res.end();   //not allow!
   }
   if (!cid) {
     cid = -1;
   }
   if (tid) {
     var RP = function() {
+      var now = (new Date()).getTime();
       Topic.update(tid, {$set: {
-        title     : title,
-        content   : content,
-        inDate    : (new Date()).getTime()
+        title: title,
+        content: content,
+        inDate: now,
+        lastReviewer: null,
+        lastReviewTime: now
       }}, function(err){
         if (err) {
           OE(err);
@@ -4490,7 +4500,7 @@ exports.doAddtopic = function(req, res) {
         return res.end('2');
       }
       if (!topic) {
-        return res.end();   //not allow
+        return res.end();  //not allow
       }
       if (topic.user != name) {
         req.session.msg = '抱歉，您不是该话题的主人，无权修改！';
@@ -4501,7 +4511,7 @@ exports.doAddtopic = function(req, res) {
   } else {
     var vcode = clearSpace(req.body.vcode);
     if (!vcode) {
-      return res.end();     //not allow
+      return res.end();   //not allow
     }
     if (vcode.toLowerCase() != req.session.verifycode) {
       return res.end('1');
@@ -4512,12 +4522,12 @@ exports.doAddtopic = function(req, res) {
         return res.end('2');
       }
       (new Topic({
-        id      : id,
-        title   : title,
-        content : content,
-        cid     : cid,
-        user    : req.session.user.name,
-        inDate  : (new Date()).getTime()
+        id: id,
+        title: title,
+        content: content,
+        cid: cid,
+        user: req.session.user.name,
+        inDate: (new Date()).getTime()
       })).save(function(err){
         if (err) {
           OE(err);
@@ -4640,42 +4650,135 @@ exports.review = function(req, res) {
     return res.end();
   }
   var user = req.session.user.name
-  ,   tid = parseInt(req.body.tid, 10)
-  ,   content = req.body.content      //can not do clearSpace because it is content
-  ,   fa = parseInt(req.body.fa, 10)
-  ,   at = clearSpace(req.body.at);
+  ,  tid = parseInt(req.body.tid, 10)
+  ,  content = String(req.body.content)      //can not do clearSpace because it is content
+  ,  fa = parseInt(req.body.fa, 10)
+  ,  at = clearSpace(req.body.at);
   if (!user || !tid || !content || !fa) {
-    return res.end();     //not allow!
+    return res.end();   //not allow!
   }
   IDs.get('topicID', function(err, id){
     if (err) {
       OE(err);
-      req.session.msg = '系统错误！';
-      return res.end();
+      return res.end('3');
     }
+    var now = (new Date()).getTime();
     (new Comment({
-      id      : id,
-      content : content,
-      user    : user,
-      tid     : tid,
-      fa      : fa,
-      at      : at,
-      inDate  : (new Date()).getTime()
+      id: id,
+      content: content,
+      user: user,
+      tid: tid,
+      fa: fa,
+      at: at,
+      inDate: now
     })).save(function(err){
       if (err) {
         OE(err);
-        req.session.msg = '系统错误！';
-        return res.end();
+        return res.end('3');
       }
-      Topic.update(tid, {$inc: {reviewsQty: 1}}, function(err){
+      Topic.update(tid, {
+        $set: {lastReviewer: user, lastReviewTime: now, lastComment: id},
+        $inc: {reviewsQty: 1}
+      }, function(err){
         if (err) {
           OE(err);
-          req.session.msg = '系统错误！';
-          return res.end();
+          return res.end('3');
         }
         req.session.msg = '回复成功！';
-        return res.end(id.toString());
+        return res.end();
       });
     });
+  });
+};
+
+exports.delComment = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end();
+  }
+  var id = parseInt(req.body.id, 10);
+  if (!id) {
+    return res.end();   //not allow
+  }
+  var q = { id: id };
+  if (req.session.user.name != 'admin') {
+    q.user = req.session.user.name;
+  }
+  Comment.findOneAndRemove(q, function(err, comment){
+    if (err) {
+      OE(err);
+      return res.end('3');
+    }
+    if (!comment) {
+      return res.end();   //not allow
+    }
+    var Q = { fa: comment.id };
+    Comment.count(Q, function(err, cnt){
+      if (err) {
+        OE(err);
+        return res.end('3');
+      }
+      Comment.remove(Q, function(err){
+        if (err) {
+          OE(err);
+          return res.end('3');
+        }
+        Comment.findLast({tid: comment.tid}, function(err, com){
+          if (err) {
+            OE(err);
+            return res.end('3');
+          }
+          Topic.watch(comment.tid, function(err, topic){
+            if (err) {
+              OE(err);
+              return res.end('3');
+            }
+            var set;
+            if (com && com.inDate > topic.inDate) {
+              set = {lastReviewer: com.user, lastReviewTime: com.inDate, lastComment: com.id};
+            } else {
+              set = {lastReviewer: null, lastReviewTime: topic.inDate, lastComment: null};
+            }
+            Topic.update(comment.tid, {
+              $set: set,
+              $inc: {reviewsQty: -(cnt+1)}
+            }, function(err){
+              if (err) {
+                OE(err);
+                return res.end('3');
+              }
+              req.session.msg = '删除成功！';
+              return res.end();
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
+exports.editComment = function(req, res) {
+  res.header('Content-Type', 'text/plain');
+  if (!req.session.user) {
+    req.session.msg = '请先登录！';
+    return res.end();
+  }
+  var id = parseInt(req.body.id, 10)
+  ,   content = String(req.body.content);
+  if (!id || !content) {
+    return res.end();   //not allow
+  }
+  var Q = { id: id };
+  if (req.session.user.name != 'admin') {
+    Q.user = req.session.user.name;
+  }
+  Comment.update(Q, {$set: {content: content}}, function(err){
+    if (err) {
+      OE(err);
+      return res.end('3');
+    }
+    req.session.msg = '修改成功！';
+    return res.end();
   });
 };

@@ -301,6 +301,22 @@ a.user {
     cursor: pointer;
 }
 
+.topic_timer {
+    color: gray;
+    display: block;
+    float: right;
+    text-decoration: none!important;
+}
+
+.topic_timer > img {
+    border-radius: 2px;
+    border: 1px solid #ccc;
+}
+
+.topic_timer > span {
+    margin-left: 8px;
+}
+
 .topic_img {
     border-radius: 3px;
     border: 1px solid #ddd;
@@ -877,6 +893,12 @@ div.avatar {
 .img_s {
     width: 50px;
     height: 50px;
+}
+
+.avatar_ss .img,
+.img_ss {
+    width: 30px;
+    height: 30px;
 }
 
 .avatar_b {

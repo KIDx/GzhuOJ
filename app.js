@@ -104,10 +104,6 @@ app.get('/sourcecode/:runid', routes.sourcecode);
 app.get('/statistic/:pid', routes.statistic);
 //regform页面
 app.get('/regform/:type', routes.regCon);
-//更新日志
-app.get('/log', function(req, res){
-	res.render('log', {layout: null});
-});
 app.get('*', function(req, res){
 	res.render('404', {layout: null});
 });

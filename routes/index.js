@@ -1543,7 +1543,7 @@ exports.index = function(req, res){
             req.session.msg = '系统错误！';
             return res.redirect('/404');
           }
-          res.render('index', { title: 'ACdream Online Judge',
+          res.render('index', { title: 'Gzhu Online Judge',
                                 user: req.session.user,
                                 time: (new Date()).getTime(),
                                 key: -1,

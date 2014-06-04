@@ -100,13 +100,19 @@ var $phide = $('#phide')
 $(document).ready(function(){
 	if ($phide.length) {
 		$phide.change(function(){
-			$.post('/toggleHide', {pid: pid}, function(res){
-				if (res == '1') {
-					ShowMessage('系统错误！');
-				} else if (res == '2') {
+			$.ajax({
+				type : 'POST',
+				url : '/toggleHide',
+				data : { pid : pid },
+				dataType : 'text'
+			})
+			.done(function(res){
+				if (!res) {
 					window.location.reload(true);
+				} else if (res == '3') {
+					ShowMessage('系统错误！');
 				} else {
-					ShowMessage(success_msg);
+					ShowMessage('Problem '+pid+' has been Updated successfully!');
 				}
 			});
 		});

@@ -876,11 +876,22 @@ $(document).ready(function(){
 			}
 			$p.addClass('disabled');
 			var pid = $p.attr('pid');
-			$.post('/toggleHide', {pid: pid}, function(res){
-				if (res == '1') {
-					ShowMessage('系统错误！');
-				} else if (res == '2') {
+			$.ajax({
+				type: 'POST',
+				url: '/toggleHide',
+				data: { pid: pid },
+				dataType: 'text',
+				error: function() {
+					$p.removeClass('disabled');
+					ShowMessage('无法连接到服务器！');
+				}
+			})
+			.done(function(res){
+				if (!res) {
 					window.location.reload(true);
+					return ;
+				} else if (res == '3') {
+					ShowMessage('系统错误！');
 				} else {
 					if (res == 'h') {
 						$p.text('显示到题库');

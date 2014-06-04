@@ -42,7 +42,7 @@ app.use(require('cookie-parser')());
 app.use(session({
 	secret: settings.cookie_secret,
 	store: sessionStore,
-	cookie: { maxAge: 3600000 }
+	cookie: { maxAge: 86400000 }
 }));
 
 app.use(express.static(__dirname+'/public', {maxAge: 259200000}));	//使用静态资源服务以及设置缓存(三天)

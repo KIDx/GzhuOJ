@@ -3,7 +3,8 @@ var mongoose = require('mongoose')
 ,   Schema = mongoose.Schema
 ,   settings = require('../settings')
 ,   pageNum = settings.contestRank_pageNum
-,   OE = settings.outputErr;
+,   OE = settings.outputErr
+,   initialValue = { penalty: 0, solved: 0, submitTime: 0 };
 
 function Rank(cid, name) {
   this.cid = cid;
@@ -23,8 +24,8 @@ var ranks = mongoose.model('ranks');
 Rank.prototype.save = function(callback) {
   //存入 Mongodb 的文档
   rank = new ranks();
-  rank.value = {penalty:0, solved:0};
-  rank._id = new Object({name: this.name, cid: this.cid});
+  rank.value = initialValue;
+  rank._id = new Object({ name: this.name, cid: this.cid });
   rank.save(function(err){
     if (err) {
       OE('Rank.save failed!');
@@ -47,7 +48,7 @@ Rank.get = function(Q, page, callback) {
     if ((page-1)*pageNum > count) {
       return callback(null, null, -1);
     }
-    ranks.find(Q).sort({'value.solved':-1, 'value.penalty':1, '_id.name':1})
+    ranks.find(Q).sort({'value.solved': -1, 'value.penalty': 1, 'value.submitTime': -1, '_id.name': 1})
     .skip((page-1)*pageNum).limit(pageNum).exec(function(err, docs) {
       if (err) {
         OE('Rank.get failed!');
@@ -66,10 +67,10 @@ Rank.count = function(Q, callback) {
   });
 };
 
-Rank.update = function(Q, H, callback) {
-  ranks.update(Q, H, {multi:true}, function(err){
+Rank.clear = function(Q, callback) {
+  ranks.update(Q, {value: initialValue}, {multi:true}, function(err){
     if (err) {
-      OE('Rank.update failed!');
+      OE('Rank.clear failed!');
     }
     return callback(err);
   });

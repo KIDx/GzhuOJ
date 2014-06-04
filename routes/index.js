@@ -233,6 +233,19 @@ function getRank(user, callback) {
   });
 }
 
+function getContestRank(cid, stars, name, V, callback) {
+  ContestRank.count({
+    '_id.cid': cid,
+    '_id.name': {$nin: stars},
+    $or: [{'value.solved': {$gt: V.solved}},
+          {'value.solved': V.solved, 'value.penalty': {$lt: V.penalty}},
+          {'value.solved': V.solved, 'value.penalty': V.penalty, 'value.submitTime': {$gt: V.submitTime}},
+          {'value.solved': V.solved, 'value.penalty': V.penalty, 'value.submitTime': V.submitTime, '_id.name': {$lt: name}}]
+  }, function(err, rank) {
+    return callback(err, rank+1);
+  });
+}
+
 exports.connectMongodb = function() {
   Solution.connect(function(err){
     if (err) {
@@ -495,13 +508,17 @@ exports.getRanklist = function(req, res) {
             has[p] = true;
           });
         }
+        var hasMe = false;
         users.forEach(function(p, i){
           var tmp = {name: p._id.name, value: p.value};
           if (has[tmp.name]) {
             tmp.star = true;
           }
           Users.push(tmp);
-          names.push(p._id.name);
+          names.push(tmp.name);
+          if (req.session.user && !hasMe && req.session.user.name == tmp.name) {
+            hasMe = true;
+          }
         });
         if (con.contestants) {
           con.contestants.forEach(function(p){
@@ -510,16 +527,13 @@ exports.getRanklist = function(req, res) {
             }
           });
         }
-        ContestRank.count({
-          '_id.cid': cid,
-          '_id.name': {$nin: stars},
-          $or: [{'value.solved': {$gt: V.solved}},
-                {$and: [{'value.solved': V.solved}, {'value.penalty': {$lt: V.penalty}}]},
-                {$and: [{'value.solved': V.solved}, {'value.penalty': V.penalty}, {'_id.name': {$lt: T}}]}]
-        }, function(err, rank){
+        getContestRank(cid, con.stars, T, V, function(err, rank){
           if (err) {
             OE(err);
             return res.end();
+          }
+          if (req.session.user && !hasMe) {
+            names.push(req.session.user.name);
           }
           User.find({name: {$in:names}}, function(err, U){
             if (err) {
@@ -539,7 +553,30 @@ exports.getRanklist = function(req, res) {
                 }
               });
             }
-            return res.json([Users, pvl, I, n, con.FB, rank+1]);
+            var Resp = function() {
+              return res.json([Users, pvl, I, n, con.FB, rank]);
+            };
+            if (!req.session.user || hasMe) {
+              return Resp();
+            }
+            ContestRank.findOne({'_id.cid': cid, '_id.name': req.session.user.name}, function(err, u){
+              if (err) {
+                OE(err);
+                return res.end();
+              }
+              if (!u) {
+                return Resp();
+              }
+              getContestRank(cid, con.stars, u._id.name, u.value, function(err, rk){
+                var tp = {name: u._id.name, value: u.value, rank: rk};
+                if (rk <= rank) {
+                  Users.unshift(tp);
+                } else {
+                  Users.push(tp);
+                }
+                return Resp();
+              });
+            });
           });
         });
       });
@@ -586,7 +623,7 @@ exports.getRanklist = function(req, res) {
             query: {$and: [Q, {runID: {$lte: maxRunID}}]},
             sort: {runID: -1},
             map: function(){
-              var val = { solved:0, penalty:0, status:{} };
+              var val = { solved:0, penalty:0, status:{}, submitTime: this.inDate };
               if (this.result == 2) {
                 val.solved = 1;
                 val.penalty = this.inDate;
@@ -597,7 +634,7 @@ exports.getRanklist = function(req, res) {
               return emit({cid: this.cID, name: this.userName}, val);
             },
             reduce: function(key, vals){
-              var val = { solved: 0, penalty: 0, status: {} };
+              var val = { solved: 0, penalty: 0, status: {}, submitTime: vals.length ? vals[0].submitTime : 0 };
               for (var j = vals.length-1; j >= 0; j--) {
                 p = vals[j];
                 if (p.status) {
@@ -1384,7 +1421,7 @@ exports.rejudge = function(req, res) {
               if (!cids || cids.length == 0) {
                 return RP();
               }
-              ContestRank.update({'_id.cid': {$in: cids}}, {$set: {value:{solved:0,penalty:0,status:{}}}}, function(err){
+              ContestRank.clear({'_id.cid': {$in: cids}}, function(err){
                 if (err) {
                   OE(err);
                   return res.end();
@@ -2475,7 +2512,7 @@ exports.doAddcontest = function(req, res) {
             if (!flg) {
               return res.end(tp);
             }
-            ContestRank.update({'_id.cid':cid}, {$set:{value:{solved:0,penalty:0,status:{}}}}, function(err){
+            ContestRank.clear({'_id.cid': cid}, function(err){
               if (err) {
                 OE(err);
                 req.session.msg = '系统错误！';

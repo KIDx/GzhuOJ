@@ -428,7 +428,9 @@ function buildRank(U) {
 	}
 
 	html += '>';
-	if (U.star) {
+	if (U.rank) {
+		html += U.rank;
+	} else if (U.star) {
 		html += '*';
 	} else {
 		html += rank++;

@@ -38,6 +38,13 @@
             <td class="error-text center" colspan="7">No Users are matched.</td>
           </tr>
         <% } else { %>
+        <% if (user) { %>
+          <% if (user.rank < (page-1)*pageNum+1) { %>
+            <% users.unshift(user); %>
+          <% } else if (user.rank > (page-1)*pageNum+users.length) { %>
+            <% users.push(user); %>
+          <% } %>
+        <% } %>
         <% users.forEach(function(p, i){ %>
         <% var c, h = '', res = '0.00'; %>
         <% if (i % 2 == 1) { %>
@@ -50,9 +57,9 @@
         <% } %>
         <% if (p.submit > 0) res = (p.solved/p.submit*100).toFixed(2); %>
           <tr class="<%= c %><%= h %>">
-            <td><%= (page-1)*pageNum+i+1 %></td>
+            <td><%= p.rank ? p.rank : (page-1)*pageNum+i+1 %></td>
             <td>
-              <a class="user user-<%= UC[i] %>" href="/user/<%= p.name %>" title="<%= UT[i] %>">
+              <a class="user user-<%= UC[p.name] %>" href="/user/<%= p.name %>" title="<%= UT[p.name] %>">
                 <%= p.name %>
               </a>
             </td>

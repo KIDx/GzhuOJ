@@ -220,6 +220,19 @@ function getTime(n) {
   return '刚刚';
 }
 
+function getRank(user, callback) {
+  User.count({
+    name: {$ne: 'admin'},
+    $or:[
+      { solved: {$gt: user.solved} },
+      { solved: user.solved, submit: {$lt: user.submit} },
+      { solved: user.solved, submit: user.submit, name: {$lt: user.name} }
+    ]
+  }, function(err, rank) {
+    return callback(err, rank+1);
+  });
+}
+
 exports.connectMongodb = function() {
   Solution.connect(function(err){
     if (err) {
@@ -1551,20 +1564,13 @@ exports.user = function(req, res) {
         });
       };
       if (user.name != 'admin') {
-        User.count({
-          $nor: [{name: 'admin'}],
-          $or:[
-            { solved: {$gt: user.solved} },
-            { solved: user.solved, submit: {$lt: user.submit} },
-            { solved: user.solved, submit: user.submit, name: {$lt: user.name} }
-          ]
-        }, function(err, rank){
+        getRank(user, function(err, rank){
           if (err) {
             req.session.msg = '系统错误！';
             OE(err);
             return res.redirect('/');
           }
-          user.rank = rank + 1;
+          user.rank = rank;
           return RP(null);
         });
       } else {
@@ -3418,25 +3424,47 @@ exports.ranklist = function(req, res) {
       if (n < 0) {
         return res.redirect('/ranklist');
       }
-      var UC = new Array(), UT = new Array();
+      var UC = {}, UT = {};
       if (users) {
         users.forEach(function(p, i){
-          UC.push(UserCol(p.privilege));
-          UT.push(UserTitle(p.privilege));
+          UC[p.name] = UserCol(p.privilege);
+          UT[p.name] = UserTitle(p.privilege);
         });
       }
-      res.render('ranklist', {title: 'Ranklist',
-                              user: req.session.user,
-                              time: (new Date()).getTime(),
-                              key: 5,
-                              n: n,
-                              users: users,
-                              page: page,
-                              pageNum: ranklist_pageNum,
-                              search: search,
-                              UC: UC,
-                              UT: UT,
-                              cid: cid
+      var Render = function() {
+        res.render('ranklist', {title: 'Ranklist',
+                                user: req.session.user,
+                                time: (new Date()).getTime(),
+                                key: 5,
+                                n: n,
+                                users: users,
+                                page: page,
+                                pageNum: ranklist_pageNum,
+                                search: search,
+                                UC: UC,
+                                UT: UT,
+                                cid: cid
+        });
+      };
+      if (!req.session.user) {
+        return Render();
+      }
+      User.watch(req.session.user.name, function(err, user){
+        if (err) {
+          OE(err);
+          req.session.msg = '系统错误！';
+          return res.redirect('/');
+        }
+        if (!user) {
+          return Render();
+        }
+        UC[user.name] = UserCol(user.privilege);
+        UT[user.name] = UserTitle(user.privilege);
+        getRank(user, function(err, rank){
+          req.session.user = user;
+          req.session.user.rank = rank;
+          return Render();
+        });
       });
     });
   };

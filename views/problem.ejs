@@ -142,7 +142,12 @@
           <% if (user.name == 'admin'|| user.name == problem.manager) { %><a class="uibtn" href="javascript:;" id="rejudge">Rejudge</a><% } %>
         <% } %>
       </div>
-  <% var S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Output', 'Hint', 'Source', 'Manager'], tmp; %>
+  <% var S, tmp; %>
+  <% if (problem.TC) { %>
+  <%  S = ['Problem Statement', 'Definition', 'Constraints', 'Test Statement', 'Result Statement', 'Notes', 'Source', 'Manager']; %>
+  <% } else { %>
+  <%  S = ['Problem Description', 'Input', 'Output', 'Sample Input', 'Sample Output', 'Hint', 'Source', 'Manager']; %>
+  <% } %>
   <% if (UC) { %>
   <% tmp = '<a href="/user/'+problem.manager+'" title="'+UT+'" class="user user-'+UC+'">'+problem.manager+'</a>'; %>
   <% } %>

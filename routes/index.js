@@ -1537,14 +1537,24 @@ exports.index = function(req, res){
           req.session.msg = '系统错误！';
           return res.redirect('/404');
         }
-        res.render('index', { title: 'Gzhu Online Judge',
-                              user: req.session.user,
-                              time: (new Date()).getTime(),
-                              key: -1,
-                              A: A,
-                              B: B,
-                              C: C,
-                              getTime: getTime
+        User.topFive({name: {$ne: 'admin'}}, function(err, D){
+          if (err) {
+            OE(err);
+            req.session.msg = '系统错误！';
+            return res.redirect('/404');
+          }
+          res.render('index', { title: 'ACdream Online Judge',
+                                user: req.session.user,
+                                time: (new Date()).getTime(),
+                                key: -1,
+                                A: A,
+                                B: B,
+                                C: C,
+                                D: D,
+                                getTime: getTime,
+                                UT: UserTitle,
+                                UC: UserCol
+          });
         });
       });
     });

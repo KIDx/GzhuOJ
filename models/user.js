@@ -147,3 +147,12 @@ User.multiUpdate = function(Q, H, callback) {
     return callback(err);
   });
 };
+
+User.topFive = function(Q, callback) {
+  users.find(Q).sort({solved: -1, submit: 1, name: 1}).limit(5).exec(function(err, docs){
+    if (err) {
+      OE('User.topFive failed!');
+    }
+    return callback(err, docs);
+  });
+};

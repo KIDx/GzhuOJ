@@ -1,4 +1,4 @@
-# Gzhu Online Judge v6.0.14
+# Gzhu Online Judge v6.1.0
 
 ## 如何快速搭建(ubuntu下测试通过)
 

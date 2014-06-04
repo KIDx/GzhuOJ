@@ -114,7 +114,7 @@ $(document).ready(function(){
 				return false;
 			}
 			var html = '<tr><td>'
-			html += '<a title="delete" href="javascript:;" class="mc user user-red delete"></a>';
+			html += '<a title="delete" href="javascript:;" class="img_link mc user user-red delete"></a>';
 			html += '</td><td><input type="text" class="probnum input-mini"'
 			if ($pid_in.length) {
 				var pid = parseInt($pid_in.last().val(),10)+1;

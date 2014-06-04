@@ -25,40 +25,41 @@ a.disabled {
     background: #fff!important;
 }
 
-a.edit {
+a.img_link {
+    width: 16px;
+    height: 16px;
     padding: 0;
     display: block;
-    width: 24px;
-    height: 24px;
-    background: url('img/edit.png');
+    opacity: 0.4;
+    filter: alpha(opacity=40);
 }
 
 a.add {
-    padding: 0;
-    display: block;
-    width: 24px;
-    height: 24px;
-    background: url('img/add.png');
-}
-
-a.add2 {
-    padding: 0;
-    display: block;
-    width: 18px;
-    height: 18px;
+    display: inline-block;
+    vertical-align: top;
     background: url('img/add.png');
 }
 
 a.delete {
-    padding: 0;
-    display: block;
-    width: 16px;
-    height: 16px;
     background: url('img/delete.png');
 }
 
-a.delete:hover {
-    background: url('img/_delete.png');
+a.edit {
+    background: url('img/edit.png');
+}
+
+a.trash {
+    margin: 0 8px;
+    background: url('img/trash.png');
+}
+
+a.reply {
+    background: url('img/reply.png');
+}
+
+a.img_link:hover {
+    opacity: 0.6;
+    filter: alpha(opacity=60);
 }
 
 .my-radio {
@@ -1533,6 +1534,10 @@ div.jqfoot .btn {
 .jqclose {
     width: 16px;
     height: 16px;
+    padding: 0;
+    display: block;
+    opacity: 0.4;
+    filter: alpha(opacity=40);
     background: url('img/delete.png');
     position: absolute;
     top: 6px;
@@ -1541,7 +1546,8 @@ div.jqfoot .btn {
 }
 
 .jqclose:hover {
-    background: url('img/_delete.png');
+    opacity: 0.6;
+    filter: alpha(opacity=60);
 }
 
 .jqmClose {

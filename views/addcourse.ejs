@@ -28,10 +28,10 @@
 					<% groups.forEach(function(p){ %>
 					<div class="topic_box" gid="<%= p.id %>">
 						<div class="header">
-							<a href="javascript:;" title="删除" class="fr delete"></a>
+							<a href="javascript:;" title="删除" class="img_link fr delete"></a>
 							<input class="groupname" style="margin:0;padding:2px;" type="text" value="<%= p.name %>" disabled/>
-							<a href="javascript:;" title="修改组名" class="gedit edit help-inline"></a>
-							<a href="javascript:;" title="添加题目" class="add help-inline"></a>
+							<a href="javascript:;" title="修改组名" class="img_link gedit edit help-inline"></a>
+							<a href="javascript:;" title="添加题目" class="img_link add help-inline"></a>
 						</div>
 						<div class="inner_topic">
 						<% if (p.pids.length == 0) { %>

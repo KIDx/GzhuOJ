@@ -391,22 +391,35 @@ function GetProblem() {
 	}, interceptorTime);
 }
 
-var $rank = $div.find('#ranktab')
-,	$ranktbody = $rank.find('table tbody')
-,	$ranklist = $rank.find('#ranklist')
-,	$ranklist_a
-,	$removebtn
-,	$refresh = $rank.find('#refresh')
-,	rankQ = {cid:cid, page:1}
-,	rank = 1
-,	rankTimeout
-,	FB = {}
-,	rankAjax
-,	rankInterval;
+var $rank = $div.find('#ranktab');
+var $rankheader = $rank.find('#rankheader');
+var $ranktable = $rank.find('#tablediv');
+var $ranktbody = $ranktable.find('tbody');
+var $ranklist = $rank.find('#ranklist')
+var $ranklist_a
+var $removebtn
+var $refresh = $rank.find('#refresh')
+var rankQ = {cid:cid, page:1}
+var rank = 1
+var rankTimeout
+var FB = {}
+var rankAjax
+var rankInterval;
 
-//deal with overflow rank table
 $(document).ready(function(){
+	//deal with overflow rank table
 	$rank.width($('#widthfix').width()-22);
+	//deal with rankheader
+	$(window).scroll(function(){
+		if (!isActive(3)) {
+			return false;
+		}
+		if ($(window).scrollTop() > $ranktable.offset().top) {
+			$rankheader.show();
+		} else {
+			$rankheader.hide();
+		}
+	});
 });
 
 function buildRank(U) {

@@ -1205,11 +1205,15 @@ table#problemset tr td div#dif_bg img {
     top: 0;
 }
 
-div#ranktab div.tablebg table th a {
+#ranktab {
+    position: relative;
+}
+
+#ranktab div.tablebg table th a {
     text-decoration: underline;
 }
 
-div#ranktab div.tablebg table td {
+#ranktab div.tablebg table td {
     padding: .5em 0;
 }
 
@@ -1246,7 +1250,7 @@ div.prob-tag a.tag {
     text-decoration: none;
 }
 
-.table-rank tbody tr {
+#tablediv .table-rank tbody tr {
     height: 45px;
 }
 
@@ -1266,6 +1270,20 @@ div.prob-tag a.tag {
 
 .tab-content {
     overflow: visible;
+}
+
+#rankheader {
+    display: none;
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    padding: 0 3px;
+}
+
+#rankheader > table th {
+    border-top: none;
+    border-bottom: 1px solid #ddd;
+    background: #fff;
 }
 
 th.rank {

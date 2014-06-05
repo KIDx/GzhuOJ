@@ -2,6 +2,7 @@
 /uploads/
 
 /data/*
+!/data/1000
 
 /public/img/prob/*
 

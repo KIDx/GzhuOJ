@@ -245,7 +245,7 @@ server.listen(app.get('port'), function(){
 });
 
 //normal when use nginx
-io.set('transports', [ 
+io.set('transports', [
   'xhr-polling',
   'jsonp-polling'
 ]);

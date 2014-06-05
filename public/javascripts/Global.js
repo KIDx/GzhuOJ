@@ -11,6 +11,10 @@ $(document).ready(function(){
     });
 });
 
+function ChangeScrollTop(n) {
+    $('html,body').stop().animate({scrollTop: n+'px'}, 500);
+}
+
 //return status color class
 function Col (n) {
   switch(n) {
@@ -285,9 +289,15 @@ $(document).ready(function(){
     setInterval(SetCurrentTime, 1000);
 
     //message
-    $.post('/getMessage', function(res){
-        if (res)
+    $.ajax({
+        type : 'POST',
+        url : '/getMessage',
+        dataType : 'text'
+    })
+    .done(function(res){
+        if (res) {
             ShowMessage(res);
+        }
     });
 
     //login
@@ -323,25 +333,37 @@ $(document).ready(function(){
                 errAnimate($loginerr, 'the password can not be empty!');
                 return ;
             }
-            $.post('/doLogin', {
+            $.ajax({
+                type : 'POST',
+                url : '/doLogin',
+                data : {
                     username: name,
                     password: psw
-                }, function(res){
-                    if (res == '1') {
-                        errAnimate($loginerr, 'the user is not exist!');
-                    } else if (res == '2') {
-                        errAnimate($loginerr, 'username and password do not match!');
-                    } else if (res == '3') {
-                        errAnimate($loginerr, '系统错误！');
+                },
+                dataType : 'text',
+                error: function() {
+                    $loginsubmit.text('Login').removeClass('disabled');
+                    errAnimate($loginerr, '无法连接到服务器！');
+                }
+            })
+            .done(function(res){
+                if (!res) {
+                    $dialog_lg.jqmHide();
+                    if (!nextURL) {
+                        window.location.reload(true);
                     } else {
-                        $dialog_lg.jqmHide();
-                        if (!nextURL) {
-                            window.location.reload(true);
-                        } else {
-                            window.location.href = nextURL;
-                            nextURL = '';
-                        }
+                        window.location.href = nextURL;
+                        nextURL = '';
                     }
+                    return ;
+                } else if (res == '1') {
+                    errAnimate($loginerr, 'the user is not exist!');
+                } else if (res == '2') {
+                    errAnimate($loginerr, 'username and password do not match!');
+                } else if (res == '3') {
+                    errAnimate($loginerr, '系统错误！');
+                }
+                $loginsubmit.text('Login').removeClass('disabled');
             });
         });
 
@@ -351,7 +373,12 @@ $(document).ready(function(){
     //logout
     if ($logout.length) {
         $logout.click(function(){
-            $.post('/logout', function(){
+            $.ajax({
+                type : 'POST',
+                url : '/logout',
+                dataType : 'text'
+            })
+            .done(function(){
                 window.location.reload(true);
             });
         });
@@ -398,6 +425,17 @@ $(document).ready(function(){
         ,   $regsubmit = $regdialog.find('a#reg_submit')
         ,   $regerr = $regdialog.find('small#reg_error');
 
+        function getVerifycode() {
+            $.ajax({
+                type : 'POST',
+                url : '/createVerifycode',
+                dataType : 'text'
+            })
+            .done(function(res){
+                $regimg.html(res);
+            });
+        }
+
         $('a#reg').click(function(){
             $regdialog.jqm({
                 overlay: 30,
@@ -413,18 +451,15 @@ $(document).ready(function(){
                     h.o.fadeOut(200);
                 }
             }).jqDrag('.jqDrag').jqResize('.jqResize').jqmShow();
-            $.post('/createVerifycode', function(res){
-                $regimg.html(res);
-            });
+            getVerifycode();
         });
 
-        $regimg.click(function(){
-            $.post('/createVerifycode', function(res){
-                $regimg.html(res);
-            });
-        });
+        $regimg.click(getVerifycode);
 
         $regsubmit.click(function(){
+            if ($(this).hasClass('disabled')) {
+                return false;
+            }
             var username = $reginput.eq(0).val();
             if (!username) {
                 errAnimate($regerr, 'username can not be empty!');
@@ -485,15 +520,26 @@ $(document).ready(function(){
                 errAnimate($regerr, '验证码不能为空!');
                 return false;
             }
-            $.post('/doReg', {
-                username: username,
-                password: password,
-                nick: nick,
-                school: school,
-                email: email,
-                signature: signature,
-                vcode: vcode
-            }, function(res){
+            $regsubmit.text('Submitting...').addClass('disabled');
+            $.ajax({
+                type : 'POST',
+                url : '/doReg',
+                dataType : 'text',
+                data: {
+                    username: username,
+                    password: password,
+                    nick: nick,
+                    school: school,
+                    email: email,
+                    signature: signature,
+                    vcode: vcode
+                },
+                error: function() {
+                    $regsubmit.text('Submit').removeClass('disabled');
+                    errAnimate($regerr, '无法连接到服务器！');
+                }
+            })
+            .done(function(res){
                 if (!res) {
                      window.location.reload(true);
                      return ;
@@ -505,6 +551,7 @@ $(document).ready(function(){
                 } else {
                     errAnimate($regerr, '系统错误！');
                 }
+                $regsubmit.text('Submit').removeClass('disabled');
             });
         });
         simulateClick($reginput, $regsubmit);

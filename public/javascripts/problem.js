@@ -67,13 +67,32 @@ $(document).ready(function(){
 			$(this).addClass('hidden');
 			$selectdiv.show();
 			$select.change(function(res){
-				$.post('/editTag', {tag:$(this).val(), pid:pid, add:true}, function(){
+				$.ajax({
+					type: 'POST',
+					url: '/editTag',
+					data: {
+						tag: $(this).val(),
+						pid: pid,
+						add: true
+					},
+					dataType: 'text'
+				})
+				.done(function(){
 					window.location.reload(true);
 				});
 			});
 		});
 		$del_tag.click(function(){
-			$.post('/editTag', {tag:$(this).attr('tag'), pid:pid}, function(){
+			$.ajax({
+				type: 'POST',
+				url: '/editTag',
+				data: {
+					tag: $(this).attr('tag'),
+					pid: pid
+				},
+				dataType: 'text'
+			})
+			.done(function(){
 				window.location.reload(true);
 			});
 		});
@@ -85,9 +104,23 @@ var $rejudge = $('#rejudge');
 $(document).ready(function(){
 	if ($rejudge.length) {
 		$rejudge.click(function(){
-			$.post('/rejudge', {pid: pid}, function(){
-				window.location.href = '/status?pid='+pid;
+			if ($(this).hasClass('disabled') || !confirm('rejudge会给用户带来较大影响，确定要rejudge？')) {
+				return false;
+			}
+			$rejudge.addClass('disabled');
+			$.ajax({
+				type: 'POST',
+				url: '/rejudge',
+				data: { pid : pid },
+				dataType: 'text',
+				error: function() {
+					$rejudge.removeClass('disabled');
+					ShowMessage('无法连接到服务器！');
+				}
 			})
+			.done(function(){
+				window.location.href = '/status?pid='+pid;
+			});
 		});
 	}
 });

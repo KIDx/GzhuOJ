@@ -73,7 +73,18 @@ function init() {
 var timeout, ajax;
 
 function getProblem($p, $t) {
-	return ($.post('/getProblem', {pid: $p.val()}, function(res){
+	return ($.ajax({
+		type : 'POST',
+		url : '/getProblem',
+		data : { pid: $p.val() },
+		dataType : 'text',
+		error: function() {
+			$t.removeClass('success-text')
+			.addClass('error-text')
+			.text('无法连接到服务器！');
+		}
+	})
+	.done(function(res){
 		if (!res) {
 			$t.removeClass('success-text')
 			.addClass('error-text')

@@ -336,11 +336,24 @@ function ShowProblem(prob) {
 	if ($rejudge.length) {
 		$rejudge.unbind('click');
 		$rejudge.click(function(){
-			if ($(this).hasClass('disabled')) {
+			if ($(this).hasClass('disabled') || !confirm('rejudge会给用户带来较大影响，确定要rejudge？')) {
 				return false;
 			}
-			$(this).addClass('disabled');
-			$.post('/rejudge', {pid:prob.problemID, cid:'1'}, function(res){
+			$rejudge.addClass('disabled');
+			$.ajax({
+				type : 'POST',
+				url : '/rejudge',
+				data : {
+					pid : prob.problemID,
+					cid : '1'
+				},
+				dataType : 'text',
+				error: function() {
+					$rejudge.removeClass('disabled');
+					ShowMessage('无法连接到服务器！');
+				}
+			})
+			.done(function(res){
 				if (res == '0') ShowMessage('Failed! You have no permission to Rejudge.');
 				else if (res == '1') {
 					ShowMessage('Problem '+F.charAt(ID)+' has been Rejudged successfully!');
@@ -530,10 +543,27 @@ function RankResponse(json) {
 	if (current_user == 'admin') {
 		$removebtn = $('button.close');
 		$removebtn.click(function(){
+			if ($(this).hasClass('disabled')) {
+				return false;
+			}
 			if (!confirm('确定要将该参赛者从比赛中移除吗？')) {
 				return false;
 			}
-			$.post('/regContestRemove', {cid: cid, name: $(this).attr('user')}, function(){
+			$removebtn.addClass('disabled');
+			$.ajax({
+				type : 'POST',
+				url : '/regContestRemove',
+				data : {
+					cid : cid,
+					name : $(this).attr('user')
+				},
+				dataType : 'text',
+				error: function() {
+					$removebtn.removeClass('disabled');
+					ShowMessage('无法连接到服务器！');
+				}
+			})
+			.done(function(){
 				window.location.reload(true);
 			});
 		});
@@ -846,28 +876,46 @@ $(document).ready(function(){
 			}
 		}).jqDrag('.jqDrag').jqResize('.jqResize');
 		var $submit_code = $dialog_sm.find('textarea')
-		,	$submit_err = $dialog_sm.find('span#error');
-		$dialog_sm.find('a#jqcodesubmit').click(function(){
-			var code = $submit_code.val();
+		,	$submit_err = $dialog_sm.find('span#error')
+		,	$submit = $dialog_sm.find('#jqcodesubmit');
+		$submit.click(function(){
+			if ($(this).hasClass('disabled')) {
+				return false;
+			}
+			var code = $submit_code.val(), lang = $dialog_sm.find('select').val();
 			if (code.length < 50 || code.length > 65536) {
 				errAnimate($submit_err, 'the length of code must be between 50B to 65535B');
 				return false;
 			}
-			$.post('/submit', {
-				pid: pid_index,
-				cid: cid,
-				code: code,
-				lang: $dialog_sm.find('select').val()
-			}, function(err){
+			$submit.text('Submitting...').addClass('disabled');
+			$.ajax({
+				type : 'POST',
+				url : '/submit',
+				data : {
+					pid: pid_index,
+					cid: cid,
+					code: code,
+					lang: lang
+				},
+				dataType : 'text',
+				error: function() {
+					$submit.text('Submit').removeClass('disabled');
+					ShowMessage('无法连接到服务器！');
+				}
+			})
+			.done(function(err){
 				$dialog_sm.jqmHide();
 				if (!err) {
 					ShowMessage('Your code for problem '+pmap[pid_index]+' has been submited successfully!');
 				} else if (err == '1') {
 					window.location.reload(true);
+					return ;
 				} else if (err == '2') {
 					ShowMessage('You can not submit because you have not registered the contest yet!');
 				} else if (err == '3') {
 					ShowMessage('系统错误！');
+				} else if (err == '4') {
+					ShowMessage('The problem is not exist!');
 				}
 				window.location.hash = '#status';
 			});
@@ -880,10 +928,24 @@ var $del = $('a#delete');
 $(document).ready(function(){
 	if ($del.length) {
 		$del.click(function(){
+			if ($(this).hasClass('disabled')) {
+				return false;
+			}
 			if (!window.confirm('Are you sure to delete this contest?')) {
 				return false;
 			}
-			$.post('/contestDelete', {cid:cid}, function(){
+			$del.addClass('disabled');
+			$.ajax({
+				type: 'POST',
+				url: '/contestDelete',
+				data: { cid : cid },
+				dataType: 'text',
+				error: function() {
+					$del.removeClass('disabled');
+					ShowMessage('无法连接到服务器！');
+				}
+			})
+			.done(function(){
 				window.location.href = '/contest/'+ctype;
 			});
 		});
@@ -960,12 +1022,30 @@ var $star = $('#star')
 $(document).ready(function(){
 	if ($star.length) {
 		$star.click(function(){
+			if ($(this).hasClass('disabled')) {
+				return false;
+			}
 			var str = JudgeString($starstr.val());
 			if (!str) {
 				errAnimate($starerr, '用户名不能为空！');
 				return false;
 			}
-			$.post('/toggleStar', {cid:cid,str:str,type:$('#type').val()}, function(){
+			$star.addClass('disabled');
+			$.ajax({
+				type: 'POST',
+				url: '/toggleStar',
+				data: {
+					cid: cid,
+					str: str,
+					type: $('#type').val()
+				},
+				dataType: 'text',
+				error: function() {
+					$star.removeClass('disabled');
+					ShowMessage('无法连接到服务器！');
+				}
+			})
+			.done(function(){
 				window.location.reload(true);
 			});
 		});
@@ -981,6 +1061,9 @@ var $publish = $('#publish')
 
 $(document).ready(function(){
 	$publish.click(function(){
+		if ($(this).hasClass('disabled')) {
+			return false;
+		}
 		var title = JudgeString($publish_title.val());
 		if (!title) {
 			errAnimate($publish_err, '标题不能为空！');
@@ -991,19 +1074,38 @@ $(document).ready(function(){
 			errAnimate($publish_err, '内容不能为空！');
 			return false;
 		}
-		if ($publish.hasClass('disabled')) {
-			return false;
-		}
 		$publish.addClass('disabled');
-		$.post('/addDiscuss', {cid: cid, title:$publish_pid.val()+'题：'+title, content:content}, function(res){
+		$.ajax({
+			type : 'POST',
+			url : '/addDiscuss',
+			data : {
+				cid : cid,
+				title : $publish_pid.val()+'题：'+title,
+				content : content
+			},
+			dataType : 'text',
+			error: function() {
+				$publish.removeClass('disabled');
+				ShowMessage('无法连接到服务器！');
+			}
+		})
+		.done(function(res){
 			if (!res) {
+				window.location.hash = 'discuss';
 				GetDiscuss();
 				ShowMessage('发表成功！');
+				$publish_pid.val('A');
+				$publish_title.val('');
+				$publish_content.attr('value', '');
+				ChangeScrollTop(200);
+				socket.emit('addDiscuss', cid);
 			} else if (res == '1') {
 				ShowMessage('系统错误！');
 			} else if (res == '2') {
 				window.location.href = '/';
+				return ;
 			}
+			$publish.removeClass('disabled');
 		});
 	});
 });

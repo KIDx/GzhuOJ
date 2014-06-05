@@ -26,8 +26,6 @@ app.set('view engine', 'ejs');
 
 app.use(partials());
 
-app.use(require('morgan')('dev'));
-
 app.use(require('body-parser')());
 app.use(require('multer')({
 	dest: './uploads/',
@@ -45,8 +43,13 @@ app.use(session({
 	cookie: { maxAge: 86400000 }
 }));
 
-app.use(express.static(__dirname+'/public', {maxAge: 259200000}));	//使用静态资源服务以及设置缓存(三天)
+//使用静态资源服务以及设置缓存(三天)
+app.use(express.static(__dirname+'/public', {maxAge: 259200000}));
+//缓存favicon(30天)
 app.use(require('serve-favicon')(__dirname+'/public/favicon.ico', {maxAge: 2592000000}));
+
+//debug log
+app.use(require('morgan')('dev'));
 
 //#####server response
 //主页

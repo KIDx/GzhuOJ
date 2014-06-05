@@ -578,19 +578,32 @@ var $discuss = $div.find('#discusstab')
 ,	discussAjax;
 
 function buildDiscuss(p) {
-	var html = '<tr><td>', img;
-	html += '<a target="_blank" href="/user/'+p.user+'">';
-	if (Imgtype[p.user]) {
-		img = '/img/avatar/'+p.user+'/4.'+Imgtype[p.user];
-	} else {
-		img = '/img/avatar/%3Ddefault%3D/4.jpeg';
+	function getImg(u) {
+		if (Imgtype[u]) {
+			return '/img/avatar/'+u+'/4.'+Imgtype[u];
+		}
+		return '/img/avatar/%3Ddefault%3D/4.jpeg';
 	}
-	html += '<img class="img_s topic_img" title="'+p.user+'" alt="'+p.user+'" src="'+img+'" />'
+	var html = '<tr';
+	if (current_user == p.user) {
+		html += ' class="highlight"';
+	}
+	html += '><td><a target="_blank" href="/user/'+p.user+'">';
+	html += '<img class="img_s topic_img" title="'+p.user+'" alt="'+p.user+'" src="'+getImg(p.user)+'" />'
 	html += '</a></td><td>';
 	html += '<span class="user-green">'+p.reviewsQty+'</span><span class="user-gray">/'+p.browseQty+'</span>';
 	html += '</td><td style="text-align:left;" class="ellipsis">';
 	html += '<a target="_blank" href="/topic/'+p.id+'">'+p.title+'</a></td>';
-	html += '<td></td></tr>';
+	html += '<td>';
+	if (p.lastReviewer) {
+		html += '<a class="topic_timer" href="/topic/'+p.id+'#'+p.lastComment+'">';
+		html += '<img class="img_ss" title="'+p.lastReviewer+'" alt="'+p.lastReviewer+'" src="'+getImg(p.lastReviewer)+'">';
+		html += '<span>'+p.lastReviewTime+'</span>';
+		html += '</a>';
+	} else {
+		html += '<span class="user-gray fr">'+p.lastReviewTime+'</span>';
+	}
+	html += '</td></tr>';
 	return html;
 }
 

@@ -705,22 +705,22 @@ exports.getTopic = function(req, res) {
   res.header('Content-Type', 'text/plain');
   var cid = parseInt(req.body.cid, 10);
   if (!cid) {
-    return res.end();     //not allow
+    return res.end();   //not allow
   }
   Contest.watch(cid, function(err, contest){
     if (err) {
       OE(err);
-      return res.end();   //not refresh
+      return res.end();  //not refresh
     }
     if (!contest) {
-      return res.end();   //not allow
+      return res.end();  //not allow
     }
     var page;
     page = parseInt(req.body.page, 10);
     if (!page) {
       page = 1;
     } else if (page < 0) {
-      return res.end();   //not allow
+      return res.end();  //not allow
     }
     Topic.get({cid: cid}, page, function(err, topics, n){
       if (err) {
@@ -730,23 +730,40 @@ exports.getTopic = function(req, res) {
       if (n < 0) {
         return res.end(); //not allow
       }
-      var names = new Array(), I = {};
+      var names = new Array(), tps = new Array(), I = {}, has = {};
       if (topics) {
         topics.forEach(function(p){
-          names.push(p.user);
+          if (!has[p.user]) {
+            names.push(p.user);
+            has[p.user] = true;
+          }
+          if (p.lastReviewer && !has[p.lastReviewer]) {
+            names.push(p.lastReviewer);
+            has[p.lastReviewer] = true;
+          }
+          tps.push({
+            id: p.id,
+            title: p.title,
+            user: p.user,
+            reviewsQty: p.reviewsQty,
+            browseQty: p.browseQty,
+            lastReviewer: p.lastReviewer,
+            lastReviewTime: getTime(p.lastReviewTime),
+            lastComment: p.lastComment
+          });
         });
       }
       User.find({name: {$in: names}}, function(err, users){
         if (err) {
           OE(err);
-          return res.end();   //not refresh
+          return res.end();  //not refresh
         }
         if (users) {
           users.forEach(function(p){
             I[p.name] = p.imgType;
           });
         }
-        res.json([topics, n, I]);
+        res.json([tps, n, I]);
       });
     });
   });

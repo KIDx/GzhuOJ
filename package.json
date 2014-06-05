@@ -8,7 +8,7 @@
   "keywords": ["OnlineJudge", "OJ", "ACM", "ICPC", "Contest", "online judge"],
   "repository" : {
     "type" : "git",
-  "url" : "https://github.com/KIDx/GzhuOJ"
+    "url" : "https://github.com/KIDx/GzhuOJ"
   },
   "dependencies": {
     "express": "4.x",
@@ -28,9 +28,9 @@
     "ejs": "*",
     "express-partials": "*",
     "canvas": "*",
-    "socket.io": "*",
+    "socket.io": "0.9.16",
     "gm": "*",
     "csv": "*",
-    "iconv": "*"
+    "iconv": "2.1.0"
   }
 }

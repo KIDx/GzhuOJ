@@ -76,6 +76,7 @@
       <div>Any bug please contact 972169909@qq.com</div>
       <div>Server time: <span <% if(key == 6) { %>type="<%= type %>"<% } %> <% if (user) { %>user="<%= user.name %>"<% } %> time="<%= time %>" id="timer"></span></div>
     </div>
+    <div id="go_top" title="Go to top"></div>
   <!--****************Dialogs****************-->
     <% if (!user) { %>
       <%- partial('D_login') %>

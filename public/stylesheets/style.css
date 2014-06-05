@@ -1383,14 +1383,22 @@ table th img {
     font-size: 1em;
 }
 
+#go_top {
+    background: url(/img/top.png);
+    opacity: 0.75;
+    filter: alpha(opacity=75);
+    width: 80px;
+    height: 80px;
+    position: fixed;
+    bottom: 70px;
+    right: 10px;
+}
 
-/*.table {word-break: break-all;}*/
-
-/* jqModal base Styling courtesy of;
-    Brice Burgess <bhb@iceburg.net> */
-
-/* The Window's CSS z-index value is respected (takes priority). If none is supplied,
-    the Window's z-index value will be set to 3000 by default (via jqModal.js). */
+#go_top:hover {
+    opacity: 1.0;
+    filter:alpha(opacity=100);
+    cursor: pointer;
+}
 
 .CeWindow {
     display: none;

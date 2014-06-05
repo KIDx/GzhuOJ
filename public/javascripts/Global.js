@@ -15,6 +15,13 @@ function ChangeScrollTop(n) {
     $('html,body').stop().animate({scrollTop: n+'px'}, 500);
 }
 
+//go to top button
+$(document).ready(function(){
+    $('#go_top').click(function(){
+        ChangeScrollTop(0);
+    });
+});
+
 //return status color class
 function Col (n) {
   switch(n) {

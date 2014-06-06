@@ -1,4 +1,4 @@
-# Gzhu Online Judge v6.1.1
+# Gzhu Online Judge v6.1.2
 
 ## ubuntu下搭建开发环境
 

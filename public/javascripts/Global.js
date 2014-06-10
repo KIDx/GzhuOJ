@@ -162,12 +162,6 @@ var nextURL = "";
 var $footTime = $('span#timer')
 ,   $contest_current = $('#contest_current');
 
-var current_user = $footTime.attr('user');
-
-var current_time
-,   contest_type = $footTime.attr('type')
-,   curren_second = parseInt($footTime.attr('time'));
-
 var $finput = $('input[type="text"], textarea').eq(1);
 
 var $dialog_lg = $('div#dialog_lg')
@@ -296,16 +290,9 @@ $(document).ready(function(){
     setInterval(SetCurrentTime, 1000);
 
     //message
-    $.ajax({
-        type : 'POST',
-        url : '/getMessage',
-        dataType : 'text'
-    })
-    .done(function(res){
-        if (res) {
-            ShowMessage(res);
-        }
-    });
+    if (globalMessage) {
+        ShowMessage(globalMessage);
+    }
 
     //login
     if ($dialog_lg.length) {

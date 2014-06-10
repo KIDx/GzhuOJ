@@ -108,6 +108,14 @@
     <% } %>
   <!--****************Dialogs****************-->
   <!-- js Placed at the end of the document so the pages load faster -->
+    <script type="text/javascript">
+      var globalMessage = "<%= msg ? msg : '' %>";
+      var nextURL = "";
+      var current_user = "<%= user ? user.name : '' %>";
+      var current_time;
+      var curren_second = <%= time %>;
+      var contest_type = <%= key == 6 ? type : 1 %>;
+    </script>
     <script src="/javascripts/jquery_uieffect_jqdnr.js"></script>
     <script src="/javascripts/Global.js"></script>
   <% var highlight = '<script src="/highlighter/scripts/shCore_brushCpp_brushJava.js"></script><script type="text/javascript">SyntaxHighlighter.defaults[\'toolbar\'] = false;SyntaxHighlighter.all();</script>'; %>

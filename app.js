@@ -51,6 +51,18 @@ app.use(require('serve-favicon')(__dirname+'/public/favicon.ico', {maxAge: 25920
 //debug log
 app.use(require('morgan')('dev'));
 
+app.use(function(req, res, next){
+  req.session.reload(function(){
+    res.locals.user = req.session.user;
+    res.locals.time = (new Date()).getTime();
+    res.locals.msg = req.session.msg;
+    if (res.locals.msg) {
+      req.session.msg = null;
+    }
+    next();
+  });
+});
+
 //#####server response
 //主页
 app.get('/', routes.index);

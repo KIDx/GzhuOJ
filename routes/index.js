@@ -1561,8 +1561,6 @@ exports.index = function(req, res){
             return res.redirect('/404');
           }
           res.render('index', { title: 'Gzhu Online Judge',
-                                user: req.session.user,
-                                time: (new Date()).getTime(),
                                 key: -1,
                                 A: A,
                                 B: B,
@@ -1614,8 +1612,6 @@ exports.user = function(req, res) {
       }
       var RP = function(H) {
         res.render('user', {title: 'User',
-                            user: req.session.user,
-                            time: (new Date()).getTime(),
                             key: 0,
                             u: user,
                             A: A,
@@ -1657,8 +1653,6 @@ exports.avatar = function(req, res) {
     return res.redirect('/');
   }
   res.render('avatar', {title: 'Avatar Setting',
-                        user: req.session.user,
-                        time: (new Date()).getTime(),
                         key: 12
   });
 };
@@ -1792,8 +1786,6 @@ exports.addstudent = function(req, res) {
     return res.redirect('/');
   }
   res.render('addstudent', { title: 'addstudent',
-                             user: req.session.user,
-                             time: (new Date()).getTime(),
                              key: 13,
                              C: College
   });
@@ -1817,8 +1809,6 @@ exports.addproblem = function(req, res) {
       P.hint = escapeHtml(P.hint);
     }
     res.render('addproblem', { title: 'addproblem',
-                               user: req.session.user,
-                               time: (new Date()).getTime(),
                                problem: P,
                                key: tk,
                                files: F,
@@ -2102,8 +2092,6 @@ exports.problem = function(req, res) {
   var pid = parseInt(req.query.pid, 10);
   if (!pid) {
     res.render('problem', {title: 'Problem',
-                            user: req.session.user,
-                            time: (new Date()).getTime(),
                             key: -1,
                             problem: null
     });
@@ -2135,8 +2123,6 @@ exports.problem = function(req, res) {
             UC = UserCol(U.privilege);
           }
           res.render('problem', { title: 'Problem '+pid,
-                                  user: req.session.user,
-                                  time: (new Date()).getTime(),
                                   key: 8,
                                   problem: problem,
                                   pvl: pvl,
@@ -2214,8 +2200,6 @@ exports.problemset = function(req, res) {
     }
     var RP = function(R){
       res.render('problemset', {title: 'ProblemSet',
-                                user: req.session.user,
-                                time: (new Date()).getTime(),
                                 key: 3,
                                 n: n,
                                 problems: problems,
@@ -2336,8 +2320,6 @@ exports.status = function(req, res) {
           P[p.problemID] = p;
         });
         res.render('status', {title: 'Status',
-                              user: req.session.user,
-                              time: (new Date()).getTime(),
                               key: 4,
                               n: n,
                               sols: sols,
@@ -2371,8 +2353,6 @@ exports.addcontest = function(req, res) {
   }
   var RP = function(C, clone, type, E, P) {
     res.render('addcontest', {title: 'AddContest',
-                              user: req.session.user,
-                              time: (new Date()).getTime(),
                               contest: C,
                               getDate: getDate,
                               key: 1002,
@@ -2705,8 +2685,6 @@ exports.onecontest = function(req, res) {
           return res.end();   //not allow
         }
         res.render('onecontest', {title: 'OneContest',
-                                  user: req.session.user,
-                                  time: (new Date()).getTime(),
                                   key: 9,
                                   contest: contest,
                                   getDate: getDate,
@@ -2822,8 +2800,6 @@ exports.contest = function(req, res) {
         });
       }
       res.render ('contest', {title: 'Contest',
-                              user: req.session.user,
-                              time: now,
                               key: 6,
                               type: type,
                               contests: contests,
@@ -2853,8 +2829,6 @@ exports.addcourse = function(req, res) {
   id = parseInt(req.query.id, 10);
   var RP = function(C, P, G){
     res.render('addcourse', { title: 'AddCourse',
-                              user: req.session.user,
-                              time: (new Date()).getTime(),
                               course: C,
                               key: 1003,
                               pName: P,
@@ -3211,8 +3185,6 @@ exports.onecourse = function(req, res) {
     }
     var RP = function(R, P, G, n) {
       res.render('onecourse', { title: 'OneCourse',
-                                user: req.session.user,
-                                time: (new Date()).getTime(),
                                 key: 15,
                                 Tag: Tag,
                                 Pt: ProTil,
@@ -3331,8 +3303,6 @@ exports.course = function(req, res) {
       return res.redirect('/course');
     }
     res.render ('course', {title: 'Course',
-                            user: req.session.user,
-                            time: (new Date()).getTime(),
                             key: 14,
                             courses: courses,
                             n: n,
@@ -3425,8 +3395,6 @@ exports.courseRank = function(req, res) {
         });
       }
       res.render('courserank', {title: 'CourseRank',
-                                user: req.session.user,
-                                time: (new Date()).getTime(),
                                 key: 16,
                                 ranks: ranks,
                                 course: C,
@@ -3506,8 +3474,6 @@ exports.ranklist = function(req, res) {
       }
       var Render = function() {
         res.render('ranklist', {title: 'Ranklist',
-                                user: req.session.user,
-                                time: (new Date()).getTime(),
                                 key: 5,
                                 n: n,
                                 users: users,
@@ -3566,8 +3532,6 @@ exports.ranklist = function(req, res) {
 
 exports.submit = function(req, res) {
   res.render('submit', {title: 'Submit',
-                        user: req.session.user,
-                        time: (new Date()).getTime(),
                         key: 10,
                         id: req.query.pid
   });
@@ -3677,8 +3641,6 @@ exports.sourcecode = function(req, res) {
     }
     var RP = function(flg){
       res.render('sourcecode', {title: 'Sourcecode',
-                                user: req.session.user,
-                                time: (new Date()).getTime(),
                                 key: 11,
                                 solution: solution,
                                 getDate: getDate,
@@ -3822,8 +3784,6 @@ exports.statistic = function(req, res) {
               });
             }
             res.render('statistic', { title: 'Problem Statistic',
-                                      user: req.session.user,
-                                      time: (new Date()).getTime(),
                                       key: 1,
                                       pid: pid,
                                       sols: sols,
@@ -3893,8 +3853,6 @@ exports.regCon = function(req, res) {
         var left, now = (new Date()).getTime();
         left = C.startTime - now - 300000;
         res.render('regform', { title: 'Register Form',
-                                user: req.session.user,
-                                time: now,
                                 key: 2,
                                 contest: C,
                                 n: n,
@@ -4358,8 +4316,6 @@ exports.topic = function(req, res) {
         });
       }
       res.render('topic', { title: 'Topic',
-                            user: req.session.user,
-                            time: (new Date()).getTime(),
                             key: 17,
                             topics: topics,
                             page: page,
@@ -4434,8 +4390,6 @@ exports.onetopic = function(req, res) {
             });
           }
           res.render('onetopic', {title: 'OneTopic',
-                                  user: req.session.user,
-                                  time: (new Date()).getTime(),
                                   key: 18,
                                   topic: topic,
                                   comments: com,
@@ -4464,8 +4418,6 @@ exports.addtopic = function(req, res) {
     tCan.Can(function(vcode, img){
       req.session.verifycode = vcode;
       res.render('addtopic', {title: type+'Topic',
-                              user: req.session.user,
-                              time: (new Date()).getTime(),
                               topic: T,
                               key: 1004,
                               vcode: img

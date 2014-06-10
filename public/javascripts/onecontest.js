@@ -933,6 +933,7 @@ $(document).ready(function(){
 				$dialog_sm.jqmHide();
 				if (!err) {
 					ShowMessage('Your code for problem '+pmap[pid_index]+' has been submited successfully!');
+					window.location.hash = '#status';
 				} else if (err == '1') {
 					window.location.reload(true);
 					return ;
@@ -943,7 +944,6 @@ $(document).ready(function(){
 				} else if (err == '4') {
 					ShowMessage('The problem is not exist!');
 				}
-				window.location.hash = '#status';
 			});
 		});
 	}

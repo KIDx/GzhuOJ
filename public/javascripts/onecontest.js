@@ -1,4 +1,6 @@
 
+//socket
+var socket = io.connect('/');
 //截流响应
 var interceptorTime = 200
 ,	cnt;	//行号
@@ -1152,9 +1154,7 @@ function clearAjax() {
 	if (discussAjax) discussAjax.abort();
 }
 
-//socket
-var socket = io.connect('/')
-,	$msg = $('#msg_data')
+var $msg = $('#msg_data')
 ,	$msg_err = $('#msg_err')
 ,	$broadcast = $('#broadcast')
 ,	$dialog_bc = $('#dialog_bc')
@@ -1177,11 +1177,13 @@ $(document).ready(function(){
 			}
 		}).jqDrag('.jqDrag');
 	}
-	socket.emit('login', cid);
-	socket.on('broadcast', function(data){
-		$bc_content.text(data);
-		$dialog_bc.jqmShow();
-	});
+  socket.on('connect', function(){
+	  socket.emit('login', cid);
+	  socket.on('broadcast', function(data){
+	  	$bc_content.text(data);
+	  	$dialog_bc.jqmShow();
+	  });
+  });
 	if ($broadcast.length) {
 		$broadcast.click(function(){
 			var msg = JudgeString($msg.val());
@@ -1189,9 +1191,15 @@ $(document).ready(function(){
 				errAnimate($msg_err, '消息不能为空！');
 				return false;
 			}
-			socket.emit('broadcast', {room: cid, msg: msg});
-			$bc_content.text('消息已广播完成！');
-			$dialog_bc.jqmShow();
+      socket.emit('broadcast', {room: cid, msg: msg}, function(res){
+      if (res) {
+        $bc_content.text('消息广播成功！');
+        $msg.val('');
+      } else {
+        $bc_content.text('系统错误！');
+      }
+        $dialog_bc.jqmShow();
+      });
 		});
 	}
 });

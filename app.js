@@ -1,23 +1,34 @@
 /*
 * Module dependencies.
 */
-var express = require('express')
-,	routes = require('./routes')
-,	http = require('http')
-,	path = require('path')
-,	partials = require('express-partials')
-,	session = require('express-session')
-,	MongoStore = require('connect-mongo')(session)
-,	settings = require('./settings')
-,	OE = settings.outputErr
-,	app = express()
-,	server = http.createServer(app)
-,	io = require('socket.io').listen(server)
-,	fs = require('fs')
-,	cookie = require('express/node_modules/cookie')
-,	utils = require('connect/lib/utils')
-,	sessionStore = new MongoStore({ db : settings.db })
-,	Contest = require('./models/contest.js');
+var express = require('express');
+var routes = require('./routes');
+var http = require('http');
+var path = require('path');
+var partials = require('express-partials');
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+var settings = require('./settings');
+var OE = settings.outputErr;
+var app = express();
+var server = http.Server(app);
+var fs = require('fs');
+var sessionStore = new MongoStore({ db : settings.db });
+var Contest = require('./models/contest.js');
+var socket_opt = {};
+
+if (app.get('env') == 'production') {
+  console.log('production env.');
+  socket_opt  = {
+    'browser client minification': true,
+    'browser client etag': true,
+    'browser client gzip': true
+  };
+  app.enable('trust proxy');
+  app.enable('view cache');
+} else {
+  console.log('development env.');
+}
 
 //服务器配置
 app.set('port', process.env.PORT || 3000);
@@ -26,7 +37,10 @@ app.set('view engine', 'ejs');
 
 app.use(partials());
 
-app.use(require('body-parser')());
+app.use(require('body-parser').urlencoded({
+  extended: true
+}));
+
 app.use(require('multer')({
 	dest: './uploads/',
 	rename: function(fieldname, filename) {
@@ -34,13 +48,14 @@ app.use(require('multer')({
 	}
 }));
 app.use(require('compression')()); 		//gzip压缩传输
-app.use(require('method-override')());
 
-app.use(require('cookie-parser')());
+app.use(require('cookie-parser')(settings.cookie_secret));
 app.use(session({
 	secret: settings.cookie_secret,
 	store: sessionStore,
-	cookie: { maxAge: 86400000 }
+	cookie: { maxAge: 86400000 },
+  resave: false,
+  saveUninitialized: true
 }));
 
 //使用静态资源服务以及设置缓存(三天)
@@ -256,63 +271,7 @@ app.on('close', function(err){
 
 //running server
 server.listen(app.get('port'), function(){
-	console.log("Server running at http://localhost:3000");
+	console.log("Server running at http://localhost:" + process.env.PORT);
 });
 
-//normal when use nginx
-io.set('transports', [
-  'xhr-polling',
-  'jsonp-polling'
-]);
-
-//websocket设置session
-io.set('authorization', function(handshakeData, accept){
-	if (!handshakeData.headers.cookie) {
-		return accept('no cookie.', false);
-	}
-	handshakeData.cookies = utils.parseSignedCookies(
-			cookie.parse(handshakeData.headers.cookie),
-			settings.cookie_secret);
-	sessionStore.get(handshakeData.cookies['connect.sid'], function(err, session){
-		if (err || !session) {
-			return accept('no session.', false);
-		}
-		handshakeData.session = session;
-		return accept(null, true);
-	});
-});
-
-//socket
-io.sockets.on('connection', function(socket){
-	var session = socket.handshake.session;
-	if (session && session.user) {
-		socket.on('broadcast', function(data){
-			if (data) {
-				var cid = parseInt(data.room, 10);
-				if (!cid) {
-					return ;	//not allow
-				}
-				var RP = function() {
-					socket.broadcast.to(data.room).emit('broadcast', data.msg);
-				};
-				if (session.user.name == 'admin') {
-					return RP();
-				}
-				Contest.watch(cid, function(err, con){
-					if (err) {
-						OE(err);
-						return ;
-					}
-					if (con && con.userName == session.user.name) {
-						return RP();
-					}
-				});
-			}
-		});
-	}
-	socket.on('login', function(room){
-		if (room) {
-			socket.join(room.toString());
-		}
-	});
-});
+require('./socket')(require('socket.io')(server, socket_opt), sessionStore);

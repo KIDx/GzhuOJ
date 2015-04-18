@@ -946,6 +946,7 @@ $(document).ready(function(){
 				} else if (err == '4') {
 					ShowMessage('The problem is not exist!');
 				}
+				$submit.text('Submit').removeClass('disabled');
 			});
 		});
 	}
